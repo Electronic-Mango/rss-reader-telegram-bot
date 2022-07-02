@@ -11,7 +11,7 @@ from feed_item_sender_instagram import send_message_instagram
 from rss_db import add_rss_to_db, get_all_rss_from_db, remove_rss_feed_id_db, update_rss_feed_in_db
 
 load_dotenv()
-bot = Bot(command_prefix=when_mentioned_or("!"))
+bot = Bot(command_prefix=when_mentioned_or(getenv("BOT_COMMAND_PREFIX")))
 
 
 def configure_logging():
