@@ -4,7 +4,6 @@ Doesn't do any formatting, just sends up to 2000 characters from 'content_html' 
 Used mostly for debugging and development purposes.
 """
 
-
 async def send_message(channel, rss_name, item):
     await channel.send(format_item(rss_name, item))
 

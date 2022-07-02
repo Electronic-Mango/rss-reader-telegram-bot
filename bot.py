@@ -1,10 +1,13 @@
-from basic_feed_item_sender import send_message
-from basic_json_feed_reader import get_json_feed_items, get_not_handled_feed_items
+from logging import DEBUG, ERROR, INFO, WARN, basicConfig, debug, error, info, warn
+from os import getenv
+
 from discord.ext import tasks
 from discord.ext.commands import Bot, when_mentioned_or
 from dotenv import load_dotenv
-from logging import basicConfig, debug, DEBUG, error, ERROR, info, INFO, warn, WARN
-from os import getenv
+
+from basic_json_feed_reader import get_json_feed_items, get_not_handled_feed_items
+from feed_item_sender_basic import send_message
+from feed_item_sender_instagram import send_message_instagram
 from rss_db import add_rss_to_db, get_all_rss_from_db, remove_rss_feed_id_db, update_rss_feed_in_db
 
 load_dotenv()
@@ -63,7 +66,7 @@ async def remove_feed(context, rss_name=None):
 def start_rss_checking_when_necessary():
     if check_rss.is_running():
         return
-    data_to_look_up = { collection: data for collection, data in get_all_rss_from_db().items() if data }
+    data_to_look_up = {collection: data for collection, data in get_all_rss_from_db().items() if data}
     if data_to_look_up:
         check_rss.start()
 
@@ -120,7 +123,11 @@ async def send_rss_update(channel_id, rss_name, item):
         error(f"Channel ID=[{channel_id}] is None, cannot send message!")
         return
     info(f"Sending message to ID=[{channel_id}]")
-    await send_message(channel, rss_name, item)
+    item_id = item["id"]
+    if "www.instagram.com" in item_id:
+        await send_message_instagram(channel, rss_name, item)
+    else:
+        await send_message(channel, rss_name, item)
 
 
 configure_logging()

@@ -1,6 +1,7 @@
-from dotenv import load_dotenv
 from logging import info
 from os import getenv
+
+from dotenv import load_dotenv
 from pymongo import MongoClient
 
 
