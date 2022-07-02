@@ -20,3 +20,13 @@ def add_rss_to_db(channel_id, rss_feed, rss_name, latest_item_id):
         }
     )
     print(f"Insert result: acknowledged={insertion_result.acknowledged} ID={insertion_result.inserted_id}")
+
+
+def get_all_rss_from_db():
+    db = get_rss_database()
+    collection_names = db.list_collection_names()
+    return {
+        collection_name: list(db.get_collection(collection_name).find({}))
+        for collection_name
+        in collection_names
+    }
