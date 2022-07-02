@@ -1,4 +1,5 @@
 from dotenv import load_dotenv
+from logging import info
 from os import getenv
 from pymongo import MongoClient
 
@@ -19,7 +20,7 @@ def add_rss_to_db(channel_id, rss_feed, rss_name, latest_item_id):
             "latest_item_id": latest_item_id
         }
     )
-    print(f"Insert result: acknowledged={insertion_result.acknowledged} ID={insertion_result.inserted_id}")
+    info(f"Insert result: acknowledged={insertion_result.acknowledged} ID={insertion_result.inserted_id}")
 
 
 def get_all_rss_from_db():
