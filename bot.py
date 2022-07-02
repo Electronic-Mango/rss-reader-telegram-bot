@@ -5,7 +5,7 @@ from discord.ext.commands import Bot, when_mentioned_or
 from dotenv import load_dotenv
 from logging import basicConfig, debug, DEBUG, error, ERROR, info, INFO, warn, WARN
 from os import getenv
-from rss_db import add_rss_to_db, get_all_rss_from_db, update_rss_feed_in_db
+from rss_db import add_rss_to_db, get_all_rss_from_db, remove_rss_feed_id_db, update_rss_feed_in_db
 
 load_dotenv()
 bot = Bot(command_prefix=when_mentioned_or("!"))
@@ -21,7 +21,7 @@ async def on_ready():
     info(f"Connected servers: {bot.guilds}...")
     info(f"Connected channels: {list(bot.get_all_channels())}")
     info("Bot started!")
-    check_rss.start()
+    start_rss_checking_when_necessary()
 
 
 @bot.command()
@@ -38,8 +38,34 @@ async def add_feed(context, rss_feed=None, rss_name=None):
     channel_id = context.channel.id
     feed_items = get_json_feed_items(rss_feed)
     latest_item_id = feed_items[0]["id"]
-    info(f"Adding RSS feed, channel_id=[{channel_id}] name=[{rss_name}] feed=[{rss_feed}] latest=[{latest_item_id}].")
+    info(f"Adding RSS feed, channel_id=[{channel_id}] name=[{rss_name}] feed=[{rss_feed}] latest=[{latest_item_id}]...")
     add_rss_to_db(channel_id, rss_feed, rss_name, latest_item_id)
+    start_rss_checking_when_necessary()
+    await context.send(f'Added subscription for "{rss_name}"!')
+
+
+@bot.command(aliases=["remove", "stop", "stop_feed"])
+async def remove_feed(context, rss_name=None):
+    if not rss_name:
+        await context.send_help(remove_feed)
+        return
+    channel_id = context.channel.id
+    info(f"Removing RSS feed, channel_id=[{channel_id}] name=[{rss_name}]...")
+    removed_count = remove_rss_feed_id_db(channel_id, rss_name)
+    if removed_count:
+        info(f"RSS channel_id=[{channel_id}] name=[{rss_name}] was removed.")
+        await context.send(f'Removed subscription for "{rss_name}"!')
+    else:
+        info(f"Removed no entries for channel_id=[{channel_id}] name=[{rss_name}], most likely this RSS name doesn't exist.")
+        await context.send(f'No subscription with name "{rss_name}" to remove!')
+
+
+def start_rss_checking_when_necessary():
+    if check_rss.is_running():
+        return
+    data_to_look_up = { collection: data for collection, data in get_all_rss_from_db().items() if data }
+    if data_to_look_up:
+        check_rss.start()
 
 
 @tasks.loop(seconds=int(getenv("LOOKUP_INTERVAL_SECONDS")))
