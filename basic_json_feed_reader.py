@@ -12,11 +12,12 @@ def get_json_feed_items(feed_link):
     return json_feed_response["items"]
 
 
-def get_unhandled_feed_items(feed_link, latest_handled_item_id):
+def get_not_handled_feed_items(feed_link, latest_handled_item_id):
     loaded_items = get_json_feed_items(feed_link)
-    unhandled_items = list()
+    not_handled_items = list()
     for item in loaded_items:
         if item["id"] == latest_handled_item_id:
             break
-        unhandled_items.append(item)
-    return unhandled_items
+        not_handled_items.append(item)
+    not_handled_items.reverse()
+    return not_handled_items

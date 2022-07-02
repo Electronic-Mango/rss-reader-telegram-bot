@@ -28,6 +28,14 @@ def get_all_rss_from_db():
     collection_names = db.list_collection_names()
     return {
         collection_name: list(db.get_collection(collection_name).find({}))
-        for collection_name
-        in collection_names
+        for collection_name in collection_names
     }
+
+
+def update_rss_feed_in_db(channel_id, rss_feed, rss_name, new_latest_item_id):
+    db = get_rss_database()
+    channel_collection = db[str(channel_id)]
+    channel_collection.find_one_and_update(
+        {"rss_feed": rss_feed, "rss_name": rss_name},
+        {"$set": {"latest_item_id": new_latest_item_id}},
+    )
