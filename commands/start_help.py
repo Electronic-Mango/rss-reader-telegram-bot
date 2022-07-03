@@ -1,4 +1,4 @@
-from logging import info
+from logging import getLogger
 
 from telegram import Update
 from telegram.ext import CommandHandler, ContextTypes
@@ -17,13 +17,14 @@ HELP_MESSAGES = [
     REMOVE_ALL_HELP_MESSAGE,
 ]
 
+logger = getLogger(__name__)
+
 
 def start_help_command_handler():
     return CommandHandler(["start", "help"], help)
 
 
 async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    info(f"Start/help from chat ID=[{update.effective_chat.id}]")
+    logger.info(f"Start/help from chat ID=[{update.effective_chat.id}]")
     await update.message.reply_text("Simple Web Comics bot based on RSS feeds!")
     await update.message.reply_text("\n".join(HELP_MESSAGES))
-

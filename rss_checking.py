@@ -1,4 +1,4 @@
-from logging import info, warn
+from logging import getLogger
 from os import getenv
 
 from telegram.ext import ContextTypes, JobQueue
@@ -9,19 +9,21 @@ from feed_item_sender_basic import send_message
 from feed_item_sender_instagram import send_message_instagram
 from feed_types import FeedTypes
 
+logger = getLogger(__name__)
+
 
 def rss_checking_job_name(chat_id: str, rss_name: str):
     return f"check-rss-{chat_id}-{rss_name}"
 
 
 def start_rss_checking(job_queue: JobQueue, chat_id: str, rss_data: RssFeedData):
-    info(str(rss_data))
+    logger.info(str(rss_data))
     job_name = rss_checking_job_name(chat_id, rss_data.feed_name)
     if job_queue.get_jobs_by_name(job_name):
-        info(f"RSS checking job=[{job_name}] is already started.")
+        logger.info(f"RSS checking job=[{job_name}] is already started.")
         return
     interval = int(getenv("LOOKUP_INTERVAL_SECONDS"))
-    info(
+    logger.info(
         f"Starting repeating job checking RSS for updates "
         f"with interval=[{interval}] "
         f"in chat ID=[{job_name}] "
@@ -35,12 +37,12 @@ def start_rss_checking(job_queue: JobQueue, chat_id: str, rss_data: RssFeedData)
 async def check_rss(context: ContextTypes.DEFAULT_TYPE):
     chat_id = context.job.chat_id
     rss_name, rss_type, rss_feed, latest_handled_item_id = context.job.data
-    info(f"Checking RSS in chat ID=[{chat_id}] for RSS=[{rss_name}]...")
+    logger.info(f"Checking RSS in chat ID=[{chat_id}] for RSS=[{rss_name}]...")
     not_handled_feed_items = get_not_handled_feed_items(
         rss_feed, latest_handled_item_id
     )
     if not not_handled_feed_items:
-        info(f"No new data for RSS=[{rss_name}] in chat ID=[{chat_id}]")
+        logger.info(f"No new data for RSS=[{rss_name}] in chat ID=[{chat_id}]")
         return
     for unhandled_item in not_handled_feed_items:
         await send_rss_update(context, chat_id, rss_name, rss_type, unhandled_item)
@@ -50,7 +52,7 @@ async def check_rss(context: ContextTypes.DEFAULT_TYPE):
 
 
 async def send_rss_update(context: ContextTypes.DEFAULT_TYPE, chat_id, rss_name, rss_type, item):
-    info(f"Sending message to ID=[{chat_id}]")
+    logger.info(f"Sending message to ID=[{chat_id}]")
     if rss_type == FeedTypes.INSTAGRAM_TYPE:
         await send_message_instagram(context, chat_id, rss_name, item)
     else:
@@ -63,4 +65,4 @@ def cancel_checking_job(context: ContextTypes.DEFAULT_TYPE, chat_id, feed_name):
     for job in jobs:
         job.schedule_removal()
     if len(jobs) > 1:
-        warn(f"Found [{len(jobs)}] jobs with name [{job_name}]!")
+        logger.warn(f"Found [{len(jobs)}] jobs with name [{job_name}]!")

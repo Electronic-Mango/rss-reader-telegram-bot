@@ -1,4 +1,4 @@
-from logging import info
+from logging import getLogger
 
 from telegram import Update
 from telegram.ext import CommandHandler, ContextTypes
@@ -8,6 +8,8 @@ from feed_types import FeedTypes
 
 LIST_HELP_MESSAGE = "/list - list all subscriptions"
 
+logger = getLogger(__name__)
+
 
 def list_command_handler():
     return CommandHandler("list", list)
@@ -15,7 +17,7 @@ def list_command_handler():
 
 async def list(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
-    info(f"List from chat ID: [{chat_id}]")
+    logger.info(f"List from chat ID: [{chat_id}]")
     rss_data = get_rss_data_for_chat(chat_id)
     if not rss_data:
         await update.message.reply_text("No feeds subscribed.")

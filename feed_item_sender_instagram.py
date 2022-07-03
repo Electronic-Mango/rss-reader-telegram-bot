@@ -3,12 +3,14 @@ Sender dedicated for Instagram feeds.
 Sends images/videos directly, removes hashtags, etc.
 """
 
-from logging import info
+from logging import getLogger
 from re import sub
 from requests import get
 
 from telegram import InputMediaPhoto, InputMediaVideo
 from telegram.ext import ContextTypes
+
+logger = getLogger(__name__)
 
 
 async def send_message_instagram(context: ContextTypes.DEFAULT_TYPE, chat_id, rss_name, item):
@@ -70,15 +72,15 @@ async def send_single_media_based_on_type(context: ContextTypes.DEFAULT_TYPE, ch
 
 def is_video(url, type):
     if "image" in type:
-        info(f"Type '{type}' treated as image.")
+        logger.info(f"Type '{type}' treated as image.")
         return False
     response = get(url)
     content_type = response.headers["Content-Type"]
     if "video" in content_type:
-        info(f"Type '{type}' (content-type=[{content_type}]) treated as video.")
+        logger.info(f"Type '{type}' (content-type=[{content_type}]) treated as video.")
         return True
     else:
-        info(f"Type '{type}' (content-type=[{content_type}]) treated as image.")
+        logger.info(f"Type '{type}' (content-type=[{content_type}]) treated as image.")
         return False
 
 

@@ -1,7 +1,7 @@
 # TODO Consider allowing for adding feeds via single command as well
 # TODO Check whether given Instagram user actually exists - this check depends on which feed type was selected
 
-from logging import info
+from logging import getLogger
 from os import getenv
 from dotenv import load_dotenv
 
@@ -17,6 +17,8 @@ from db import add_rss_to_db, get_rss_data
 ADD_HELP_MESSAGE = "/add - adds subscription for a given feed"
 FEED_TYPE, FEED_LINK, FEED_NAME = range(3)
 
+logger = getLogger(__name__)
+
 
 def add_conversation_handler():
     return ConversationHandler(
@@ -31,7 +33,7 @@ def add_conversation_handler():
 
 
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    info(f"User cancelled adding subscription chat ID=[{update.effective_chat.id}].")
+    logger.info(f"User cancelled adding subscription chat ID=[{update.effective_chat.id}].")
     await update.message.reply_text(
         "Cancelled adding subscription", reply_markup=ReplyKeyboardRemove()
     )
@@ -39,7 +41,7 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def request_feed_type(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    info("User requested new subscription.")
+    logger.info("User requested new subscription.")
     keyboard = [[FeedTypes.INSTAGRAM_TYPE, FeedTypes.RAW_RSS_TYPE]]
     await update.message.reply_text(
         "Select source, or /cancel",
@@ -56,7 +58,7 @@ async def request_feed_type(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def handle_feed_type(update: Update, context: ContextTypes.DEFAULT_TYPE):
     feed_type = update.message.text
     context.user_data[FEED_TYPE] = feed_type
-    info(f"User selected type=[{feed_type}].")
+    logger.info(f"User selected type=[{feed_type}].")
     match feed_type:
         case FeedTypes.INSTAGRAM_TYPE:
             await update.message.reply_text("Send Instagram user, or /cancel")
@@ -71,7 +73,7 @@ async def handle_feed_type(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def request_feed_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
     feed_link = update.message.text
-    info(f"User send feed link: {feed_link}.")
+    logger.info(f"User send feed link: {feed_link}.")
     context.user_data[FEED_LINK] = feed_link
     await update.message.reply_text("Send RSS feed name, or /cancel")
     return FEED_NAME
@@ -79,20 +81,20 @@ async def request_feed_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def store_subscription(update: Update, context: ContextTypes.DEFAULT_TYPE):
     feed_name = update.message.text
-    info(f"User send feed name: {feed_name}.")
+    logger.info(f"User send feed name: {feed_name}.")
     chat_id = update.effective_chat.id
     existing_feed = get_rss_data(chat_id, feed_name)
+    feed_type = context.user_data[FEED_TYPE]
     if existing_feed is not None:
         await update.message.reply_text(
             f"Subscription with name <b>{feed_name}</b> ({feed_type}) already exists!",
             parse_mode="HTML",
         )
         return await request_feed_name(update, context)
-    feed_type = context.user_data[FEED_TYPE]
     feed_link = get_feed_link(context, feed_name, feed_type)
     feed_items = get_json_feed_items(feed_link)
     latest_item_id = feed_items[0]["id"]
-    info(
+    logger.info(
         f"Adding RSS feed"
         f"chat_id=[{chat_id}] "
         f"name=[{feed_name}] "

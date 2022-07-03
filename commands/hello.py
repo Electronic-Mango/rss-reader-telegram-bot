@@ -1,4 +1,4 @@
-from logging import info
+from logging import getLogger
 from random import choice
 
 from telegram import Update
@@ -14,11 +14,14 @@ HELLO_RESPONSES = [
     "Hey!",
 ]
 
+logger = getLogger(__name__)
+
+
 
 def hello_command_handler():
     return CommandHandler("hello", hello)
 
 
 async def hello(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    info(f"Hello from chat ID: [{update.effective_chat.id}]")
+    logger.info(f"Hello from chat ID: [{update.effective_chat.id}]")
     await update.message.reply_text(choice(HELLO_RESPONSES))

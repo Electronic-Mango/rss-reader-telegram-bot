@@ -1,6 +1,6 @@
 # TODO Allow removing feed via a single command, rather than a conversation
 
-from logging import info
+from logging import getLogger
 
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import CommandHandler, ConversationHandler, ContextTypes, MessageHandler
@@ -13,6 +13,9 @@ REMOVE_HELP_MESSAGE = "/remove - remove subscription for a given feed"
 CONFIRM_REMOVAL_YES = "Yes"
 CONFIRM_REMOVAL_NO = "No"
 REMOVE_NAME, CONFIRM = range(2)
+
+logger = getLogger(__name__)
+
 
 
 def remove_conversation_handler():
@@ -27,7 +30,7 @@ def remove_conversation_handler():
 
 
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    info(f"User cancelled removing subscription chat ID=[{update.effective_chat.id}].")
+    logger.info(f"User cancelled removing subscription chat ID=[{update.effective_chat.id}].")
     await update.message.reply_text(
         "Cancelled removing subscription", reply_markup=ReplyKeyboardRemove()
     )
@@ -35,7 +38,7 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def request_feed_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    info(f"User requested cancellation of subscription.")
+    logger.info(f"User requested cancellation of subscription.")
     all_feed_names = [
         [feed_data.feed_name]
         for feed_data in get_rss_data_for_chat(update.effective_chat.id)
@@ -57,7 +60,7 @@ async def request_feed_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def confirm_removal(update: Update, context: ContextTypes.DEFAULT_TYPE):
     feed_name = update.message.text
-    info(f"User provided feed name to remove [{feed_name}]")
+    logger.info(f"User provided feed name to remove [{feed_name}]")
     context.user_data[REMOVE_NAME] = feed_name
     confirmation_keyboard = [[CONFIRM_REMOVAL_YES, CONFIRM_REMOVAL_NO]]
     await update.message.reply_text(
@@ -78,17 +81,17 @@ async def remove_subscription(update: Update, context: ContextTypes.DEFAULT_TYPE
     if confirmation != CONFIRM_REMOVAL_YES:
         return await cancel(update, context)
     feed_name = context.user_data[REMOVE_NAME]
-    info(f"User confirmed removal of feed=[{feed_name}]")
+    logger.info(f"User confirmed removal of feed=[{feed_name}]")
     chat_id = update.effective_chat.id
     cancel_checking_job(context, chat_id, feed_name)
     removed_count = remove_feed_link_id_db(chat_id, feed_name)
     if removed_count:
-        info(f"RSS chat_id=[{chat_id}] name=[{feed_name}] was removed.")
+        logger.info(f"RSS chat_id=[{chat_id}] name=[{feed_name}] was removed.")
         await update.message.reply_text(
             f"Removed subscription for <b>{feed_name}</b>!", parse_mode="HTML"
         )
         return ConversationHandler.END
-    info(
+    logger.info(
         f"Removed no entries for chat_id=[{chat_id}] name=[{feed_name}], "
         f"most likely this RSS name doesn't exist."
     )
