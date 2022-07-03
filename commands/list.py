@@ -1,5 +1,3 @@
-# TODO Extra empty line before feeds are listed?
-
 from logging import info
 
 from telegram import Update
@@ -23,8 +21,8 @@ async def list(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("No feeds subscribed.")
         return
     formatted_rss_data = [format_feed_item(rss_data) for rss_data in rss_data]
-    message = "Following feeds are subscribed:\n"
-    message += "\n".join(formatted_rss_data)
+    message = "Following feeds are subscribed:\n\n"
+    message += "\n".join(sorted(formatted_rss_data))
     await update.message.reply_text(message, parse_mode="HTML")
 
 
