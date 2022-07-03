@@ -5,6 +5,8 @@ from telegram.ext import CommandHandler, ContextTypes
 
 from rss_db import get_rss_data_for_chat
 
+LIST_HELP_MESSAGE = "/list - list all subscriptions"
+
 
 def list_command_handler():
     return CommandHandler("list", list)

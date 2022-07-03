@@ -8,6 +8,7 @@ from telegram.ext.filters import COMMAND, TEXT
 
 from rss_db import get_rss_data_for_chat
 
+REMOVE_HELP_MESSAGE = "/remove - remove subscription for a given feed"
 REMOVE_NAME = range(1)
 
 

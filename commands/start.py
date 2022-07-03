@@ -3,6 +3,8 @@ from logging import info
 from telegram import Update
 from telegram.ext import CommandHandler, ContextTypes
 
+START_HELP_MESSAGE = "/start - prints start message"
+
 
 def start_command_handler():
     return CommandHandler("start", start)

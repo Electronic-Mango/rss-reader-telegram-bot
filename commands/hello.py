@@ -3,6 +3,8 @@ from logging import info
 from telegram import Update
 from telegram.ext import CommandHandler, ContextTypes
 
+HELLO_HELP_MESSAGE = "/hello - say hello to the bot"
+
 
 def hello_command_handler():
     return CommandHandler("hello", hello)

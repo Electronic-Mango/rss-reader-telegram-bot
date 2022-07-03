@@ -8,6 +8,7 @@ from basic_json_feed_reader import get_json_feed_items
 from rss_checking import start_rss_checking
 from rss_db import add_rss_to_db, get_rss_feed
 
+ADD_HELP_MESSAGE = "/add - adds subscription for a given feed"
 ADD_LINK, ADD_NAME = range(2)
 
 
