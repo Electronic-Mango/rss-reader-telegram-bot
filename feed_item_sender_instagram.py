@@ -7,10 +7,10 @@ from logging import info
 from re import sub
 
 from telegram import InputMediaPhoto, InputMediaVideo
-from telegram.ext.callbackcontext import CallbackContext
+from telegram.ext import ContextTypes
 
 
-def send_message_instagram(context: CallbackContext, chat_id, rss_name, item):
+async def send_message_instagram(context: ContextTypes.DEFAULT_TYPE, chat_id, rss_name, item):
     item_url, title, content = parse_item(item)
     attachments = [(attachment["url"], attachment["mime_type"]) for attachment in item["attachments"]]
     message = format_message(rss_name, item_url, title, content, len(attachments) > 10)
@@ -18,16 +18,16 @@ def send_message_instagram(context: CallbackContext, chat_id, rss_name, item):
         url, type = attachments[0]
         if type != "application/octet-stream":
             info(f"Type 'application/octet-stream' treated as video.")
-            context.bot.send_photo(chat_id, photo=url, caption=message)
+            await context.bot.send_photo(chat_id, photo=url, caption=message)
         else:
             info(f"Type '{type}' treated as image.")
-            context.bot.send_video(chat_id, video=url, caption=message, supports_streaming=True)
+            await context.bot.send_video(chat_id, video=url, caption=message, supports_streaming=True)
     else:
         media_list = [media_object(url, type) for url, type in attachments]
         # Only the first media should have a caption,
         # otherwise actual caption body won't be displayed directly in the message
         media_list[0].caption = message
-        context.bot.send_media_group(chat_id, media_list)
+        await context.bot.send_media_group(chat_id, media_list)
 
 
 def format_message(rss_name, item_url, title, content, too_many_images):

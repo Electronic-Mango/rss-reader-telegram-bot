@@ -33,6 +33,12 @@ def get_all_rss_from_db():
     }
 
 
+def get_rss_from_db(chat_id: str):
+    db = get_rss_database()
+    chat_collection = db[chat_id]
+    return list(chat_collection.find({}))
+
+
 def update_rss_feed_in_db(channel_id, rss_feed, rss_name, new_latest_item_id):
     db = get_rss_database()
     channel_collection = db[str(channel_id)]

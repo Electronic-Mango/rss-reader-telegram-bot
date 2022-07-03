@@ -4,11 +4,11 @@ Doesn't do any formatting, just sends up to 2000 characters from 'content_html' 
 Used mostly for debugging and development purposes.
 """
 
-from telegram.ext.callbackcontext import CallbackContext
+from telegram.ext import ContextTypes
 
 
-def send_message(context: CallbackContext, chat_id, rss_name, item):
-    context.bot.send_message(chat_id, format_item(rss_name, item))
+async def send_message(context: ContextTypes.DEFAULT_TYPE, chat_id, rss_name, item):
+    await context.bot.send_message(chat_id, format_item(rss_name, item))
 
 
 def format_item(rss_name, item):
