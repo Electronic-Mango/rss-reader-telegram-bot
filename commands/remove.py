@@ -1,4 +1,5 @@
 # TODO Allow removing feed via a single command, rather than a conversation
+# TODO Check whether there are any subscriptions to remove
 
 from logging import info
 

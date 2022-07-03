@@ -13,7 +13,7 @@ from commands.hello import hello_command_handler
 from commands.help import help_command_handler
 from commands.list import list_command_handler
 from commands.remove import remove_conversation_handler
-from commands.remove_all import remove_all_command_handler
+from commands.remove_all import remove_all_conversation_handler
 from commands.start import start_command_handler
 from db import get_all_rss_from_db
 from rss_checking import start_rss_checking
@@ -31,7 +31,7 @@ def main():
     application.add_handler(list_command_handler())
     application.add_handler(add_conversation_handler())
     application.add_handler(remove_conversation_handler())
-    application.add_handler(remove_all_command_handler())
+    application.add_handler(remove_all_conversation_handler())
     info("Handlers configured, starting RSS checking...")
     start_all_rss_checking_when_necessary(application.job_queue)
     info("RSS checking triggered, starting polling...")
