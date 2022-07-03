@@ -1,5 +1,5 @@
 # TODO Consider allowing for adding feeds via single command as well
-# TODO Check whether given Instagram user actually exists
+# TODO Check whether given Instagram user actually exists - this check depends on which feed type was selected
 
 from logging import info
 from os import getenv
@@ -106,6 +106,7 @@ async def store_subscription(update: Update, context: ContextTypes.DEFAULT_TYPE)
     return ConversationHandler.END
 
 
+# TODO Move this to the feed type dispatcher?
 def get_feed_link(context, feed_name, feed_type):
     if feed_type == FeedTypes.INSTAGRAM_TYPE:
         load_dotenv()

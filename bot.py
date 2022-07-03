@@ -10,11 +10,10 @@ from telegram.ext import ApplicationBuilder, JobQueue
 
 from commands.add import add_conversation_handler
 from commands.hello import hello_command_handler
-from commands.help import help_command_handler
+from commands.start_help import start_help_command_handler
 from commands.list import list_command_handler
 from commands.remove import remove_conversation_handler
 from commands.remove_all import remove_all_conversation_handler
-from commands.start import start_command_handler
 from db import get_all_rss_from_db
 from rss_checking import start_rss_checking
 
@@ -25,8 +24,7 @@ def main():
     info("Bot starting...")
     application = ApplicationBuilder().token(getenv("TOKEN")).build()
     info("Bot started, setting handlers...")
-    application.add_handler(start_command_handler())
-    application.add_handler(help_command_handler())
+    application.add_handler(start_help_command_handler())
     application.add_handler(hello_command_handler())
     application.add_handler(list_command_handler())
     application.add_handler(add_conversation_handler())
