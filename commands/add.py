@@ -39,7 +39,7 @@ async def request_feed_type(update: Update, context: ContextTypes.DEFAULT_TYPE):
     info("User requested new subscription.")
     keyboard = [[FeedTypes.INSTAGRAM_TYPE, FeedTypes.RAW_RSS_TYPE]]
     await update.message.reply_text(
-        "Send RSS feed link, or /cancel",
+        "Select source, or /cancel",
         reply_markup=ReplyKeyboardMarkup(
             keyboard,
             one_time_keyboard=True,
