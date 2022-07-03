@@ -5,6 +5,7 @@ Sends images/videos directly, removes hashtags, etc.
 
 from logging import info
 from re import sub
+from requests import get
 
 from telegram import InputMediaPhoto, InputMediaVideo
 from telegram.ext import ContextTypes
@@ -12,16 +13,13 @@ from telegram.ext import ContextTypes
 
 async def send_message_instagram(context: ContextTypes.DEFAULT_TYPE, chat_id, rss_name, item):
     item_url, title, content = parse_item(item)
-    attachments = [(attachment["url"], attachment["mime_type"]) for attachment in item["attachments"]]
+    attachments = [
+        (attachment["url"], attachment["mime_type"])
+        for attachment in item["attachments"]
+    ]
     message = format_message(rss_name, item_url, title, content, len(attachments) > 10)
     if len(attachments) == 1:
-        url, type = attachments[0]
-        if type != "application/octet-stream":
-            info(f"Type '{type}' treated as image.")
-            await context.bot.send_photo(chat_id, photo=url, caption=message)
-        else:
-            info(f"Type 'application/octet-stream' treated as video.")
-            await context.bot.send_video(chat_id, video=url, caption=message, supports_streaming=True)
+        await send_single_media_based_on_type(context, chat_id, *attachments[0], message)
     else:
         media_list = [media_object(url, type) for url, type in attachments]
         # Only the first media should have a caption,
@@ -71,8 +69,29 @@ def parse_item_content(item):
     return content
 
 
-def media_object(url, type):
-    if type != "application/octet-stream":
-        return InputMediaPhoto(media=url)
+async def send_single_media_based_on_type(context, chat_id, url, type, message):
+    if is_video(url, type):
+        await context.bot.send_video(chat_id, video=url, caption=message, supports_streaming=True)
     else:
+        await context.bot.send_photo(chat_id, photo=url, caption=message)
+
+
+def is_video(url, type):
+    if "image" in type:
+        info(f"Type '{type}' treated as image.")
+        return False
+    response = get(url)
+    content_type = response.headers["Content-Type"]
+    if "video" in content_type:
+        info(f"Type '{type}' (content-type=[{content_type}]) treated as video.")
+        return True
+    else:
+        info(f"Type '{type}' (content-type=[{content_type}]) treated as image.")
+        return False
+
+
+def media_object(url, type):
+    if is_video(url, type):
         return InputMediaVideo(media=url, supports_streaming=True)
+    else:
+        return InputMediaPhoto(media=url)
