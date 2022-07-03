@@ -1,56 +1,55 @@
+from collections import namedtuple
 from logging import info
 from os import getenv
 
 from dotenv import load_dotenv
 from pymongo import MongoClient
 
+RssFeedData = namedtuple("RssFeedData", ["rss_name", "rss_feed", "latest_item_id"])
 
-def get_rss_database():
+
+def db_document_to_rss_data(document: dict) -> RssFeedData:
+    return RssFeedData(document["rss_name"], document["rss_feed"], document["latest_item_id"])
+
+
+def get_rss_db():
     load_dotenv()
     db_client = MongoClient(getenv("DB_HOST"), int(getenv("DB_PORT")))
     return db_client[str(getenv("DB_FEED_DATA_NAME"))]
 
 
-def add_rss_to_db(chat_id, rss_feed, rss_name, latest_item_id):
-    db = get_rss_database()
-    channel_collection = db[str(chat_id)]
-    insert_result = channel_collection.insert_one(
-        {
-            "rss_name": rss_name,
-            "rss_feed": rss_feed,
-            "latest_item_id": latest_item_id
-        }
-    )
+def get_rss_collection(collection_name: str):
+    db = get_rss_db()
+    return db[str(collection_name)]
+
+
+def add_rss_to_db(chat_id: str, rss_feed: str, rss_name: str, latest_item_id: str) -> RssFeedData:
+    chat_collection = get_rss_collection(chat_id)
+    rss_feed_data = RssFeedData(rss_name, rss_feed, latest_item_id)
+    insert_result = chat_collection.insert_one(rss_feed_data._asdict())
     info(f"Insert result: acknowledged={insert_result.acknowledged} ID={insert_result.inserted_id}")
+    return rss_feed_data
 
 
 def get_all_rss_from_db():
-    db = get_rss_database()
+    db = get_rss_db()
     collection_names = db.list_collection_names()
     return {
-        collection_name: list(db.get_collection(collection_name).find({}))
+        collection_name: [db_document_to_rss_data(document) for document in db.get_collection(collection_name).find({})]
         for collection_name in collection_names
     }
 
 
-def get_rss_from_db(chat_id: str):
-    db = get_rss_database()
-    chat_collection = db[chat_id]
-    return list(chat_collection.find({}))
-
-
-def update_rss_feed_in_db(channel_id, rss_feed, rss_name, new_latest_item_id):
-    db = get_rss_database()
-    channel_collection = db[str(channel_id)]
-    channel_collection.find_one_and_update(
+def update_rss_feed_in_db(chat_id: str, rss_feed: str, rss_name: str, new_latest_item_id: str):
+    chat_collection = get_rss_collection(chat_id)
+    chat_collection.find_one_and_update(
         {"rss_feed": rss_feed, "rss_name": rss_name},
         {"$set": {"latest_item_id": new_latest_item_id}},
     )
 
 
-def remove_rss_feed_id_db(chat_id, rss_name):
-    db = get_rss_database()
-    channel_collection = db[str(chat_id)]
-    delete_result = channel_collection.delete_many({"rss_name": rss_name})
+def remove_rss_feed_id_db(chat_id: str, rss_name: str):
+    chat_collection = get_rss_collection(chat_id)
+    delete_result = chat_collection.delete_many({"rss_name": rss_name})
     info(f"Delete result: acknowledged={delete_result.acknowledged} count={delete_result.deleted_count}")
     return delete_result.deleted_count

@@ -17,10 +17,10 @@ async def send_message_instagram(context: ContextTypes.DEFAULT_TYPE, chat_id, rs
     if len(attachments) == 1:
         url, type = attachments[0]
         if type != "application/octet-stream":
-            info(f"Type 'application/octet-stream' treated as video.")
+            info(f"Type '{type}' treated as image.")
             await context.bot.send_photo(chat_id, photo=url, caption=message)
         else:
-            info(f"Type '{type}' treated as image.")
+            info(f"Type 'application/octet-stream' treated as video.")
             await context.bot.send_video(chat_id, video=url, caption=message, supports_streaming=True)
     else:
         media_list = [media_object(url, type) for url, type in attachments]

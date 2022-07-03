@@ -3,12 +3,12 @@ from os import getenv
 
 from dotenv import load_dotenv
 from telegram import Update
-from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, JobQueue
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, JobQueue
 
 from basic_json_feed_reader import get_json_feed_items, get_not_handled_feed_items
 from feed_item_sender_basic import send_message
 from feed_item_sender_instagram import send_message_instagram
-from rss_db import add_rss_to_db, get_all_rss_from_db, get_rss_from_db, remove_rss_feed_id_db, update_rss_feed_in_db
+from rss_db import RssFeedData, add_rss_to_db, get_all_rss_from_db, remove_rss_feed_id_db, update_rss_feed_in_db
 
 
 def main():
@@ -22,7 +22,7 @@ def main():
     application.add_handler(CommandHandler("add", add))
     application.add_handler(CommandHandler("remove", remove))
     info("Handlers configured, starting RSS checking...")
-    start_rss_checking_when_necessary(application.job_queue)
+    start_all_rss_checking_when_necessary(application.job_queue)
     info("RSS checking triggered, starting polling...")
     application.run_polling()
 
@@ -51,8 +51,8 @@ async def add(update: Update, context: ContextTypes.DEFAULT_TYPE):
     feed_items = get_json_feed_items(rss_feed)
     latest_item_id = feed_items[0]["id"]
     info(f"Adding RSS feed, chat_id=[{chat_id}] name=[{rss_name}] feed=[{rss_feed}] latest=[{latest_item_id}]...")
-    add_rss_to_db(chat_id, rss_feed, rss_name, latest_item_id)
-    start_rss_checking_when_necessary(context.job_queue)
+    rss_data = add_rss_to_db(chat_id, rss_feed, rss_name, latest_item_id)
+    start_rss_checking(context.job_queue, chat_id, rss_data)
     await update.message.reply_text(f'Added subscription for "{rss_name}"!')
 
 
@@ -63,6 +63,9 @@ async def remove(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     rss_name = context.args[0]
     chat_id = update.effective_chat.id
+    jobs = context.job_queue.get_jobs_by_name(rss_checking_job_name(chat_id, rss_name))
+    for job in jobs:
+        job.schedule_removal()
     removed_count = remove_rss_feed_id_db(chat_id, rss_name)
     if removed_count:
         info(f"RSS chat_id=[{chat_id}] name=[{rss_name}] was removed.")
@@ -72,58 +75,43 @@ async def remove(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f'No subscription with name "{rss_name}" to remove!')
 
 
-def start_rss_checking_when_necessary(job_queue: JobQueue):
+def rss_checking_job_name(chat_id: str, rss_name: str):
+    return f"check-rss-{chat_id}-{rss_name}"
+
+
+def start_rss_checking(job_queue: JobQueue, chat_id: str, rss_data: RssFeedData):
+    info(str(rss_data))
+    job_name = rss_checking_job_name(chat_id, rss_data.rss_name)
+    if job_queue.get_jobs_by_name(job_name):
+        info(f"RSS checking job=[{job_name}] is already started.")
+        return
     interval = int(getenv("LOOKUP_INTERVAL_SECONDS"))
+    info(f"Starting repeating job checking RSS for updates with interval=[{interval}] in chat ID=[{job_name}] RSS=[{rss_data.rss_name}]")
+    job_queue.run_repeating(check_rss, interval, name=job_name, chat_id=chat_id, data=rss_data)
+
+
+def start_all_rss_checking_when_necessary(job_queue: JobQueue):
     data_to_look_up = {chat_id: data for chat_id, data in get_all_rss_from_db().items() if data}
     for chat_id, data in data_to_look_up.items():
         if not data:
             info(f"No RSS feeds to check for chat ID=[{chat_id}].")
             continue
-        job_name = f"check-rss-{chat_id}"
-        if len(job_queue.get_jobs_by_name(job_name)) != 0:
-            info(f"RSS checking job=[{job_name}] is already started.")
-            continue
-        info(f"Starting repeating job checking RSS for updates with interval=[{interval}] in chat ID=[{job_name}]")
-        job_queue.run_repeating(check_rss, interval, name=job_name, chat_id=chat_id)
+        for rss_data in data:
+            start_rss_checking(job_queue, chat_id, rss_data)
 
 
 async def check_rss(context: ContextTypes.DEFAULT_TYPE):
-    info(f"Checking all RSS...")
     chat_id = context.job.chat_id
-    rss_feeds_to_check = get_rss_from_db(chat_id)
-    not_handled_rss = prepare_all_not_handled_data(rss_feeds_to_check)
-    if not not_handled_rss:
-        info("No updates.")
-        return
-    info("Found new RSS items.")
-    info(not_handled_rss)
-    for rss_name, rss_feed, items in not_handled_rss:
-        for item in items:
-            await send_rss_update(context, chat_id, rss_name, item)
-        latest_item = items[-1]
-        update_rss_feed_in_db(chat_id, rss_feed, rss_name, latest_item["id"])
-
-
-def prepare_all_not_handled_data(stored_rss_data):
-    not_handled_rss_data = [
-        get_not_handled_rss_data_for_channel(rss_data)
-        for rss_data in stored_rss_data
-    ]
-    return [
-        not_handled_rss_data
-        for not_handled_rss_data in not_handled_rss_data
-        if not_handled_rss_data
-    ]
-
-
-def get_not_handled_rss_data_for_channel(rss_data):
-    rss_name = rss_data["rss_name"]
-    rss_feed = rss_data["rss_feed"]
-    latest_handled_item_id = rss_data["latest_item_id"]
+    rss_name, rss_feed, latest_handled_item_id = context.job.data
+    info(f"Checking RSS in chat ID=[{chat_id}] for RSS=[{rss_name}]...")
     not_handled_feed_items = get_not_handled_feed_items(rss_feed, latest_handled_item_id)
     if not not_handled_feed_items:
-        return ()
-    return (rss_name, rss_feed, not_handled_feed_items)
+        info(f"No new data for RSS=[{rss_name}] in chat ID=[{chat_id}]")
+        return
+    for unhandled_item in not_handled_feed_items:
+        await send_rss_update(context, chat_id, rss_name, unhandled_item)
+    latest_item = not_handled_feed_items[-1]
+    update_rss_feed_in_db(chat_id, rss_feed, rss_name, latest_item["id"])
 
 
 async def send_rss_update(context: ContextTypes.DEFAULT_TYPE, chat_id, rss_name, item):
