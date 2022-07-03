@@ -4,9 +4,9 @@ from os import getenv
 from telegram.ext import ContextTypes, JobQueue
 
 from basic_json_feed_reader import get_not_handled_feed_items
+from db import RssFeedData, update_rss_feed_in_db
 from feed_item_sender_basic import send_message
 from feed_item_sender_instagram import send_message_instagram
-from rss_db import RssFeedData, update_rss_feed_in_db
 
 
 def rss_checking_job_name(chat_id: str, rss_name: str):

@@ -1,12 +1,11 @@
 from logging import info, warn
 
-from rss_checking import rss_checking_job_name
-from rss_db import remove_rss_feed_id_db
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import CommandHandler, ConversationHandler, ContextTypes, MessageHandler
 from telegram.ext.filters import COMMAND, TEXT
 
-from rss_db import get_rss_data_for_chat
+from db import get_rss_data_for_chat, remove_rss_feed_id_db
+from rss_checking import rss_checking_job_name
 
 REMOVE_HELP_MESSAGE = "/remove - remove subscription for a given feed"
 REMOVE_NAME = range(1)

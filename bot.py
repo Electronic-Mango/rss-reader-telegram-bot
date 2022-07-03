@@ -10,8 +10,8 @@ from commands.help import help_command_handler
 from commands.list import list_command_handler
 from commands.remove import remove_conversation_handler
 from commands.start import start_command_handler
+from db import get_all_rss_from_db
 from rss_checking import start_rss_checking
-from rss_db import get_all_rss_from_db
 
 
 def main():
