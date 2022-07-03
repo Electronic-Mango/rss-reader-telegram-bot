@@ -12,12 +12,12 @@ from telegram.ext import ContextTypes
 
 
 async def send_message_instagram(context: ContextTypes.DEFAULT_TYPE, chat_id, rss_name, item):
-    item_url, title, content = parse_item(item)
+    item_url, content = parse_item(item)
     attachments = [
         (attachment["url"], attachment["mime_type"])
         for attachment in item["attachments"]
     ]
-    message = format_message(rss_name, item_url, title, content, len(attachments) > 10)
+    message = format_message(rss_name, item_url, content, len(attachments) > 10)
     if len(attachments) == 1:
         await send_single_media_based_on_type(context, chat_id, *attachments[0], message)
     else:
@@ -28,10 +28,10 @@ async def send_message_instagram(context: ContextTypes.DEFAULT_TYPE, chat_id, rs
         await context.bot.send_media_group(chat_id, media_list)
 
 
-def format_message(rss_name, item_url, title, content, too_many_images):
-    message_text = f"{rss_name} on Instagram: {title}"
+def format_message(rss_name, item_url, content, too_many_images):
+    message_text = f"{rss_name} on Instagram"
     if content:
-        message_text += f"\n{content}"
+        message_text += f":\n{content}"
     max_message_size = 1024 - 3 - 1 - len(item_url)  # 3 - "...",  1 - new line
     if too_many_images:
         max_message_size -= len("\nToo many images to send!")
@@ -45,16 +45,8 @@ def format_message(rss_name, item_url, title, content, too_many_images):
 
 def parse_item(item):
     item_url = item["url"]
-    title = parse_item_title(item)
     content = parse_item_content(item)
-    return (item_url, title, content)
-
-
-def parse_item_title(item):
-    title = item["title"]
-    title = title.replace("...", "")
-    title = title.replace("(no text)", "")
-    return title
+    return item_url, content
 
 
 def parse_item_content(item):
@@ -63,13 +55,12 @@ def parse_item_content(item):
     content = sub(r"(<video controls>.+</video>)+", "", content)
     content = content.replace("&quot;", '"')
     content = sub(r"<br( )?(/)?>", "\n", content)
-    content = sub(r"#[\w]+", "", content)
     content = content.replace("(no text)", "")
-    content = "\n".join([line.strip() for line in content.strip().splitlines()[1:] if line.strip()])
+    content = "\n".join([line.strip() for line in content.strip().splitlines() if line.strip()])
     return content
 
 
-async def send_single_media_based_on_type(context, chat_id, url, type, message):
+async def send_single_media_based_on_type(context: ContextTypes.DEFAULT_TYPE, chat_id, url, type, message):
     if is_video(url, type):
         await context.bot.send_video(chat_id, video=url, caption=message, supports_streaming=True)
     else:
