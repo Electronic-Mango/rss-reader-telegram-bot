@@ -1,11 +1,12 @@
-from distutils.log import warn
-from logging import info
+from logging import info, warn
 
 from rss_checking import rss_checking_job_name
 from rss_db import remove_rss_feed_id_db
-from telegram import Update
+from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import CommandHandler, ConversationHandler, ContextTypes, MessageHandler
 from telegram.ext.filters import COMMAND, TEXT
+
+from rss_db import get_rss_data_for_chat
 
 REMOVE_NAME = range(1)
 
@@ -22,13 +23,27 @@ def remove_conversation_handler():
 
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     info(f"User cancelled removing subscription chat ID=[{update.effective_chat.id}].")
-    await update.message.reply_text("Cancelled removing subscription.")
+    await update.message.reply_text(
+        "Cancelled removing subscription.", reply_markup=ReplyKeyboardRemove()
+    )
     return ConversationHandler.END
 
 
 async def request_feed_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
     info(f"User requested cancellation of subscription.")
-    await update.message.reply_text("Send RSS feed link, or /cancel.")
+    all_feeds = [
+        [feed_data.rss_name]
+        for feed_data in get_rss_data_for_chat(update.effective_chat.id)
+    ]
+    await update.message.reply_text(
+        "Select RSS feed to remove, or /cancel.",
+        reply_markup=ReplyKeyboardMarkup(
+            keyboard=all_feeds,
+            one_time_keyboard=True,
+            resize_keyboard=True,
+            input_field_placeholder="Select RSS feed to remove",
+        ),
+    )
     return REMOVE_NAME
 
 
@@ -50,11 +65,10 @@ async def remove_subscription(update: Update, context: ContextTypes.DEFAULT_TYPE
         f"most likely this RSS name doesn't exist."
     )
     await update.message.reply_text(
-        f"No subscription with name <b>{feed_name}</b> to remove!"
-        f"\nSend a correct name or /cancel.",
+        f"No subscription with name <b>{feed_name}</b> to remove!",
         parse_mode="HTML",
     )
-    return REMOVE_NAME
+    return await request_feed_name(update, context)
 
 
 def cancel_checking_job(context: ContextTypes.DEFAULT_TYPE, chat_id, feed_name):
