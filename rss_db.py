@@ -8,7 +8,9 @@ from pymongo import MongoClient
 RssFeedData = namedtuple("RssFeedData", ["rss_name", "rss_feed", "latest_item_id"])
 
 
-def db_document_to_rss_data(document: dict) -> RssFeedData:
+def db_document_to_rss_data(document):
+    if document is None:
+        return None
     return RssFeedData(document["rss_name"], document["rss_feed"], document["latest_item_id"])
 
 
@@ -18,12 +20,18 @@ def get_rss_db():
     return db_client[str(getenv("DB_FEED_DATA_NAME"))]
 
 
-def get_rss_collection(collection_name: str):
+def get_rss_collection(collection_name):
     db = get_rss_db()
     return db[str(collection_name)]
 
 
-def add_rss_to_db(chat_id: str, rss_feed: str, rss_name: str, latest_item_id: str) -> RssFeedData:
+def get_rss_feed(chat_id, rss_name):
+    chat_collection = get_rss_collection(chat_id)
+    found_document = chat_collection.find_one({"rss_name": rss_name})
+    return db_document_to_rss_data(found_document)
+
+
+def add_rss_to_db(chat_id, rss_feed, rss_name, latest_item_id):
     chat_collection = get_rss_collection(chat_id)
     rss_feed_data = RssFeedData(rss_name, rss_feed, latest_item_id)
     insert_result = chat_collection.insert_one(rss_feed_data._asdict())
@@ -40,7 +48,7 @@ def get_all_rss_from_db():
     }
 
 
-def update_rss_feed_in_db(chat_id: str, rss_feed: str, rss_name: str, new_latest_item_id: str):
+def update_rss_feed_in_db(chat_id, rss_feed, rss_name, new_latest_item_id):
     chat_collection = get_rss_collection(chat_id)
     chat_collection.find_one_and_update(
         {"rss_feed": rss_feed, "rss_name": rss_name},
@@ -48,7 +56,7 @@ def update_rss_feed_in_db(chat_id: str, rss_feed: str, rss_name: str, new_latest
     )
 
 
-def remove_rss_feed_id_db(chat_id: str, rss_name: str):
+def remove_rss_feed_id_db(chat_id, rss_name):
     chat_collection = get_rss_collection(chat_id)
     delete_result = chat_collection.delete_many({"rss_name": rss_name})
     info(f"Delete result: acknowledged={delete_result.acknowledged} count={delete_result.deleted_count}")

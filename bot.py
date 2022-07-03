@@ -8,7 +8,7 @@ from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, JobQu
 from basic_json_feed_reader import get_json_feed_items, get_not_handled_feed_items
 from feed_item_sender_basic import send_message
 from feed_item_sender_instagram import send_message_instagram
-from rss_db import RssFeedData, add_rss_to_db, get_all_rss_from_db, remove_rss_feed_id_db, update_rss_feed_in_db
+from rss_db import RssFeedData, add_rss_to_db, get_rss_feed, get_all_rss_from_db, remove_rss_feed_id_db, update_rss_feed_in_db
 
 
 def main():
@@ -18,6 +18,7 @@ def main():
     application = ApplicationBuilder().token(getenv("TOKEN")).build()
     info("Bot started, setting handlers...")
     application.add_handler(CommandHandler("start", start))
+    application.add_handler(CommandHandler("help", help))
     application.add_handler(CommandHandler("hello", hello))
     application.add_handler(CommandHandler("add", add))
     application.add_handler(CommandHandler("remove", remove))
@@ -32,13 +33,24 @@ def configure_logging():
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    info(f"Start from chat ID: [{update.effective_chat.id}]")
-    await update.message.reply_text("Simple Web Comics bot based on RSS feeds!");
+    info(f"Start from chat ID=[{update.effective_chat.id}]")
+    await update.message.reply_text("Simple Web Comics bot based on RSS feeds!")
+
+
+async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    info(f"Help from chat ID=[{update.effective_chat.id}]")
+    await update.message.reply_text(
+        "/start - prints start message"
+        "\n/add - adds subscription for a given feed"
+        "\n/remove - remove subscription for a given feed"
+        "\n/help - prints this help message",
+        parse_mode="HTML"
+    )
 
 
 async def hello(update: Update, context: ContextTypes.DEFAULT_TYPE):
     info(f"Hello from chat ID: [{update.effective_chat.id}]")
-    await update.message.reply_text("Hello there!");
+    await update.message.reply_text("Hello there!")
 
 
 async def add(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -48,6 +60,12 @@ async def add(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     rss_feed, rss_name = context.args
     chat_id = update.effective_chat.id
+    existing_feed = get_rss_feed(chat_id, rss_name)
+    if existing_feed is not None:
+        await update.message.reply_text(f"Subscription for <b>{rss_name}</b> already exists!"
+                                        f"\nFeed: <code>{existing_feed.rss_feed}</code>",
+                                        parse_mode="HTML")
+        return
     feed_items = get_json_feed_items(rss_feed)
     latest_item_id = feed_items[0]["id"]
     info(f"Adding RSS feed, chat_id=[{chat_id}] name=[{rss_name}] feed=[{rss_feed}] latest=[{latest_item_id}]...")
