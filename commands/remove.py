@@ -1,5 +1,4 @@
 # TODO Allow removing feed via a single command, rather than a conversation
-# TODO Check whether there are any subscriptions to remove
 
 from logging import info
 
@@ -37,14 +36,17 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def request_feed_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
     info(f"User requested cancellation of subscription.")
-    all_feeds = [
+    all_feed_names = [
         [feed_data.feed_name]
         for feed_data in get_rss_data_for_chat(update.effective_chat.id)
     ]
+    if not all_feed_names:
+        await update.message.reply_text("No subscriptions to remove")
+        return ConversationHandler.END
     await update.message.reply_text(
         "Select RSS feed to remove, or /cancel",
         reply_markup=ReplyKeyboardMarkup(
-            keyboard=all_feeds,
+            keyboard=all_feed_names,
             one_time_keyboard=True,
             resize_keyboard=True,
             input_field_placeholder="Select RSS feed to remove",
