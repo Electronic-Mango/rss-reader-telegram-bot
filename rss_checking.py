@@ -3,7 +3,7 @@ from os import getenv
 
 from telegram.ext import ContextTypes, JobQueue
 
-from basic_json_feed_reader import get_not_handled_feed_items
+from json_feed_reader import get_not_handled_feed_items
 from db import RssFeedData, update_latest_item_id_in_db
 from feed_item_sender_basic import send_message
 from feed_item_sender_instagram import send_message_instagram

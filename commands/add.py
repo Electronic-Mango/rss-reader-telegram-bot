@@ -9,8 +9,8 @@ from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import CommandHandler, ConversationHandler, ContextTypes, MessageHandler
 from telegram.ext.filters import TEXT, COMMAND
 
-from basic_json_feed_reader import get_json_feed_items
 from feed_types import FeedTypes
+from json_feed_reader import get_json_feed_items
 from rss_checking import start_rss_checking
 from db import add_rss_to_db, get_rss_data
 

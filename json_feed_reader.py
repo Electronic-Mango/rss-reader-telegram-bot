@@ -1,4 +1,4 @@
-# TODO Can probably be just "json_feed_reader", since it's used for Instagram
+# TODO Perhaps there's a Python module for RSS which is type agnostic (whether it's JSON, XML, etc.)
 
 from json import loads
 
