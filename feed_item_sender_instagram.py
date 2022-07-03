@@ -3,34 +3,44 @@ Sender dedicated for Instagram feeds.
 Sends images/videos directly, removes hashtags, etc.
 """
 
-from io import BytesIO
 from logging import info
-from mimetypes import guess_extension
-from os import linesep
 from re import sub
 
-from aiohttp import ClientSession
-from discord import File
+from telegram import InputMediaPhoto, InputMediaVideo
+from telegram.ext.callbackcontext import CallbackContext
 
 
-async def send_message_instagram(channel, rss_name, item):
+def send_message_instagram(context: CallbackContext, chat_id, rss_name, item):
     item_url, title, content = parse_item(item)
     attachments = [(attachment["url"], attachment["mime_type"]) for attachment in item["attachments"]]
-    files = [await download_attachment(title, url, type) for url, type in attachments]
-    issues_with_downloading_files = any(not file for file in files)
-    message = format_message(rss_name, item_url, title, content, issues_with_downloading_files)
-    await channel.send(message, files=list(filter(None, files)))
+    message = format_message(rss_name, item_url, title, content, len(attachments) > 10)
+    if len(attachments) == 1:
+        url, type = attachments[0]
+        if type != "application/octet-stream":
+            info(f"Type 'application/octet-stream' treated as video.")
+            context.bot.send_photo(chat_id, photo=url, caption=message)
+        else:
+            info(f"Type '{type}' treated as image.")
+            context.bot.send_video(chat_id, video=url, caption=message, supports_streaming=True)
+    else:
+        media_list = [media_object(url, type) for url, type in attachments]
+        # Only the first media should have a caption,
+        # otherwise actual caption body won't be displayed directly in the message
+        media_list[0].caption = message
+        context.bot.send_media_group(chat_id, media_list)
 
 
-def format_message(rss_name, item_url, title, content, issues_with_downloading_attachments):
+def format_message(rss_name, item_url, title, content, too_many_images):
     message_text = f"{rss_name} on Instagram: {title}"
     if content:
         message_text += f"\n{content}"
-    if issues_with_downloading_attachments:
-        message_text += "\nCouldn't download some images/videos."
-    max_message_size = 2000 - 3 - 1 - len(item_url)  # 3 - "...",  1 - new line
+    max_message_size = 1024 - 3 - 1 - len(item_url)  # 3 - "...",  1 - new line
+    if too_many_images:
+        max_message_size -= len("\nToo many images to send!")
     if len(message_text) > max_message_size:
         message_text = f"{message_text[:max_message_size]}..."
+    if too_many_images:
+        message_text += "\nToo many images to send!"
     message_text += f"\n{item_url}"
     return message_text
 
@@ -54,27 +64,15 @@ def parse_item_content(item):
     content = sub(r"(<a.+</a>)+", "", content)
     content = sub(r"(<video controls>.+</video>)+", "", content)
     content = content.replace("&quot;", '"')
-    content = sub(r"<br( )?(/)?>", linesep, content)
+    content = sub(r"<br( )?(/)?>", "\n", content)
     content = sub(r"#[\w]+", "", content)
     content = content.replace("(no text)", "")
-    content = linesep.join([line.strip() for line in content.strip().splitlines()[1:] if line.strip()])
+    content = "\n".join([line.strip() for line in content.strip().splitlines()[1:] if line.strip()])
     return content
 
 
-async def download_attachment(filename, url, type):
-    async with ClientSession() as session:
-        async with session.get(url) as response:
-            if response.status != 200:
-                return None
-            data = BytesIO(await response.read())
-            file = File(data, f"{filename}{convert_mime_to_extension(type)}")
-            return file
-
-
-def convert_mime_to_extension(type):
-    if type == "application/octet-stream":
-        info(f"Assuming that [application/octet-stream] type is mp4.")
-        return ".mp4"
-    extension = guess_extension(type)
-    info(f"Guessed extension=[{extension}] based on type=[{type}].")
-    return extension
+def media_object(url, type):
+    if type != "application/octet-stream":
+        return InputMediaPhoto(media=url)
+    else:
+        return InputMediaVideo(media=url, supports_streaming=True)

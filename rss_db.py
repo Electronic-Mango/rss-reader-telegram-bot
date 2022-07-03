@@ -11,9 +11,9 @@ def get_rss_database():
     return db_client[str(getenv("DB_FEED_DATA_NAME"))]
 
 
-def add_rss_to_db(channel_id, rss_feed, rss_name, latest_item_id):
+def add_rss_to_db(chat_id, rss_feed, rss_name, latest_item_id):
     db = get_rss_database()
-    channel_collection = db[str(channel_id)]
+    channel_collection = db[str(chat_id)]
     insert_result = channel_collection.insert_one(
         {
             "rss_name": rss_name,
@@ -42,9 +42,9 @@ def update_rss_feed_in_db(channel_id, rss_feed, rss_name, new_latest_item_id):
     )
 
 
-def remove_rss_feed_id_db(channel_id, rss_name):
+def remove_rss_feed_id_db(chat_id, rss_name):
     db = get_rss_database()
-    channel_collection = db[str(channel_id)]
+    channel_collection = db[str(chat_id)]
     delete_result = channel_collection.delete_many({"rss_name": rss_name})
     info(f"Delete result: acknowledged={delete_result.acknowledged} count={delete_result.deleted_count}")
     return delete_result.deleted_count
