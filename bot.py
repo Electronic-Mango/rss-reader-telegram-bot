@@ -8,7 +8,7 @@ from commands.add import add_conversation_handler
 from commands.hello import hello_command_handler
 from commands.help import help_command_handler
 from commands.list import list_command_handler
-from commands.remove import remove_command_handler
+from commands.remove import remove_conversation_handler
 from commands.start import start_command_handler
 from rss_checking import start_rss_checking
 from rss_db import get_all_rss_from_db
@@ -25,7 +25,7 @@ def main():
     application.add_handler(hello_command_handler())
     application.add_handler(list_command_handler())
     application.add_handler(add_conversation_handler())
-    application.add_handler(remove_command_handler())
+    application.add_handler(remove_conversation_handler())
     info("Handlers configured, starting RSS checking...")
     start_all_rss_checking_when_necessary(application.job_queue)
     info("RSS checking triggered, starting polling...")
@@ -36,7 +36,7 @@ def configure_logging():
     basicConfig(
         format="%(asctime)s %(name)s %(levelname)s: %(message)s",
         datefmt="%d-%m-%Y %H:%M:%S",
-        level=INFO
+        level=INFO,
     )
 
 
@@ -50,5 +50,5 @@ def start_all_rss_checking_when_necessary(job_queue: JobQueue):
             start_rss_checking(job_queue, chat_id, rss_data)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

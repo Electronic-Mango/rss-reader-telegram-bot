@@ -16,5 +16,5 @@ async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "\n/add - adds subscription for a given feed"
         "\n/remove - remove subscription for a given feed"
         "\n/help - prints this help message",
-        parse_mode="HTML"
+        parse_mode="HTML",
     )

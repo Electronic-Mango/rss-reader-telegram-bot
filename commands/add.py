@@ -18,17 +18,18 @@ def add_conversation_handler():
             ADD_LINK: [MessageHandler(TEXT & ~COMMAND, request_feed_name)],
             ADD_NAME: [MessageHandler(TEXT & ~COMMAND, store_subscription)],
         },
-        fallbacks=[CommandHandler("cancel", add_cancel)],
+        fallbacks=[CommandHandler("cancel", cancel)],
     )
 
 
-async def add_cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    info(f"User cancelled adding subscription.")
+async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    info(f"User cancelled adding subscription chat ID=[{update.effective_chat.id}].")
     await update.message.reply_text("Cancelled adding subscription.")
     return ConversationHandler.END
 
 
 async def request_feed_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    info("User requested new subscription.")
     await update.message.reply_text("Send RSS feed link, or /cancel.")
     return ADD_LINK
 
@@ -58,7 +59,7 @@ async def store_subscription(update: Update, context: ContextTypes.DEFAULT_TYPE)
     feed_items = get_json_feed_items(feed_link)
     latest_item_id = feed_items[0]["id"]
     info(
-        f"Adding RSS feed",
+        f"Adding RSS feed"
         f"chat_id=[{chat_id}] "
         f"name=[{feed_name}] "
         f"feed=[{feed_link}] "
