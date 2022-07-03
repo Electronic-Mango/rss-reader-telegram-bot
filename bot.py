@@ -8,7 +8,7 @@ from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, JobQu
 from basic_json_feed_reader import get_json_feed_items, get_not_handled_feed_items
 from feed_item_sender_basic import send_message
 from feed_item_sender_instagram import send_message_instagram
-from rss_db import RssFeedData, add_rss_to_db, get_rss_feed, get_all_rss_from_db, remove_rss_feed_id_db, update_rss_feed_in_db
+from rss_db import RssFeedData, add_rss_to_db, get_rss_data_for_chat, get_rss_feed, get_all_rss_from_db, remove_rss_feed_id_db, update_rss_feed_in_db
 
 
 def main():
@@ -20,6 +20,7 @@ def main():
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("help", help))
     application.add_handler(CommandHandler("hello", hello))
+    application.add_handler(CommandHandler("list", list))
     application.add_handler(CommandHandler("add", add))
     application.add_handler(CommandHandler("remove", remove))
     info("Handlers configured, starting RSS checking...")
@@ -41,6 +42,7 @@ async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
     info(f"Help from chat ID=[{update.effective_chat.id}]")
     await update.message.reply_text(
         "/start - prints start message"
+        "\n/list - list all subscriptions"
         "\n/add - adds subscription for a given feed"
         "\n/remove - remove subscription for a given feed"
         "\n/help - prints this help message",
@@ -51,6 +53,20 @@ async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def hello(update: Update, context: ContextTypes.DEFAULT_TYPE):
     info(f"Hello from chat ID: [{update.effective_chat.id}]")
     await update.message.reply_text("Hello there!")
+
+
+async def list(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = update.effective_chat.id
+    info(f"List from chat ID: [{chat_id}]")
+    rss_data = get_rss_data_for_chat(chat_id)
+    if not rss_data:
+        await update.message.reply_text("No feeds subscribed.")
+        return
+    rss_data = [(rss_data.rss_name, rss_data.rss_feed) for rss_data in rss_data]
+    rss_data = [f"<b>{rss_name}</b> - <code>{rss_feed}</code>" for rss_name, rss_feed in rss_data]
+    message = "Following feeds are subscribed:\n"
+    message += "\n".join(rss_data)
+    await update.message.reply_text(message, parse_mode="HTML")
 
 
 async def add(update: Update, context: ContextTypes.DEFAULT_TYPE):

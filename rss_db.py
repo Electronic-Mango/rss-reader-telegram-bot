@@ -25,6 +25,12 @@ def get_rss_collection(collection_name):
     return db[str(collection_name)]
 
 
+
+def get_rss_data_for_chat(chat_id):
+    chat_collection = get_rss_collection(chat_id)
+    return [db_document_to_rss_data(document) for document in chat_collection.find({})]
+
+
 def get_rss_feed(chat_id, rss_name):
     chat_collection = get_rss_collection(chat_id)
     found_document = chat_collection.find_one({"rss_name": rss_name})
