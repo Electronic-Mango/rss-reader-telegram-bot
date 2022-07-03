@@ -1,3 +1,5 @@
+# TODO Print help the second time start is called?
+
 from logging import info
 
 from telegram import Update

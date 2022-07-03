@@ -1,3 +1,6 @@
+# TODO Consider allowing for adding feeds via single command as well
+# TODO Check whether given Instagram user actually exists
+
 from logging import info
 from os import getenv
 from dotenv import load_dotenv

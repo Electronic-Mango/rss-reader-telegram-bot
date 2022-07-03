@@ -21,6 +21,7 @@ async def send_message_instagram(context: ContextTypes.DEFAULT_TYPE, chat_id, rs
     if len(attachments) == 1:
         await send_single_media_based_on_type(context, chat_id, *attachments[0], message)
     else:
+        # TODO Split this message into two when there are over 10 attachments
         media_list = [media_object(url, type) for url, type in attachments]
         # Only the first media should have a caption,
         # otherwise actual caption body won't be displayed directly in the message

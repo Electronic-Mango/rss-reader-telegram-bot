@@ -1,3 +1,5 @@
+# TODO Add confirmation of removal (two step confirmation, perhaps?)
+
 from logging import info
 
 from telegram import Update

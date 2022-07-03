@@ -1,3 +1,7 @@
+# TODO How to handle situations where user removed conversation?
+# TODO Add logging to file
+# TODO Perhaps add "details" command showing feed link, etc
+
 from logging import INFO, basicConfig, info
 from os import getenv
 

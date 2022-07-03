@@ -1,4 +1,7 @@
-from logging import info, warn
+# TODO Add confirmation of removal
+# TODO Allow removing feed via a single command, rather than a conversation
+
+from logging import info
 
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import CommandHandler, ConversationHandler, ContextTypes, MessageHandler

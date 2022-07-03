@@ -1,3 +1,5 @@
+# TODO Unify feed names: rss_name -> feed_name, rss_feed -> feed_link, etc.
+
 from collections import namedtuple
 from logging import info
 from os import getenv

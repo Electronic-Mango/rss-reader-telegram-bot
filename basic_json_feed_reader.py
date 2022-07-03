@@ -1,3 +1,5 @@
+# TODO Can probably be just "json_feed_reader", since it's used for Instagram
+
 from json import loads
 
 from requests import get

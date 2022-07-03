@@ -2,6 +2,8 @@
 Very basic sender for RSS feed items.
 Doesn't do any formatting, just sends up to 2000 characters from 'content_html' field.
 Used mostly for debugging and development purposes.
+
+TODO Probably can be removed, since it's not useful even for debugging purposes
 """
 
 from telegram.ext import ContextTypes
