@@ -69,3 +69,7 @@ def remove_feed_link_id_db(chat_id, feed_name):
     delete_result = chat_collection.delete_many({"feed_name": feed_name})
     info(f"Delete result: acknowledged={delete_result.acknowledged} count={delete_result.deleted_count}")
     return delete_result.deleted_count
+
+def remove_chat_collection(chat_id):
+    chat_collection = get_collection(chat_id)
+    chat_collection.drop()

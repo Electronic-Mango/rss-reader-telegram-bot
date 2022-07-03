@@ -5,7 +5,7 @@ from telegram.ext import CommandHandler, ConversationHandler, ContextTypes, Mess
 from telegram.ext.filters import COMMAND, TEXT
 
 from db import get_rss_data_for_chat, remove_feed_link_id_db
-from rss_checking import rss_checking_job_name
+from rss_checking import cancel_checking_job
 
 REMOVE_HELP_MESSAGE = "/remove - remove subscription for a given feed"
 REMOVE_NAME = range(1)
@@ -69,12 +69,3 @@ async def remove_subscription(update: Update, context: ContextTypes.DEFAULT_TYPE
         parse_mode="HTML",
     )
     return await request_feed_name(update, context)
-
-
-def cancel_checking_job(context: ContextTypes.DEFAULT_TYPE, chat_id, feed_name):
-    job_name = rss_checking_job_name(chat_id, feed_name)
-    jobs = context.job_queue.get_jobs_by_name(job_name)
-    for job in jobs:
-        job.schedule_removal()
-    if len(jobs) > 1:
-        warn(f"Found [{len(jobs)}] jobs with name [{job_name}]!")

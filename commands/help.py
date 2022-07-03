@@ -7,6 +7,7 @@ from commands.add import ADD_HELP_MESSAGE
 from commands.hello import HELLO_HELP_MESSAGE
 from commands.list import LIST_HELP_MESSAGE
 from commands.remove import REMOVE_HELP_MESSAGE
+from commands.remove_all import REMOVE_ALL_HELP_MESSAGE
 from commands.start import START_HELP_MESSAGE
 
 HELP_HELP_MESSAGE = "/help - prints this help message"
@@ -16,6 +17,7 @@ HELP_MESSAGES = [
     LIST_HELP_MESSAGE,
     ADD_HELP_MESSAGE,
     REMOVE_HELP_MESSAGE,
+    REMOVE_ALL_HELP_MESSAGE,
     HELP_HELP_MESSAGE,
 ]
 

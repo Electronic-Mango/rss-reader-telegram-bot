@@ -1,4 +1,4 @@
-from logging import info
+from logging import info, warn
 from os import getenv
 
 from telegram.ext import ContextTypes, JobQueue
@@ -55,3 +55,12 @@ async def send_rss_update(context: ContextTypes.DEFAULT_TYPE, chat_id, rss_name,
         await send_message_instagram(context, chat_id, rss_name, item)
     else:
         await send_message(context, chat_id, rss_name, item)
+
+
+def cancel_checking_job(context: ContextTypes.DEFAULT_TYPE, chat_id, feed_name):
+    job_name = rss_checking_job_name(chat_id, feed_name)
+    jobs = context.job_queue.get_jobs_by_name(job_name)
+    for job in jobs:
+        job.schedule_removal()
+    if len(jobs) > 1:
+        warn(f"Found [{len(jobs)}] jobs with name [{job_name}]!")
