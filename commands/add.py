@@ -1,4 +1,6 @@
 from logging import info
+from os import getenv
+from dotenv import load_dotenv
 
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import CommandHandler, ConversationHandler, ContextTypes, MessageHandler
@@ -10,8 +12,6 @@ from rss_checking import start_rss_checking
 from db import add_rss_to_db, get_rss_data
 
 ADD_HELP_MESSAGE = "/add - adds subscription for a given feed"
-INSTAGRAM_RSS_FEED_LINK = "http://localhost:3000/?action=display&bridge=InstagramLoginFix&context=Username&u=INSTAGRAM_USER&media_type=all&direct_links=on&format=Json"
-INSTAGRAM_RSS_FEED_USER_PATTERN = "INSTAGRAM_USER"
 FEED_TYPE, FEED_LINK, FEED_NAME = range(3)
 
 
@@ -86,10 +86,7 @@ async def store_subscription(update: Update, context: ContextTypes.DEFAULT_TYPE)
         )
         return await request_feed_name(update, context)
     feed_type = context.user_data[FEED_TYPE]
-    if feed_type == FeedTypes.INSTAGRAM_TYPE:
-        feed_link = INSTAGRAM_RSS_FEED_LINK.replace(INSTAGRAM_RSS_FEED_USER_PATTERN, feed_name)
-    else:
-        feed_link = context.user_data[FEED_LINK]
+    feed_link = get_feed_link(context, feed_name, feed_type)
     feed_items = get_json_feed_items(feed_link)
     latest_item_id = feed_items[0]["id"]
     info(
@@ -104,3 +101,13 @@ async def store_subscription(update: Update, context: ContextTypes.DEFAULT_TYPE)
     start_rss_checking(context.job_queue, chat_id, rss_data)
     await update.message.reply_text(f"Added subscription for <b>{feed_name}</b>!", parse_mode="HTML")
     return ConversationHandler.END
+
+
+def get_feed_link(context, feed_name, feed_type):
+    if feed_type == FeedTypes.INSTAGRAM_TYPE:
+        load_dotenv()
+        instagram_feed_link = getenv("INSTAGRAM_RSS_FEED_LINK")
+        user_pattern = getenv("INSTAGRAM_RSS_FEED_USER_PATTERN")
+        return instagram_feed_link.replace(user_pattern, feed_name)
+    else:
+        return context.user_data[FEED_LINK]
