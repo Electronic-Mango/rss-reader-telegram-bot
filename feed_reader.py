@@ -44,5 +44,11 @@ def _parse_entry(entry):
         entry["id"],
         entry["link"],
         entry["summary"],
-        [FeedMedia(media["url"], media["type"]) for media in entry["media_content"]],
+        _parse_media(entry),
     )
+
+
+def _parse_media(entry):
+    if "media_content" not in entry:
+        return None
+    return [FeedMedia(media["url"], media["type"]) for media in entry["media_content"]]

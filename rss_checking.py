@@ -5,10 +5,8 @@ from telegram.error import Forbidden
 from telegram.ext import ContextTypes, JobQueue
 
 from db import RssFeedData, remove_chat_collection, update_latest_item_id_in_db
-from feed_item_sender_basic import send_message
-from feed_item_sender_instagram import send_message_instagram
 from feed_reader import get_not_handled_feed_entries
-from feed_types import FeedTypes
+from sender import send_message
 
 _logger = getLogger(__name__)
 
@@ -45,21 +43,13 @@ async def check_rss(context: ContextTypes.DEFAULT_TYPE):
         return
     for entry in not_handled_feed_entries:
         try:
-            await send_rss_update(context, chat_id, feed_name, feed_type, entry)
+            await send_message(context, chat_id, feed_type, feed_name, entry)
         except Forbidden:
             remove_chat_and_job(context, chat_id)
             return
     latest_entry_id = not_handled_feed_entries[-1].id
     update_latest_item_id_in_db(chat_id, feed_type, feed_name, latest_entry_id)
     context.job.data = RssFeedData(feed_name, feed_type, feed_link, latest_entry_id)
-
-
-async def send_rss_update(context: ContextTypes.DEFAULT_TYPE, chat_id, feed_name, feed_type, entry):
-    _logger.info(f"Sending message to ID=[{chat_id}]")
-    if feed_type == FeedTypes.INSTAGRAM_TYPE:
-        await send_message_instagram(context, chat_id, feed_name, entry)
-    else:
-        await send_message(context, chat_id, feed_name, entry)
 
 
  # TODO Is this the best way of handling user removing and blocking the bot?
