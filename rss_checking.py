@@ -7,15 +7,14 @@ from telegram.ext import ContextTypes, JobQueue
 from db import RssFeedData, remove_chat_collection, update_latest_item_id_in_db
 from feed_item_sender_basic import send_message
 from feed_item_sender_instagram import send_message_instagram
+from feed_reader import get_not_handled_feed_entries
 from feed_types import FeedTypes
-from instagram_feed_reader import get_not_handled_feed_items
 
 _logger = getLogger(__name__)
 
 
-def start_rss_checking(job_queue: JobQueue, chat_id: str, rss_data: RssFeedData):
-    _logger.info(str(rss_data))
-    job_name = _rss_checking_job_name(chat_id, rss_data.feed_type, rss_data.feed_name)
+def start_rss_checking(job_queue: JobQueue, chat_id: str, feed_data: RssFeedData):
+    job_name = _rss_checking_job_name(chat_id, feed_data.feed_type, feed_data.feed_name)
     # TODO This check might not be necessary now,
     # subscriptions shouldn't be duplicated in DB,
     # user cannot add the same subscription twice.
@@ -27,40 +26,40 @@ def start_rss_checking(job_queue: JobQueue, chat_id: str, rss_data: RssFeedData)
         f"Starting repeating job checking RSS for updates "
         f"with interval=[{interval}] "
         f"in chat ID=[{job_name}] "
-        f"RSS=[{rss_data.feed_name}]"
+        f"RSS=[{feed_data.feed_name}]"
     )
     job_queue.run_repeating(
-        check_rss, interval, name=job_name, chat_id=chat_id, data=rss_data
+        check_rss, interval, name=job_name, chat_id=chat_id, data=feed_data
     )
 
 
 async def check_rss(context: ContextTypes.DEFAULT_TYPE):
     chat_id = context.job.chat_id
-    rss_name, rss_type, rss_feed, latest_handled_item_id = context.job.data
-    _logger.info(f"Checking RSS in chat ID=[{chat_id}] for RSS=[{rss_name}]...")
-    not_handled_feed_items = get_not_handled_feed_items(
-        rss_feed, latest_handled_item_id
+    feed_name, feed_type, feed_link, latest_handled_entry_id = context.job.data
+    _logger.info(f"Checking RSS in chat ID=[{chat_id}] for RSS=[{feed_name}]...")
+    not_handled_feed_entries = get_not_handled_feed_entries(
+        feed_link, latest_handled_entry_id
     )
-    if not not_handled_feed_items:
-        _logger.info(f"No new data for RSS=[{rss_name}] in chat ID=[{chat_id}]")
+    if not not_handled_feed_entries:
+        _logger.info(f"No new data for RSS=[{feed_name}] in chat ID=[{chat_id}]")
         return
-    for unhandled_item in not_handled_feed_items:
+    for entry in not_handled_feed_entries:
         try:
-            await send_rss_update(context, chat_id, rss_name, rss_type, unhandled_item)
+            await send_rss_update(context, chat_id, feed_name, feed_type, entry)
         except Forbidden:
             remove_chat_and_job(context, chat_id)
             return
-    latest_item_id = not_handled_feed_items[-1]["id"]
-    update_latest_item_id_in_db(chat_id, rss_feed, rss_name, latest_item_id)
-    context.job.data = RssFeedData(rss_name, rss_type, rss_feed, latest_item_id)
+    latest_entry_id = not_handled_feed_entries[-1].id
+    update_latest_item_id_in_db(chat_id, feed_type, feed_name, latest_entry_id)
+    context.job.data = RssFeedData(feed_name, feed_type, feed_link, latest_entry_id)
 
 
-async def send_rss_update(context: ContextTypes.DEFAULT_TYPE, chat_id, rss_name, rss_type, item):
+async def send_rss_update(context: ContextTypes.DEFAULT_TYPE, chat_id, feed_name, feed_type, entry):
     _logger.info(f"Sending message to ID=[{chat_id}]")
-    if rss_type == FeedTypes.INSTAGRAM_TYPE:
-        await send_message_instagram(context, chat_id, rss_name, item)
+    if feed_type == FeedTypes.INSTAGRAM_TYPE:
+        await send_message_instagram(context, chat_id, feed_name, entry)
     else:
-        await send_message(context, chat_id, rss_name, item)
+        await send_message(context, chat_id, feed_name, entry)
 
 
  # TODO Is this the best way of handling user removing and blocking the bot?

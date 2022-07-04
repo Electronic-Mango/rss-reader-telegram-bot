@@ -8,8 +8,8 @@ from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import CommandHandler, ConversationHandler, ContextTypes, MessageHandler
 from telegram.ext.filters import TEXT, COMMAND
 
+from feed_reader import feed_exists, get_latest_feed_entry_id
 from feed_types import FeedTypes
-from instagram_feed_reader import feed_exists, get_json_feed_items
 from rss_checking import start_rss_checking
 from db import add_rss_to_db, feed_is_in_db
 
@@ -89,17 +89,16 @@ async def store_subscription(update: Update, context: ContextTypes.DEFAULT_TYPE)
     feed_link = get_feed_link(context, feed_name, feed_type)
     if not feed_exists(feed_link):
         return await feed_does_not_exist(context, update, feed_name)
-    feed_items = get_json_feed_items(feed_link)
-    latest_item_id = feed_items[0]["id"]
+    latest_entry_id = get_latest_feed_entry_id(feed_link)
     _logger.info(
         f"Adding RSS feed"
         f"chat_id=[{chat_id}] "
         f"name=[{feed_name}] "
         f"type=[{feed_type}] "
         f"feed=[{feed_link}] "
-        f"latest=[{latest_item_id}]..."
+        f"latest=[{latest_entry_id}]..."
     )
-    rss_data = add_rss_to_db(chat_id, feed_name, feed_type, feed_link, latest_item_id)
+    rss_data = add_rss_to_db(chat_id, feed_name, feed_type, feed_link, latest_entry_id)
     start_rss_checking(context.job_queue, chat_id, rss_data)
     await update.message.reply_text(f"Added subscription for <b>{feed_name}</b>!", parse_mode="HTML")
     return ConversationHandler.END

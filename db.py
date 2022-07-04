@@ -49,10 +49,10 @@ def get_all_rss_from_db():
     }
 
 
-def update_latest_item_id_in_db(chat_id, feed_link, feed_name, new_latest_item_id):
+def update_latest_item_id_in_db(chat_id, feed_type, feed_name, new_latest_item_id):
     chat_collection = _get_collection(chat_id)
     chat_collection.find_one_and_update(
-        {"feed_link": feed_link, "feed_name": feed_name},
+        {"feed_type": feed_type, "feed_name": feed_name},
         {"$set": {"latest_item_id": new_latest_item_id}},
     )
 
