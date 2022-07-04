@@ -40,16 +40,21 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def request_feed_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.info(f"User requested cancellation of subscription.")
     all_feed_names = [
-        [feed_data.feed_name]
+        feed_data.feed_name
         for feed_data in get_rss_data_for_chat(update.effective_chat.id)
     ]
     if not all_feed_names:
         await update.message.reply_text("No subscriptions to remove")
         return ConversationHandler.END
+    number_of_feeds_per_row = 2
+    all_feed_names_keyboard = [
+        all_feed_names[x : x + number_of_feeds_per_row]
+        for x in range(0, len(all_feed_names), number_of_feeds_per_row)
+    ]
     await update.message.reply_text(
         "Select RSS feed to remove, or /cancel",
         reply_markup=ReplyKeyboardMarkup(
-            keyboard=all_feed_names,
+            keyboard=all_feed_names_keyboard,
             one_time_keyboard=True,
             resize_keyboard=True,
             input_field_placeholder="Select RSS feed to remove",
