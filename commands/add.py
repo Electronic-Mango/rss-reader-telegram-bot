@@ -1,5 +1,4 @@
 # TODO Consider allowing for adding feeds via single command as well
-# TODO Check whether given Instagram user actually exists - this check depends on which feed type was selected
 
 from logging import getLogger
 from os import getenv
@@ -10,7 +9,7 @@ from telegram.ext import CommandHandler, ConversationHandler, ContextTypes, Mess
 from telegram.ext.filters import TEXT, COMMAND
 
 from feed_types import FeedTypes
-from json_feed_reader import get_json_feed_items
+from instagram_feed_reader import feed_exists, get_json_feed_items
 from rss_checking import start_rss_checking
 from db import add_rss_to_db, get_rss_data
 
@@ -86,12 +85,10 @@ async def store_subscription(update: Update, context: ContextTypes.DEFAULT_TYPE)
     existing_feed = get_rss_data(chat_id, feed_name)
     feed_type = context.user_data[FEED_TYPE]
     if existing_feed is not None:
-        await update.message.reply_text(
-            f"Subscription with name <b>{feed_name}</b> ({feed_type}) already exists!",
-            parse_mode="HTML",
-        )
-        return await request_feed_name(update, context)
+        return await feed_with_given_name_already_exists(context, update, feed_name, feed_type)
     feed_link = get_feed_link(context, feed_name, feed_type)
+    if not feed_exists(feed_link):
+        return await feed_does_not_exist(context, update, feed_name)
     feed_items = get_json_feed_items(feed_link)
     latest_item_id = feed_items[0]["id"]
     logger.info(
@@ -117,3 +114,19 @@ def get_feed_link(context, feed_name, feed_type):
         return instagram_feed_link.replace(user_pattern, feed_name)
     else:
         return context.user_data[FEED_LINK]
+
+
+async def feed_with_given_name_already_exists(context, update, feed_name, feed_type):
+    await update.message.reply_text(
+        f"Subscription with name <b>{feed_name}</b> ({feed_type}) already exists!",
+        parse_mode="HTML",
+    )
+    return await request_feed_name(update, context)
+
+
+async def feed_does_not_exist(context, update, feed_name):
+    await update.message.reply_text(
+        f"Feed for user <b>{feed_name}</b> doesn't exist!",
+        parse_mode="HTML",
+    )
+    return await request_feed_name(update, context)

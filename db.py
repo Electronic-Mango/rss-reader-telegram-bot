@@ -9,7 +9,7 @@ from pymongo import MongoClient
 
 RssFeedData = namedtuple("RssFeedData", ["feed_name", "feed_type", "feed_link", "latest_item_id"])
 
-LOG = getLogger(__name__)
+logger = getLogger(__name__)
 
 
 def db_document_to_rss_data(document):
@@ -44,7 +44,7 @@ def add_rss_to_db(chat_id, feed_name, feed_type, feed_link, latest_item_id):
     chat_collection = get_collection(chat_id)
     feed_link_data = RssFeedData(feed_name, feed_type, feed_link, latest_item_id)
     insert_result = chat_collection.insert_one(feed_link_data._asdict())
-    LOG.info(f"Insert result: acknowledged={insert_result.acknowledged} ID={insert_result.inserted_id}")
+    logger.info(f"Insert result: acknowledged={insert_result.acknowledged} ID={insert_result.inserted_id}")
     return feed_link_data
 
 
@@ -71,7 +71,7 @@ def update_latest_item_id_in_db(chat_id, feed_link, feed_name, new_latest_item_i
 def remove_feed_link_id_db(chat_id, feed_name):
     chat_collection = get_collection(chat_id)
     delete_result = chat_collection.delete_many({"feed_name": feed_name})
-    LOG.info(f"Delete result: acknowledged={delete_result.acknowledged} count={delete_result.deleted_count}")
+    logger.info(f"Delete result: acknowledged={delete_result.acknowledged} count={delete_result.deleted_count}")
     return delete_result.deleted_count
 
 def remove_chat_collection(chat_id):
