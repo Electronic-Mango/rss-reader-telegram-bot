@@ -1,4 +1,3 @@
-# TODO How to handle situations where user removed conversation?
 # TODO Perhaps add "details" command showing feed link, etc
 
 from logging import INFO, FileHandler, StreamHandler, basicConfig, getLogger

@@ -1,9 +1,10 @@
 from logging import getLogger
 from os import getenv
 
+from telegram.error import Forbidden
 from telegram.ext import ContextTypes, JobQueue
 
-from db import RssFeedData, update_latest_item_id_in_db
+from db import RssFeedData, remove_chat_collection, update_latest_item_id_in_db
 from feed_item_sender_basic import send_message
 from feed_item_sender_instagram import send_message_instagram
 from feed_types import FeedTypes
@@ -19,6 +20,9 @@ def rss_checking_job_name(chat_id: str, rss_name: str):
 def start_rss_checking(job_queue: JobQueue, chat_id: str, rss_data: RssFeedData):
     logger.info(str(rss_data))
     job_name = rss_checking_job_name(chat_id, rss_data.feed_name)
+    # TODO This check might not be necessary now,
+    # subscriptions shouldn't be duplicated in DB,
+    # user cannot add the same subscription twice.
     if job_queue.get_jobs_by_name(job_name):
         logger.info(f"RSS checking job=[{job_name}] is already started.")
         return
@@ -45,7 +49,11 @@ async def check_rss(context: ContextTypes.DEFAULT_TYPE):
         logger.info(f"No new data for RSS=[{rss_name}] in chat ID=[{chat_id}]")
         return
     for unhandled_item in not_handled_feed_items:
-        await send_rss_update(context, chat_id, rss_name, rss_type, unhandled_item)
+        try:
+            await send_rss_update(context, chat_id, rss_name, rss_type, unhandled_item)
+        except Forbidden:
+            remove_chat_and_job(context, chat_id)
+            return
     latest_item_id = not_handled_feed_items[-1]["id"]
     update_latest_item_id_in_db(chat_id, rss_feed, rss_name, latest_item_id)
     context.job.data = RssFeedData(rss_name, rss_type, rss_feed, latest_item_id)
@@ -57,6 +65,16 @@ async def send_rss_update(context: ContextTypes.DEFAULT_TYPE, chat_id, rss_name,
         await send_message_instagram(context, chat_id, rss_name, item)
     else:
         await send_message(context, chat_id, rss_name, item)
+
+
+ # TODO Is this the best way of handling user removing and blocking the bot?
+def remove_chat_and_job(context: ContextTypes.DEFAULT_TYPE, chat_id):
+    logger.warn(f"Couldn't send updates to chat ID=[{chat_id}]!")
+    logger.warn(f"Removing from DB chat ID=[{chat_id}] and stopping job queue!")
+    remove_chat_collection(chat_id)
+    for job in context.job_queue.jobs():
+        if job.name.startswith(f"check-rss-{chat_id}-"):
+            job.schedule_removal()
 
 
 def cancel_checking_job(context: ContextTypes.DEFAULT_TYPE, chat_id, feed_name):
