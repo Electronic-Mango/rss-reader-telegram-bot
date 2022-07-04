@@ -4,10 +4,11 @@ Sends images/videos directly, removes hashtags, etc.
 """
 
 from logging import getLogger
-from re import findall, match, sub
 from requests import get
 
 from telegram import InputMediaPhoto, InputMediaVideo
+
+from formatter import parse_media, parse_summary
 
 _MAX_MEDIA_SIZE_PER_MESSAGE = 10
 
@@ -16,41 +17,20 @@ _logger = getLogger(__name__)
 
 async def send_message(context, chat_id, feed_type, feed_name, entry):
     entry_link = entry.url
-    summary = _parse_summary(entry)
+    summary = parse_summary(entry)
     message = _format_message(feed_type, feed_name, entry_link, summary)
-    media = _parse_media(entry)
+    media = parse_media(entry)
     media_groups = [
         media[x : x + _MAX_MEDIA_SIZE_PER_MESSAGE]
         for x in range(0, len(media), _MAX_MEDIA_SIZE_PER_MESSAGE)
     ]
+    if not media_groups:
+        await context.bot.send_message(chat_id, message)
+        return
     # Only the last group should have a message
     for media_group in media_groups[:-1]:
         await _handle_attachment_group(context, chat_id, feed_name, media_group)
     await _handle_attachment_group(context, chat_id, feed_name, media_groups[-1], message)
-
-
-def _parse_summary(entry):
-    summary = entry.summary
-    summary = sub(r"(<a.+</a>)+", "", summary)
-    summary = sub(r"(<video controls>.+</video>)+", "", summary)
-    summary = summary.replace("&quot;", '"')
-    summary = sub(r"<br( )?(/)?>", "\n", summary)
-    summary = sub(r"<p>", "", summary)
-    summary = sub(r"</p>", "\n", summary)
-    summary = sub(r"<img.+/>", "", summary)
-    summary = summary.replace("(no text)", "")
-    summary = "\n".join([line.strip() for line in summary.strip().splitlines() if line.strip()])
-    return summary
-
-
-def _parse_media(entry):
-    if entry.media:
-        return entry.media
-    summary = entry.summary
-    img_pattern = r"<img src=\"(.*?)\""
-    match(img_pattern, summary)
-    img_urls = findall(img_pattern, summary)
-    return [(url, None) for url in img_urls]
 
 
 async def _handle_attachment_group(context, chat_id, feed_name, media_group, message=None):
@@ -67,6 +47,9 @@ async def _handle_attachment_group(context, chat_id, feed_name, media_group, mes
         await context.bot.send_media_group(chat_id, media_list)
 
 
+# TODO Consider extracting this to formatter.py,
+# but at the same time other bots might allow for different formatting,
+# like bolding feed name, etc.
 def _format_message(feed_type, feed_name, entry_link, content):
     message_text = f"{feed_name} on {feed_type}"
     if content:

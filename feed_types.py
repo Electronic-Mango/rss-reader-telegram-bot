@@ -1,5 +1,11 @@
-# TODO Expand this file into a sender / reader dispatcher
+from os import getenv
 
-class FeedTypes:
-    INSTAGRAM_TYPE = "Instagram"
-    RAW_RSS_TYPE = "Raw RSS"
+_INSTAGRAM_TYPE = "Instagram"
+_TUMBLR_TYPE = "Tumblr"
+
+
+def feed_type_to_rss():
+    return {
+        _INSTAGRAM_TYPE: getenv("INSTAGRAM_RSS_FEED_LINK"),
+        _TUMBLR_TYPE: f"https://{getenv('RSS_FEED_USER_PATTERN')}.tumblr.com/rss",
+    }
