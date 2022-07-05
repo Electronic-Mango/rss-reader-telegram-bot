@@ -24,13 +24,8 @@ def get_not_handled_feed_entries(feed_link, target_id):
 
 
 def feed_exists(feed_link):
-    feed = parse(feed_link)
     # 301 is a workaround for tumblr blogs with dedicated URLs
-    if feed["status"] not in [200, 301]:
-        return False
-    # Workaround for Instagram feed
-    entries = feed["entries"]
-    return len(entries) != 1 or "Bridge returned error 500!" not in entries[0]["title"]
+    return parse(feed_link)["status"] in [200, 301]
 
 
 def _get_feed_entries(feed_link):
