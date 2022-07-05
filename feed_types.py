@@ -1,11 +1,6 @@
 from os import getenv
-
-_INSTAGRAM_TYPE = "Instagram"
-_TUMBLR_TYPE = "Tumblr"
+from yaml import safe_load
 
 
 def feed_type_to_rss():
-    return {
-        _INSTAGRAM_TYPE: getenv("INSTAGRAM_RSS_FEED_LINK"),
-        _TUMBLR_TYPE: f"https://{getenv('RSS_FEED_USER_PATTERN')}.tumblr.com/rss",
-    }
+    return safe_load(getenv("RSS_FEEDS"))
