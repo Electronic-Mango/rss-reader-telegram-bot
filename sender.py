@@ -11,8 +11,6 @@ from telegram import InputMediaPhoto, InputMediaVideo
 
 from formatter import parse_media, parse_summary
 
-_MAX_MEDIA_SIZE_PER_MESSAGE = 10
-
 _logger = getLogger(__name__)
 
 
@@ -21,9 +19,10 @@ async def send_message(context, chat_id, feed_type, feed_name, entry):
     summary = parse_summary(entry)
     message = _format_message(feed_type, feed_name, entry_link, summary)
     media = parse_media(entry)
+    max_media_items_per_message = int(getenv("MAX_MEDIA_ITEMS_PER_MESSSAGE"))
     media_groups = [
-        media[x : x + _MAX_MEDIA_SIZE_PER_MESSAGE]
-        for x in range(0, len(media), _MAX_MEDIA_SIZE_PER_MESSAGE)
+        media[x : x + max_media_items_per_message]
+        for x in range(0, len(media), max_media_items_per_message)
     ]
     if not media_groups:
         await context.bot.send_message(chat_id, message)
