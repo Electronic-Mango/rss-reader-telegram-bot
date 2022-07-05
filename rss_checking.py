@@ -1,5 +1,4 @@
 from logging import getLogger
-from os import getenv
 
 from telegram.error import Forbidden
 from telegram.ext import ContextTypes, JobQueue
@@ -7,6 +6,7 @@ from telegram.ext import ContextTypes, JobQueue
 from db import RssFeedData, remove_chat_collection, update_latest_item_id_in_db
 from feed_reader import get_not_handled_feed_entries
 from sender import send_message
+from settings import LOOKUP_INTERVAL_SECONDS
 
 _logger = getLogger(__name__)
 
@@ -19,7 +19,7 @@ def start_rss_checking(job_queue: JobQueue, chat_id: str, feed_data: RssFeedData
     if job_queue.get_jobs_by_name(job_name):
         _logger.info(f"RSS checking job=[{job_name}] is already started.")
         return
-    interval = int(getenv("LOOKUP_INTERVAL_SECONDS"))
+    interval = LOOKUP_INTERVAL_SECONDS
     _logger.info(
         f"Starting repeating job checking RSS for updates "
         f"with interval=[{interval}] "

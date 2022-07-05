@@ -1,16 +1,15 @@
 # TODO Consider allowing for adding feeds via single command as well
 
 from logging import getLogger
-from os import getenv
 
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import CommandHandler, ConversationHandler, ContextTypes, MessageHandler
 from telegram.ext.filters import TEXT, COMMAND
 
-from feed_reader import feed_exists, get_latest_feed_entry_id
-from feed_types import feed_type_to_rss
-from rss_checking import start_rss_checking
 from db import add_rss_to_db, feed_is_in_db
+from feed_reader import feed_exists, get_latest_feed_entry_id
+from rss_checking import start_rss_checking
+from settings import RSS_FEEDS, RSS_FEED_USER_PATTERN
 
 ADD_HELP_MESSAGE = "/add - adds subscription for a given feed"
 
@@ -41,7 +40,7 @@ async def _cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def _request_feed_type(update: Update, context: ContextTypes.DEFAULT_TYPE):
     _logger.info("User requested new subscription.")
-    all_feed_types = list(feed_type_to_rss().keys())
+    all_feed_types = list(RSS_FEEDS.keys())
     keyboard = [
         all_feed_types[x : x + _FEED_TYPES_PER_KEYBOARD_ROW]
         for x in range(0, len(all_feed_types), _FEED_TYPES_PER_KEYBOARD_ROW)
@@ -91,8 +90,8 @@ async def _store_subscription(update: Update, context: ContextTypes.DEFAULT_TYPE
 
 
 def _get_feed_link(feed_name, feed_type):
-    instagram_feed_link = feed_type_to_rss()[feed_type]
-    user_pattern = getenv("RSS_FEED_USER_PATTERN")
+    instagram_feed_link = RSS_FEEDS[feed_type]
+    user_pattern = RSS_FEED_USER_PATTERN
     return instagram_feed_link.replace(user_pattern, feed_name)
 
 

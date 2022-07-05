@@ -4,12 +4,12 @@ Sends images/videos directly, removes hashtags, etc.
 """
 
 from logging import getLogger
-from os import getenv
 from requests import get
 
 from telegram import InputMediaPhoto, InputMediaVideo
 
 from formatter import parse_media, parse_summary
+from settings import MAX_MEDIA_ITEMS_PER_MESSSAGE, MAX_MESSAGE_SIZE
 
 _logger = getLogger(__name__)
 
@@ -19,7 +19,7 @@ async def send_message(context, chat_id, feed_type, feed_name, entry):
     summary = parse_summary(entry)
     message = _format_message(feed_type, feed_name, entry_link, summary)
     media = parse_media(entry)
-    max_media_items_per_message = int(getenv("MAX_MEDIA_ITEMS_PER_MESSSAGE"))
+    max_media_items_per_message = MAX_MEDIA_ITEMS_PER_MESSSAGE
     media_groups = [
         media[x : x + max_media_items_per_message]
         for x in range(0, len(media), max_media_items_per_message)
@@ -54,7 +54,7 @@ def _format_message(feed_type, feed_name, entry_link, content):
     message_text = f"{feed_name} on {feed_type}"
     if content:
         message_text += f":\n{content}"
-    max_message_size = int(getenv("MAX_MESSAGE_SIZE")) - 3 - 1 - len(entry_link)
+    max_message_size = MAX_MESSAGE_SIZE - 3 - 1 - len(entry_link)
     # 3 - "...",  1 - new line
     if len(message_text) > max_message_size:
         message_text = f"{message_text[:max_message_size]}..."

@@ -1,10 +1,8 @@
 # TODO Perhaps add "details" command showing feed link, etc
 
 from logging import INFO, FileHandler, StreamHandler, basicConfig, getLogger
-from os import getenv
 from sys import stdout
 
-from dotenv import load_dotenv
 from telegram.ext import ApplicationBuilder, JobQueue
 
 from commands.add import add_conversation_handler
@@ -15,31 +13,31 @@ from commands.remove_all import remove_all_conversation_handler
 from commands.start_help import start_help_command_handler
 from db import get_all_rss_from_db
 from rss_checking import start_rss_checking
+from settings import LOG_PATH, TOKEN
 
-logger = getLogger("bot.main")
+_logger = getLogger("bot.main")
 
 
-def main():
-    load_dotenv()
-    configure_logging()
-    logger.info("Bot starting...")
-    application = ApplicationBuilder().token(getenv("TOKEN")).build()
-    logger.info("Bot started, setting handlers...")
+def _main():
+    _configure_logging()
+    _logger.info("Bot starting...")
+    application = ApplicationBuilder().token(TOKEN).build()
+    _logger.info("Bot started, setting handlers...")
     application.add_handler(start_help_command_handler())
     application.add_handler(hello_command_handler())
     application.add_handler(list_command_handler())
     application.add_handler(add_conversation_handler())
     application.add_handler(remove_conversation_handler())
     application.add_handler(remove_all_conversation_handler())
-    logger.info("Handlers configured, starting RSS checking...")
-    start_all_rss_checking_when_necessary(application.job_queue)
-    logger.info("RSS checking triggered, starting polling...")
+    _logger.info("Handlers configured, starting RSS checking...")
+    _start_all_rss_checking_when_necessary(application.job_queue)
+    _logger.info("RSS checking triggered, starting polling...")
     application.run_polling()
 
 
-def configure_logging():
+def _configure_logging():
     logging_handlers = [StreamHandler(stdout)]
-    log_file_path = getenv("logger_PATH")
+    log_file_path = LOG_PATH
     if log_file_path:
         logging_handlers += [FileHandler(log_file_path)]
     basicConfig(
@@ -50,15 +48,15 @@ def configure_logging():
     )
 
 
-def start_all_rss_checking_when_necessary(job_queue: JobQueue):
+def _start_all_rss_checking_when_necessary(job_queue: JobQueue):
     data_to_look_up = {chat_id: data for chat_id, data in get_all_rss_from_db().items() if data}
     for chat_id, data in data_to_look_up.items():
         if not data:
-            logger.info(f"No RSS feeds to check for chat ID=[{chat_id}].")
+            _logger.info(f"No RSS feeds to check for chat ID=[{chat_id}].")
             continue
         for rss_data in data:
             start_rss_checking(job_queue, chat_id, rss_data)
 
 
 if __name__ == "__main__":
-    main()
+    _main()

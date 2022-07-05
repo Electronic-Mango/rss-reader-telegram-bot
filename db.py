@@ -2,10 +2,9 @@
 
 from collections import namedtuple
 from logging import getLogger
-from os import getenv
 
-from dotenv import load_dotenv
 from pymongo import MongoClient
+from settings import DB_HOST, DB_PORT, DB_FEED_DATA_NAME
 
 RssFeedData = namedtuple("RssFeedData", ["feed_name", "feed_type", "feed_link", "latest_item_id"])
 
@@ -72,9 +71,8 @@ def remove_chat_collection(chat_id):
 
 
 def _get_db():
-    load_dotenv()
-    db_client = MongoClient(getenv("DB_HOST"), int(getenv("DB_PORT")))
-    return db_client[str(getenv("DB_FEED_DATA_NAME"))]
+    db_client = MongoClient(DB_HOST, DB_PORT)
+    return db_client[DB_FEED_DATA_NAME]
 
 
 def _get_collection(collection_name):
