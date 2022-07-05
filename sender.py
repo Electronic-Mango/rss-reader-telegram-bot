@@ -4,6 +4,7 @@ Sends images/videos directly, removes hashtags, etc.
 """
 
 from logging import getLogger
+from os import getenv
 from requests import get
 
 from telegram import InputMediaPhoto, InputMediaVideo
@@ -54,7 +55,8 @@ def _format_message(feed_type, feed_name, entry_link, content):
     message_text = f"{feed_name} on {feed_type}"
     if content:
         message_text += f":\n{content}"
-    max_message_size = 1024 - 3 - 1 - len(entry_link)  # 3 - "...",  1 - new line
+    max_message_size = int(getenv("MAX_MESSAGE_SIZE")) - 3 - 1 - len(entry_link)
+    # 3 - "...",  1 - new line
     if len(message_text) > max_message_size:
         message_text = f"{message_text[:max_message_size]}..."
     message_text += f"\n{entry_link}"
