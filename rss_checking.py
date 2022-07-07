@@ -4,6 +4,7 @@ from telegram.error import Forbidden
 from telegram.ext import ContextTypes, JobQueue
 
 from db import RssFeedData, remove_chat_collection, update_latest_item_id_in_db
+from feed_parser import parse_entry
 from feed_reader import get_not_handled_feed_entries
 from sender import send_message
 from settings import LOOKUP_INTERVAL_SECONDS
@@ -33,17 +34,15 @@ def start_rss_checking(job_queue: JobQueue, chat_id: str, feed_data: RssFeedData
 
 async def check_rss(context: ContextTypes.DEFAULT_TYPE):
     chat_id = context.job.chat_id
-    feed_name, feed_type, feed_link, latest_handled_entry_id = context.job.data
+    feed_name, feed_type, feed_link, latest_id = context.job.data
     _logger.info(f"Checking RSS in chat ID=[{chat_id}] for RSS=[{feed_name}]...")
-    not_handled_feed_entries = get_not_handled_feed_entries(
-        feed_link, latest_handled_entry_id
-    )
+    not_handled_feed_entries = get_not_handled_feed_entries(feed_link, latest_id)
     if not not_handled_feed_entries:
         _logger.info(f"No new data for RSS=[{feed_name}] in chat ID=[{chat_id}]")
         return
-    for entry in not_handled_feed_entries:
+    for parsed_entry in [parse_entry(entry) for entry in not_handled_feed_entries]:
         try:
-            await send_message(context, chat_id, feed_type, feed_name, entry)
+            await send_message(context, chat_id, feed_type, feed_name, parsed_entry)
         except Forbidden:
             remove_chat_and_job(context, chat_id)
             return

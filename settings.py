@@ -19,4 +19,3 @@ MAX_MEDIA_ITEMS_PER_MESSSAGE = int(getenv("MAX_MEDIA_ITEMS_PER_MESSSAGE"))
 
 with open(getenv("RSS_FEEDS_YAML_FILENAME"), "r") as feeds_yaml:
     RSS_FEEDS = safe_load(feeds_yaml)
-print(RSS_FEEDS)

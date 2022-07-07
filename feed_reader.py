@@ -1,17 +1,14 @@
-from collections import namedtuple
-from dateutil.parser import parse as parse_date
-from feedparser import parse
 from itertools import takewhile
 
-FeedEntry = namedtuple("FeedEntry", ["id", "url", "summary", "media"])
-FeedMedia = namedtuple("FeedMedia", ["url", "type"])
+from dateutil.parser import parse as parse_date
+from feedparser import parse
 
 
 def get_latest_feed_entry_id(feed_link):
     entries = _get_sorted_feed_entries(feed_link)
     if not entries:
         return None
-    return entries[-1].id
+    return entries[-1]["id"]
 
 
 def get_not_handled_feed_entries(feed_link, target_id):
@@ -33,21 +30,4 @@ def feed_exists(feed_link):
 
 def _get_sorted_feed_entries(feed_link):
     entries = parse(feed_link)["entries"]
-    sorted_entries = sorted(entries, key=lambda entry: parse_date(entry["published"]))
-    parsed_entries = [_parse_entry(entry) for entry in sorted_entries]
-    return parsed_entries
-
-
-def _parse_entry(entry):
-    return FeedEntry(
-        entry["id"],
-        entry["link"],
-        entry["summary"],
-        _parse_media(entry),
-    )
-
-
-def _parse_media(entry):
-    if "media_content" not in entry:
-        return None
-    return [FeedMedia(media["url"], media["type"]) for media in entry["media_content"]]
+    return sorted(entries, key=lambda entry: parse_date(entry["published"]))
