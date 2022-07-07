@@ -1,0 +1,6 @@
+# Notice {source_pattern} substring.
+# This part will be replaced with whatever source you input when adding subscription.
+Feed name 1:
+    http://feedlink1.com/{source_pattern}/rss
+Feed name 2:
+    https://feedlink2.com/{source_pattern}/rss

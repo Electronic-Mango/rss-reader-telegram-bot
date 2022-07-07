@@ -9,7 +9,7 @@ from telegram.ext.filters import TEXT, COMMAND
 from db import add_rss_to_db, feed_is_in_db
 from feed_reader import feed_exists, get_latest_feed_entry_id
 from rss_checking import start_rss_checking
-from settings import RSS_FEEDS, RSS_FEED_USER_PATTERN
+from settings import RSS_FEEDS
 
 ADD_HELP_MESSAGE = "/add - adds subscription for a given feed"
 
@@ -90,9 +90,7 @@ async def _store_subscription(update: Update, context: ContextTypes.DEFAULT_TYPE
 
 
 def _get_feed_link(feed_name, feed_type):
-    instagram_feed_link = RSS_FEEDS[feed_type]
-    user_pattern = RSS_FEED_USER_PATTERN
-    return instagram_feed_link.replace(user_pattern, feed_name)
+    return RSS_FEEDS[feed_type].format(source_pattern=feed_name)
 
 
 async def _feed_with_given_name_already_exists(update, feed_name, feed_type):

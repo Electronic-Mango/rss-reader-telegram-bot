@@ -17,5 +17,6 @@ LOOKUP_INTERVAL_SECONDS = int(getenv("LOOKUP_INTERVAL_SECONDS"))
 MAX_MESSAGE_SIZE = int(getenv("MAX_MESSAGE_SIZE"))
 MAX_MEDIA_ITEMS_PER_MESSSAGE = int(getenv("MAX_MEDIA_ITEMS_PER_MESSSAGE"))
 
-RSS_FEEDS = safe_load(getenv("RSS_FEEDS"))
-RSS_FEED_USER_PATTERN = getenv("RSS_FEED_USER_PATTERN")
+with open(getenv("RSS_FEEDS_YAML_FILENAME"), "r") as feeds_yaml:
+    RSS_FEEDS = safe_load(feeds_yaml)
+print(RSS_FEEDS)
