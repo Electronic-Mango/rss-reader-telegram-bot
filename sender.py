@@ -23,7 +23,7 @@ async def send_update(
     entry: FeedEntry,
 ) -> None:
     _logger.info(f"[{chat_id}] Sending update [{feed_name}] [{feed_type}]")
-    _, entry_url, summary, media = entry
+    entry_url, summary, media = entry
     message = _format_message(feed_type, feed_name, entry_url, summary)
     if not media:
         await context.bot.send_message(chat_id, message)

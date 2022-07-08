@@ -3,14 +3,13 @@ from collections import namedtuple
 from bs4 import BeautifulSoup
 from feedparser.util import FeedParserDict
 
-FeedEntry = namedtuple("FeedEntry", ["id", "url", "summary", "media"])
+FeedEntry = namedtuple("FeedEntry", ["url", "summary", "media"])
 FeedMedia = namedtuple("FeedMedia", ["url", "type"])
 
 
 # TODO Should used type here be "FeedParserDict", or just "dict"?
 def parse_entry(entry: FeedParserDict) -> FeedEntry:
     return FeedEntry(
-        entry["id"],
         entry["link"],
         _parse_summary(entry),
         _parse_media(entry),
