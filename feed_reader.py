@@ -9,7 +9,7 @@ from settings import RSS_FEEDS
 _logger = getLogger(__name__)
 
 
-def get_latest_entry_id(feed_type: str, feed_name: str) -> str:
+def get_latest_id(feed_type: str, feed_name: str) -> str:
     _logger.info(f"Getting latest ID for [{feed_name}] [{feed_type}]")
     entries = _get_sorted_entries(feed_type, feed_name)
     if not entries:

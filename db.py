@@ -8,9 +8,6 @@ from pymongo.results import DeleteResult
 
 from settings import DB_HOST, DB_PORT, DB_COLLECTION_NAME, DB_NAME
 
-# TODO Is this namedtuple needed? Can this be normal tuple?
-FeedData = namedtuple("FeedData", ["feed_name", "feed_type", "latest_item_id"])
-
 _logger = getLogger(__name__)
 _feed_collection = None
 
@@ -29,7 +26,7 @@ def initialize_db() -> None:
     _logger.info(f"Created index [{index}]")
 
 
-def get_feed_data_for_chat(chat_id: int) -> list[FeedData]:
+def get_feed_data_for_chat(chat_id: int) -> list[tuple[str, str, str]]:
     _logger.info(f"[{chat_id}] Getting data")
     return [_parse_document(document) for document in _feed_collection.find({"chat_id": chat_id})]
 
@@ -47,48 +44,33 @@ def chat_has_feeds(chat_id: int) -> bool:
     return _feed_collection.count_documents({"chat_id": chat_id}, limit=1)
 
 
-# TODO Does this need to return anything?
-def add_feed_to_db(
-    chat_id: int,
-    feed_name: str,
-    feed_type: str,
-    latest_entry_id: str
-) -> FeedData:
+def add_feed_to_db(chat_id: int, feed_name: str, feed_type: str, latest_id: str) -> None:
     _logger.info(
         f"[{chat_id}] "
         f"Inserting feed data "
         f"name=[{feed_name}] "
         f"type=[{feed_type}] "
-        f"latest=[{latest_entry_id}]"
+        f"latest=[{latest_id}]"
     )
     insert_result = _feed_collection.insert_one({
-        "chat_id": chat_id,
-        "feed_name": feed_name,
-        "feed_type": feed_type,
-        "latest_item_id": latest_entry_id
+        "chat_id": chat_id, "feed_name": feed_name, "feed_type": feed_type, "latest_id": latest_id
     })
     _logger.info(f"[{chat_id}] Insert acknowledged=[{insert_result.acknowledged}]")
-    return FeedData(feed_name, feed_type, latest_entry_id)
 
 
-def get_all_data_from_db() -> list[tuple[int, FeedData]]:
+def get_all_data_from_db() -> list[tuple[int, str, str, str]]:
     _logger.info(f"Getting all data for all chats")
     return [
-        (document["chat_id"], _parse_document(document))
+        (document["chat_id"], *_parse_document(document))
         for document in _feed_collection.find({})
     ]
 
 
-def update_latest_item_id_in_db(
-    chat_id: int,
-    feed_type: str,
-    feed_name: str,
-    new_latest_item_id: str
-) -> None:
+def update_latest_id_in_db(chat_id: int, feed_type: str, feed_name: str, latest_id: str) -> None:
     _logger.info(f"[{chat_id}] Updating latest item ID [{feed_type}] [{feed_name}]")
     _feed_collection.find_one_and_update(
         {"chat_id": chat_id, "feed_type": feed_type, "feed_name": feed_name},
-        {"$set": {"latest_item_id": new_latest_item_id}},
+        {"$set": {"latest_id": latest_id}},
     )
 
 
@@ -116,9 +98,5 @@ def _log_delete_result(chat_id: int, delete_result: DeleteResult) -> None:
     )
 
 
-def _parse_document(document: dict) -> FeedData:
-    return FeedData(
-        document["feed_name"],
-        document["feed_type"],
-        document["latest_item_id"],
-    )
+def _parse_document(document: dict) -> tuple[str, str, str]:
+    return (document["feed_type"], document["feed_name"], document["latest_id"])

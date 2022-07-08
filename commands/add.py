@@ -7,7 +7,7 @@ from telegram.ext import CommandHandler, ConversationHandler, ContextTypes, Mess
 from telegram.ext.filters import TEXT, COMMAND
 
 from db import add_feed_to_db, feed_is_in_db
-from feed_reader import feed_exists, get_latest_entry_id
+from feed_reader import feed_exists, get_latest_id
 from settings import RSS_FEEDS
 from update_checker import check_for_updates_repeatedly
 
@@ -84,9 +84,9 @@ async def _store_subscription(
     feed_type: str,
     feed_name: str
 ) -> int:
-    latest_entry_id = get_latest_entry_id(feed_type, feed_name)
-    feed_data = add_feed_to_db(chat_id, feed_name, feed_type, latest_entry_id)
-    check_for_updates_repeatedly(context.job_queue, chat_id, feed_data)
+    latest_id = get_latest_id(feed_type, feed_name)
+    add_feed_to_db(chat_id, feed_name, feed_type, latest_id)
+    check_for_updates_repeatedly(context.job_queue, chat_id, feed_type, feed_name, latest_id)
     await update.message.reply_text(
         f"Added subscription for <b>{feed_name}</b>!", parse_mode="HTML"
     )

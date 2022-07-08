@@ -3,7 +3,7 @@ from logging import getLogger
 from telegram.error import Forbidden
 from telegram.ext import ContextTypes, JobQueue
 
-from db import FeedData, remove_chat_data, update_latest_item_id_in_db
+from db import remove_chat_data, update_latest_id_in_db
 from feed_parser import parse_entry
 from feed_reader import get_not_handled_entries
 from sender import send_update
@@ -12,8 +12,14 @@ from settings import LOOKUP_INTERVAL_SECONDS
 _logger = getLogger(__name__)
 
 
-def check_for_updates_repeatedly(job_queue: JobQueue, chat_id: int, feed_data: FeedData) -> None:
-    job_name = _check_updates_job_name(chat_id, feed_data.feed_type, feed_data.feed_name)
+def check_for_updates_repeatedly(
+    job_queue: JobQueue,
+    chat_id: int,
+    feed_type: str,
+    feed_name: str,
+    latest_id: str
+) -> None:
+    job_name = _check_updates_job_name(chat_id, feed_type, feed_name)
     if job_queue.get_jobs_by_name(job_name):
         _logger.info(f"Update checker job=[{job_name}] is already started")
         return
@@ -22,13 +28,13 @@ def check_for_updates_repeatedly(job_queue: JobQueue, chat_id: int, feed_data: F
         interval=LOOKUP_INTERVAL_SECONDS,
         name=job_name,
         chat_id=chat_id,
-        data=feed_data,
+        data=(feed_type, feed_name, latest_id),
     )
 
 
 async def _check_for_updates(context: ContextTypes.DEFAULT_TYPE) -> None:
     chat_id = context.job.chat_id
-    feed_name, feed_type, latest_id = context.job.data
+    feed_type, feed_name, latest_id = context.job.data
     _logger.info(f"[{chat_id}] Checking for updates for [{feed_name}] [{feed_type}]")
     not_handled_feed_entries = get_not_handled_entries(feed_type, feed_name, latest_id)
     if not not_handled_feed_entries:
@@ -41,9 +47,10 @@ async def _check_for_updates(context: ContextTypes.DEFAULT_TYPE) -> None:
         except Forbidden:
             remove_chat_and_job(context, chat_id)
             return
-    latest_entry_id = not_handled_feed_entries[-1].id
-    update_latest_item_id_in_db(chat_id, feed_type, feed_name, latest_entry_id)
-    context.job.data = FeedData(feed_name, feed_type, latest_entry_id)
+    latest_id = not_handled_feed_entries[-1].id
+    update_latest_id_in_db(chat_id, feed_type, feed_name, latest_id)
+    # TODO Is there a better way of handing this, than to overwrite the whole job data?
+    context.job.data = (feed_type, feed_name, latest_id)
 
 
 # TODO Is this the best way of handling user removing and blocking the bot?

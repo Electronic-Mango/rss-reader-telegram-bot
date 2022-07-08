@@ -46,7 +46,7 @@ async def _request_feed_name(update: Update, _: ContextTypes.DEFAULT_TYPE) -> in
         return ConversationHandler.END
     all_feed_names = [
         [f"{feed_name} ({feed_type})"]
-        for feed_name, feed_type, _ in get_feed_data_for_chat(chat_id)
+        for feed_type, feed_name, _ in get_feed_data_for_chat(chat_id)
     ]
     await update.message.reply_text(
         "Select feed to remove, or /cancel",

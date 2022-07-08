@@ -83,7 +83,7 @@ async def _remove_all(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
     chat_id = update.effective_chat.id
     _logger.info(f"[{chat_id}] Removing all subscriptions")
     remove_chat_data(chat_id)
-    for feed_data in get_feed_data_for_chat(chat_id):
-        cancel_checking_job(context, chat_id, feed_data.feed_type, feed_data.feed_name)
+    for feed_type, feed_name, _ in get_feed_data_for_chat(chat_id):
+        cancel_checking_job(context, chat_id, feed_type, feed_name)
     await update.message.reply_text("Removed all subscriptions")
     return ConversationHandler.END
