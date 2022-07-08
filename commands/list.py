@@ -3,30 +3,32 @@ from logging import getLogger
 from telegram import Update
 from telegram.ext import CommandHandler, ContextTypes
 
-from db import get_rss_data_for_chat
+from db import RssFeedData, get_feed_data_for_chat
 
 LIST_HELP_MESSAGE = "/list - list all subscriptions"
 
 _logger = getLogger(__name__)
 
 
-def list_command_handler():
+def list_command_handler() -> CommandHandler:
     return CommandHandler("list", _list)
 
 
-async def _list(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def _list(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
     chat_id = update.effective_chat.id
-    _logger.info(f"List from chat ID: [{chat_id}]")
-    rss_data = get_rss_data_for_chat(chat_id)
-    if not rss_data:
+    _logger.info(f"[{chat_id}] Listing all subscriptions")
+    feed_data = get_feed_data_for_chat(chat_id)
+    if not feed_data:
         await update.message.reply_text("No feeds subscribed.")
-        return
-    formatted_rss_data = [_format_feed_item(rss_data) for rss_data in rss_data]
-    message = "Following feeds are subscribed:\n\n"
-    message += "\n".join(sorted(formatted_rss_data))
-    await update.message.reply_text(message, parse_mode="HTML")
+    else:
+        await _seed_feed_data(update, feed_data)
 
 
-def _format_feed_item(rss_feed_data):
-    feed_name, feed_type, _, _ = rss_feed_data
-    return f"<b>{feed_name}</b> - {feed_type}"
+async def _seed_feed_data(update: Update, feed_data: list[RssFeedData]) -> None:
+    formatted_rss_data = [
+        f"<b>{feed_name}</b> - {feed_type}"
+        for feed_name, feed_type, _, _ in feed_data
+    ]
+    response = "Following feeds are subscribed:\n\n"
+    response += "\n".join(sorted(formatted_rss_data))
+    await update.message.reply_text(response, parse_mode="HTML")

@@ -18,7 +18,7 @@ from settings import LOG_PATH, TOKEN
 _logger = getLogger("bot.main")
 
 
-def _main():
+def _main() -> None:
     _configure_logging()
     _logger.info("Bot starting...")
     application = ApplicationBuilder().token(TOKEN).build()
@@ -31,31 +31,27 @@ def _main():
     application.add_handler(remove_all_conversation_handler())
     _logger.info("Handlers configured, starting RSS checking...")
     _start_all_rss_checking_when_necessary(application.job_queue)
-    _logger.info("RSS checking triggered, starting polling...")
+    _logger.info("RSS checking started, starting polling...")
     application.run_polling()
 
 
-def _configure_logging():
+def _configure_logging() -> None:
     logging_handlers = [StreamHandler(stdout)]
     log_file_path = LOG_PATH
     if log_file_path:
         logging_handlers += [FileHandler(log_file_path)]
     basicConfig(
-        format="%(asctime)s %(name)s %(levelname)s: %(message)s",
-        datefmt="%d-%m-%Y %H:%M:%S",
+        format="[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s",
         level=INFO,
         handlers=logging_handlers,
     )
 
 
-def _start_all_rss_checking_when_necessary(job_queue: JobQueue):
+def _start_all_rss_checking_when_necessary(job_queue: JobQueue) -> None:
     data_to_look_up = {chat_id: data for chat_id, data in get_all_rss_from_db().items() if data}
     for chat_id, data in data_to_look_up.items():
-        if not data:
-            _logger.info(f"No RSS feeds to check for chat ID=[{chat_id}].")
-            continue
-        for rss_data in data:
-            start_rss_checking(job_queue, chat_id, rss_data)
+        for feed_data in data:
+            start_rss_checking(job_queue, chat_id, feed_data)
 
 
 if __name__ == "__main__":

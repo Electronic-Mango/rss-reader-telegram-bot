@@ -22,11 +22,11 @@ HELP_MESSAGES = [
 logger = getLogger(__name__)
 
 
-def start_help_command_handler():
-    return CommandHandler(["start", "help"], help)
+def start_help_command_handler() -> CommandHandler:
+    return CommandHandler(["start", "help"], _help)
 
 
-async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    logger.info(f"Start/help from chat ID=[{update.effective_chat.id}]")
+async def _help(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
+    logger.info(f"[{update.effective_chat.id}] Sending start/help")
     await update.message.reply_text("Simple Web Comics bot based on RSS feeds!")
     await update.message.reply_text("\n".join(HELP_MESSAGES))

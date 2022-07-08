@@ -5,7 +5,9 @@ from telegram import Update
 from telegram.ext import CommandHandler, ContextTypes
 
 HELLO_HELP_MESSAGE = "/hello - say hello to the bot"
-HELLO_RESPONSES = [
+
+# TODO Extract to file?
+_HELLO_RESPONSES = [
     "Hello there!",
     "Hello!",
     "Hi!",
@@ -14,14 +16,13 @@ HELLO_RESPONSES = [
     "Hey!",
 ]
 
-logger = getLogger(__name__)
+_logger = getLogger(__name__)
 
 
+def hello_command_handler() -> CommandHandler:
+    return CommandHandler("hello", _hello)
 
-def hello_command_handler():
-    return CommandHandler("hello", hello)
 
-
-async def hello(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    logger.info(f"Hello from chat ID: [{update.effective_chat.id}]")
-    await update.message.reply_text(choice(HELLO_RESPONSES))
+async def _hello(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
+    _logger.info(f"[{update.effective_chat.id}] Hello!")
+    await update.message.reply_text(choice(_HELLO_RESPONSES))
