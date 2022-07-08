@@ -3,7 +3,7 @@ from logging import getLogger
 from telegram.error import Forbidden
 from telegram.ext import ContextTypes, JobQueue
 
-from db import FeedData, remove_chat_collection, update_latest_item_id_in_db
+from db import FeedData, remove_chat_data, update_latest_item_id_in_db
 from feed_parser import parse_entry
 from feed_reader import get_not_handled_feed_entries
 from sender import send_update
@@ -12,13 +12,10 @@ from settings import LOOKUP_INTERVAL_SECONDS
 _logger = getLogger(__name__)
 
 
-def add_check_for_updates_job(job_queue: JobQueue, chat_id: str, feed_data: FeedData) -> None:
-    job_name = _update_checker_job_name(chat_id, feed_data.feed_type, feed_data.feed_name)
-    # TODO This check might not be necessary now,
-    # subscriptions shouldn't be duplicated in DB,
-    # user cannot add the same subscription twice.
+def check_for_updates_repeatedly(job_queue: JobQueue, chat_id: int, feed_data: FeedData) -> None:
+    job_name = _check_updates_job_name(chat_id, feed_data.feed_type, feed_data.feed_name)
     if job_queue.get_jobs_by_name(job_name):
-        _logger.info(f"Update checker job=[{job_name}] is already started.")
+        _logger.info(f"Update checker job=[{job_name}] is already started")
         return
     job_queue.run_repeating(
         callback=_check_for_updates,
@@ -50,9 +47,9 @@ async def _check_for_updates(context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 # TODO Is this the best way of handling user removing and blocking the bot?
-def remove_chat_and_job(context: ContextTypes.DEFAULT_TYPE, chat_id: str) -> None:
+def remove_chat_and_job(context: ContextTypes.DEFAULT_TYPE, chat_id: int) -> None:
     _logger.warn(f"[{chat_id}] Couldn't send updates, removing from DB and stopping jobs")
-    remove_chat_collection(chat_id)
+    remove_chat_data(chat_id)
     chat_jobs = [
         job for job in context.job_queue.jobs()
         if job.name.startswith(_update_checker_job_name_chat_prefix(chat_id))
@@ -64,11 +61,11 @@ def remove_chat_and_job(context: ContextTypes.DEFAULT_TYPE, chat_id: str) -> Non
 # TODO If it was the last job, then remove everything from the DB
 def cancel_checking_job(
     context: ContextTypes.DEFAULT_TYPE,
-    chat_id: str,
+    chat_id: int,
     feed_type: str,
     feed_name: str
 ) -> None:
-    job_name = _update_checker_job_name(chat_id, feed_type, feed_name)
+    job_name = _check_updates_job_name(chat_id, feed_type, feed_name)
     jobs = context.job_queue.get_jobs_by_name(job_name)
     for job in jobs:
         job.schedule_removal()
@@ -76,9 +73,9 @@ def cancel_checking_job(
         _logger.warn(f"[{chat_id}] Found [{len(jobs)}] jobs with name [{job_name}]")
 
 
-def _update_checker_job_name(chat_id: str, feed_type: str, feed_name: str) -> str:
+def _check_updates_job_name(chat_id: int, feed_type: str, feed_name: str) -> str:
     return f"{_update_checker_job_name_chat_prefix(chat_id)}{feed_type}-{feed_name}"
 
 
-def _update_checker_job_name_chat_prefix(chat_id: str) -> str:
+def _update_checker_job_name_chat_prefix(chat_id: int) -> str:
     return f"check-updates-{chat_id}-"

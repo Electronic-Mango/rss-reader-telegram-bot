@@ -17,7 +17,7 @@ _logger = getLogger(__name__)
 
 async def send_update(
     context: ContextTypes.DEFAULT_TYPE,
-    chat_id: str,
+    chat_id: int,
     feed_type: str,
     feed_name: str,
     entry: FeedEntry,
@@ -33,7 +33,7 @@ async def send_update(
 
 async def _send_media_update(
     context: ContextTypes.DEFAULT_TYPE,
-    chat_id: str,
+    chat_id: int,
     message: str,
     media: list[FeedMedia],
 ) -> None:
@@ -49,7 +49,7 @@ async def _send_media_update(
 
 async def _handle_attachment_group(
     context: ContextTypes.DEFAULT_TYPE,
-    chat_id: str,
+    chat_id: int,
     media_group: list[FeedMedia],
     message: str = None
 ) -> None:
@@ -80,7 +80,7 @@ def _format_message(feed_type: str, feed_name: str, entry_link: str, content: st
 
 async def _send_single_media_based_on_type(
     context: ContextTypes.DEFAULT_TYPE,
-    chat_id: str,
+    chat_id: int,
     url: str,
     type: str,
     message: str

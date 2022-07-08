@@ -1,38 +1,55 @@
 from collections import namedtuple
 from logging import getLogger
 
-from pymongo import MongoClient
+from pymongo import ASCENDING, MongoClient
 from pymongo.collection import Collection
 from pymongo.database import Database
+from pymongo.results import DeleteResult
 
-from settings import DB_HOST, DB_PORT, DB_FEED_DATA_NAME
+from settings import DB_HOST, DB_PORT, DB_COLLECTION_NAME, DB_NAME
 
 # TODO Is this namedtuple needed? Can this be normal tuple?
 FeedData = namedtuple("FeedData", ["feed_name", "feed_type", "feed_link", "latest_item_id"])
 
 _logger = getLogger(__name__)
+_feed_collection = None
 
 
-def get_feed_data_for_chat(chat_id: str) -> list[FeedData]:
+# TODO Is it a good idea to set _feed_collection here and even store collection as a global var?
+# It does work and allows for control when MongoClient is created, but I'm not sure.
+def initialize_db() -> None:
+    _logger.info("Initalizing DB...")
+    global _feed_collection
+    _feed_collection = MongoClient(DB_HOST, DB_PORT)[DB_NAME][DB_COLLECTION_NAME]
+    _logger.info("Creating DB index...")
+    index = _feed_collection.create_index(
+        [("chat_id", ASCENDING), ("feed_name", ASCENDING), ("feed_type", ASCENDING)],
+        unique=True
+    )
+    _logger.info(f"Created index [{index}]")
+
+
+def get_feed_data_for_chat(chat_id: int) -> list[FeedData]:
     _logger.info(f"[{chat_id}] Getting data")
-    chat_collection = _get_collection(chat_id)
-    return [_parse_document(document) for document in chat_collection.find({})]
+    return [_parse_document(document) for document in _feed_collection.find({"chat_id": chat_id})]
 
 
-def feed_is_in_db(chat_id: str, feed_type: str, feed_name: str) -> int:
+def feed_is_in_db(chat_id: int, feed_type: str, feed_name: str) -> bool:
     _logger.info(f"[{chat_id}] Checking for [{feed_type}] [{feed_name}]")
-    chat_collection = _get_collection(chat_id)
-    return chat_collection.count_documents({"feed_type": feed_type, "feed_name": feed_name})
+    return _feed_collection.count_documents(
+        {"chat_id": chat_id, "feed_type": feed_type, "feed_name": feed_name},
+        limit=1
+    )
 
 
-def chat_has_feeds(chat_id: str) -> bool:
+def chat_has_feeds(chat_id: int) -> bool:
     _logger.info(f"[{chat_id}] Checking if chat has any feeds")
-    chat_collection = _get_collection(chat_id)
-    return chat_collection.count_documents({})
+    return _feed_collection.count_documents({"chat_id": chat_id}, limit=1)
 
 
+# TODO Does this need to return anything?
 def add_feed_to_db(
-    chat_id: str,
+    chat_id: int,
     feed_name: str,
     feed_type: str,
     feed_link: str,
@@ -46,72 +63,63 @@ def add_feed_to_db(
         f"feed=[{feed_link}] "
         f"latest=[{latest_entry_id}]"
     )
-    chat_collection = _get_collection(chat_id)
-    feed_link_data = FeedData(feed_name, feed_type, feed_link, latest_entry_id)
-    insert_result = chat_collection.insert_one(feed_link_data._asdict())
+    insert_result = _feed_collection.insert_one({
+        "chat_id": chat_id,
+        "feed_name": feed_name,
+        "feed_type": feed_type,
+        "feed_link": feed_link,
+        "latest_item_id": latest_entry_id
+    })
     _logger.info(f"[{chat_id}] Insert acknowledged=[{insert_result.acknowledged}]")
-    return feed_link_data
+    return FeedData(feed_name, feed_type, feed_link, latest_entry_id)
 
 
-def get_all_data_from_db() -> dict[str, list[FeedData]]:
+def get_all_data_from_db() -> list[tuple[int, FeedData]]:
     _logger.info(f"Getting all data for all chats")
-    db = _get_db()
-    collection_names = db.list_collection_names()
-    return {
-        collection_name: [
-            _parse_document(document)
-            for document in db.get_collection(collection_name).find({})
-        ]
-        for collection_name in collection_names
-    }
+    return [
+        (document["chat_id"], _parse_document(document))
+        for document in _feed_collection.find({})
+    ]
 
 
 def update_latest_item_id_in_db(
-    chat_id: str,
+    chat_id: int,
     feed_type: str,
     feed_name: str,
     new_latest_item_id: str
 ) -> None:
     _logger.info(f"[{chat_id}] Updating latest item ID [{feed_type}] [{feed_name}]")
-    chat_collection = _get_collection(chat_id)
-    chat_collection.find_one_and_update(
-        {"feed_type": feed_type, "feed_name": feed_name},
+    _feed_collection.find_one_and_update(
+        {"chat_id": chat_id, "feed_type": feed_type, "feed_name": feed_name},
         {"$set": {"latest_item_id": new_latest_item_id}},
     )
 
 
 # TODO Is returning deleted count needed?
-def remove_feed_link_id_db(chat_id: str, feed_type: str, feed_name: str) -> int:
+def remove_feed_link_id_db(chat_id: int, feed_type: str, feed_name: str) -> int:
     _logger.info(f"[{chat_id}] Deleting [{feed_type}] [{feed_name}]")
-    chat_collection = _get_collection(chat_id)
-    delete_result = chat_collection.delete_many({"feed_type": feed_type, "feed_name": feed_name})
+    delete_result = _feed_collection.delete_many(
+        {"chat_id": chat_id, "feed_type": feed_type, "feed_name": feed_name}
+    )
+    _log_delete_result(chat_id, delete_result)
+    return delete_result.deleted_count
+
+
+def remove_chat_data(chat_id: int) -> None:
+    _logger.info(f"[{chat_id}] Deleting all data for chat")
+    delete_result = _feed_collection.delete_many({"chat_id": chat_id})
+    _log_delete_result(chat_id, delete_result)
+
+
+def _log_delete_result(chat_id: int, delete_result: DeleteResult) -> None:
     _logger.info(
         f"[{chat_id}] Delete result: "
         f"acknowledged=[{delete_result.acknowledged}] "
         f"count=[{delete_result.deleted_count}]"
     )
-    return delete_result.deleted_count
-
-
-def remove_chat_collection(chat_id: str) -> None:
-    _logger.info(f"[{chat_id}] Deleting all data for chat")
-    chat_collection = _get_collection(chat_id)
-    chat_collection.drop()
-
-
-def _get_db() -> Database:
-    db_client = MongoClient(DB_HOST, DB_PORT)
-    return db_client[DB_FEED_DATA_NAME]
-
-
-def _get_collection(collection_name: str) -> Collection:
-    db = _get_db()
-    return db[str(collection_name)]
 
 
 def _parse_document(document: dict) -> FeedData:
-    if document is None:
-        return None
     return FeedData(
         document["feed_name"],
         document["feed_type"],

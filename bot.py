@@ -11,15 +11,16 @@ from commands.list import list_command_handler
 from commands.remove import remove_conversation_handler
 from commands.remove_all import remove_all_conversation_handler
 from commands.start_help import start_help_command_handler
-from db import get_all_data_from_db
+from db import get_all_data_from_db, initialize_db
 from settings import LOG_PATH, TOKEN
-from update_checker import add_check_for_updates_job
+from update_checker import check_for_updates_repeatedly
 
 _logger = getLogger("bot.main")
 
 
 def _main() -> None:
     _configure_logging()
+    initialize_db()
     _logger.info("Bot starting...")
     application = ApplicationBuilder().token(TOKEN).build()
     _logger.info("Bot started, setting handlers...")
@@ -37,9 +38,8 @@ def _main() -> None:
 
 def _configure_logging() -> None:
     logging_handlers = [StreamHandler(stdout)]
-    log_file_path = LOG_PATH
-    if log_file_path:
-        logging_handlers += [FileHandler(log_file_path)]
+    if LOG_PATH:
+        logging_handlers += [FileHandler(LOG_PATH)]
     basicConfig(
         format="[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s",
         level=INFO,
@@ -48,10 +48,8 @@ def _configure_logging() -> None:
 
 
 def _start_all_checking_for_updates(job_queue: JobQueue) -> None:
-    data_to_look_up = {chat_id: data for chat_id, data in get_all_data_from_db().items() if data}
-    for chat_id, data in data_to_look_up.items():
-        for feed_data in data:
-            add_check_for_updates_job(job_queue, chat_id, feed_data)
+    for chat_id, feed_data in get_all_data_from_db():
+        check_for_updates_repeatedly(job_queue, chat_id, feed_data)
 
 
 if __name__ == "__main__":
