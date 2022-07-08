@@ -24,7 +24,7 @@ def add_conversation_handler() -> ConversationHandler:
         entry_points=[CommandHandler("add", _request_feed_type)],
         states={
             _FEED_TYPE: [MessageHandler(TEXT & ~COMMAND, _handle_feed_type)],
-            _FEED_NAME: [MessageHandler(TEXT & ~COMMAND, _store_subscription)],
+            _FEED_NAME: [MessageHandler(TEXT & ~COMMAND, _handle_feed_name)],
         },
         fallbacks=[CommandHandler("cancel", _cancel)],
     )
@@ -64,15 +64,26 @@ async def _handle_feed_type(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     return await _request_feed_name(update, feed_type)
 
 
-async def _store_subscription(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def _handle_feed_name(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     feed_name = update.message.text
     chat_id = update.effective_chat.id
     _logger.info(f"{chat_id} User send feed name [{feed_name}]")
     feed_type = context.user_data[_FEED_TYPE]
     if feed_is_in_db(chat_id, feed_type, feed_name):
         return await _feed_with_given_name_already_exists(update, chat_id, feed_name, feed_type)
-    if not feed_exists(feed_type, feed_name):
+    elif not feed_exists(feed_type, feed_name):
         return await _feed_does_not_exist(update, chat_id, feed_type, feed_name)
+    else:
+        return await _store_subscription(update, context, chat_id, feed_type, feed_name)
+
+
+async def _store_subscription(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+    chat_id: int,
+    feed_type: str,
+    feed_name: str
+) -> int:
     latest_entry_id = get_latest_entry_id(feed_type, feed_name)
     feed_data = add_feed_to_db(chat_id, feed_name, feed_type, latest_entry_id)
     check_for_updates_repeatedly(context.job_queue, chat_id, feed_data)
@@ -82,7 +93,12 @@ async def _store_subscription(update: Update, context: ContextTypes.DEFAULT_TYPE
     return ConversationHandler.END
 
 
-async def _feed_with_given_name_already_exists(update, chat_id, feed_name, feed_type) -> int:
+async def _feed_with_given_name_already_exists(
+    update: Update,
+    chat_id: int,
+    feed_name: str,
+    feed_type: str
+) -> int:
     _logger.info(f"{chat_id} Feed [{feed_name}][{feed_type}] is subscribed")
     await update.message.reply_text(
         f"Subscription with name <b>{feed_name}</b> ({feed_type}) already exists!",
@@ -91,7 +107,7 @@ async def _feed_with_given_name_already_exists(update, chat_id, feed_name, feed_
     return await _request_feed_name(update, feed_type)
 
 
-async def _feed_does_not_exist(update, chat_id, feed_type, feed_name) -> int:
+async def _feed_does_not_exist(update: Update, chat_id: int, feed_type: str, feed_name: str) -> int:
     _logger.info(f"{chat_id} Feed [{feed_name}][{feed_type}] doesn't exist")
     await update.message.reply_text(
         f"Feed for source <b>{feed_name}</b> doesn't exist!",
@@ -100,7 +116,7 @@ async def _feed_does_not_exist(update, chat_id, feed_type, feed_name) -> int:
     return await _request_feed_name(update, feed_type)
 
 
-async def _request_feed_name(update, feed_type) -> int:
+async def _request_feed_name(update: Update, feed_type: str) -> int:
     _logger.info(f"[{update.effective_chat.id}] Requesting feed name")
     await update.message.reply_text(f"Send {feed_type} source, or /cancel")
     return _FEED_NAME
