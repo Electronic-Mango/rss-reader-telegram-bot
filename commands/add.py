@@ -8,8 +8,8 @@ from telegram.ext.filters import TEXT, COMMAND
 
 from db import add_feed_to_db, feed_is_in_db
 from feed_reader import feed_exists, get_latest_feed_entry_id
-from rss_checking import start_rss_checking
 from settings import RSS_FEEDS
+from update_checker import add_check_for_updates_job
 
 ADD_HELP_MESSAGE = "/add - adds subscription for a given feed"
 
@@ -75,8 +75,8 @@ async def _store_subscription(update: Update, context: ContextTypes.DEFAULT_TYPE
     if not feed_exists(feed_link):
         return await _feed_does_not_exist(update, chat_id, feed_type, feed_name)
     latest_entry_id = get_latest_feed_entry_id(feed_link)
-    rss_data = add_feed_to_db(chat_id, feed_name, feed_type, feed_link, latest_entry_id)
-    start_rss_checking(context.job_queue, chat_id, rss_data)
+    feed_data = add_feed_to_db(chat_id, feed_name, feed_type, feed_link, latest_entry_id)
+    add_check_for_updates_job(context.job_queue, chat_id, feed_data)
     await update.message.reply_text(
         f"Added subscription for <b>{feed_name}</b>!", parse_mode="HTML"
     )

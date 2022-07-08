@@ -8,7 +8,7 @@ from telegram.ext import CommandHandler, ConversationHandler, ContextTypes, Mess
 from telegram.ext.filters import COMMAND, TEXT
 
 from db import chat_has_feeds, get_feed_data_for_chat, remove_feed_link_id_db
-from rss_checking import cancel_checking_job
+from update_checker import cancel_checking_job
 
 REMOVE_HELP_MESSAGE = "/remove - remove subscription for a given feed"
 

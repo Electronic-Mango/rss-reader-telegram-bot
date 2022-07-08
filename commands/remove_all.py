@@ -5,7 +5,7 @@ from telegram.ext import ConversationHandler, CommandHandler, ContextTypes, Mess
 from telegram.ext.filters import COMMAND, TEXT
 
 from db import chat_has_feeds, get_feed_data_for_chat, remove_chat_collection
-from rss_checking import cancel_checking_job
+from update_checker import cancel_checking_job
 
 REMOVE_ALL_HELP_MESSAGE = "/remove_all - remove all subscriptions"
 

@@ -3,7 +3,7 @@ from logging import getLogger
 from telegram import Update
 from telegram.ext import CommandHandler, ContextTypes
 
-from db import RssFeedData, get_feed_data_for_chat
+from db import FeedData, get_feed_data_for_chat
 
 LIST_HELP_MESSAGE = "/list - list all subscriptions"
 
@@ -24,11 +24,11 @@ async def _list(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
         await _seed_feed_data(update, feed_data)
 
 
-async def _seed_feed_data(update: Update, feed_data: list[RssFeedData]) -> None:
-    formatted_rss_data = [
+async def _seed_feed_data(update: Update, feed_data: list[FeedData]) -> None:
+    formatted_feed_data = [
         f"<b>{feed_name}</b> - {feed_type}"
         for feed_name, feed_type, _, _ in feed_data
     ]
     response = "Following feeds are subscribed:\n\n"
-    response += "\n".join(sorted(formatted_rss_data))
+    response += "\n".join(sorted(formatted_feed_data))
     await update.message.reply_text(response, parse_mode="HTML")
