@@ -9,7 +9,7 @@ from pymongo.results import DeleteResult
 from settings import DB_HOST, DB_PORT, DB_COLLECTION_NAME, DB_NAME
 
 # TODO Is this namedtuple needed? Can this be normal tuple?
-FeedData = namedtuple("FeedData", ["feed_name", "feed_type", "feed_link", "latest_item_id"])
+FeedData = namedtuple("FeedData", ["feed_name", "feed_type", "latest_item_id"])
 
 _logger = getLogger(__name__)
 _feed_collection = None
@@ -52,7 +52,6 @@ def add_feed_to_db(
     chat_id: int,
     feed_name: str,
     feed_type: str,
-    feed_link: str,
     latest_entry_id: str
 ) -> FeedData:
     _logger.info(
@@ -60,18 +59,16 @@ def add_feed_to_db(
         f"Inserting feed data "
         f"name=[{feed_name}] "
         f"type=[{feed_type}] "
-        f"feed=[{feed_link}] "
         f"latest=[{latest_entry_id}]"
     )
     insert_result = _feed_collection.insert_one({
         "chat_id": chat_id,
         "feed_name": feed_name,
         "feed_type": feed_type,
-        "feed_link": feed_link,
         "latest_item_id": latest_entry_id
     })
     _logger.info(f"[{chat_id}] Insert acknowledged=[{insert_result.acknowledged}]")
-    return FeedData(feed_name, feed_type, feed_link, latest_entry_id)
+    return FeedData(feed_name, feed_type, latest_entry_id)
 
 
 def get_all_data_from_db() -> list[tuple[int, FeedData]]:
@@ -96,7 +93,7 @@ def update_latest_item_id_in_db(
 
 
 # TODO Is returning deleted count needed?
-def remove_feed_link_id_db(chat_id: int, feed_type: str, feed_name: str) -> int:
+def remove_feed_from_db(chat_id: int, feed_type: str, feed_name: str) -> int:
     _logger.info(f"[{chat_id}] Deleting [{feed_type}] [{feed_name}]")
     delete_result = _feed_collection.delete_many(
         {"chat_id": chat_id, "feed_type": feed_type, "feed_name": feed_name}
@@ -123,6 +120,5 @@ def _parse_document(document: dict) -> FeedData:
     return FeedData(
         document["feed_name"],
         document["feed_type"],
-        document["feed_link"],
         document["latest_item_id"],
     )

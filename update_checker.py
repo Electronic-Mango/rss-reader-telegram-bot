@@ -5,7 +5,7 @@ from telegram.ext import ContextTypes, JobQueue
 
 from db import FeedData, remove_chat_data, update_latest_item_id_in_db
 from feed_parser import parse_entry
-from feed_reader import get_not_handled_feed_entries
+from feed_reader import get_not_handled_entries
 from sender import send_update
 from settings import LOOKUP_INTERVAL_SECONDS
 
@@ -28,9 +28,9 @@ def check_for_updates_repeatedly(job_queue: JobQueue, chat_id: int, feed_data: F
 
 async def _check_for_updates(context: ContextTypes.DEFAULT_TYPE) -> None:
     chat_id = context.job.chat_id
-    feed_name, feed_type, feed_link, latest_id = context.job.data
+    feed_name, feed_type, latest_id = context.job.data
     _logger.info(f"[{chat_id}] Checking for updates for [{feed_name}] [{feed_type}]")
-    not_handled_feed_entries = get_not_handled_feed_entries(feed_link, latest_id)
+    not_handled_feed_entries = get_not_handled_entries(feed_type, feed_name, latest_id)
     if not not_handled_feed_entries:
         _logger.info(f"[{chat_id}] No new data for [{feed_name}] [{feed_type}]")
         return
@@ -43,7 +43,7 @@ async def _check_for_updates(context: ContextTypes.DEFAULT_TYPE) -> None:
             return
     latest_entry_id = not_handled_feed_entries[-1].id
     update_latest_item_id_in_db(chat_id, feed_type, feed_name, latest_entry_id)
-    context.job.data = FeedData(feed_name, feed_type, feed_link, latest_entry_id)
+    context.job.data = FeedData(feed_name, feed_type, latest_entry_id)
 
 
 # TODO Is this the best way of handling user removing and blocking the bot?

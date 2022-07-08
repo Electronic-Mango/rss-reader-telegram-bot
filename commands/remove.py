@@ -7,7 +7,7 @@ from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import CommandHandler, ConversationHandler, ContextTypes, MessageHandler
 from telegram.ext.filters import COMMAND, TEXT
 
-from db import chat_has_feeds, get_feed_data_for_chat, remove_feed_link_id_db
+from db import chat_has_feeds, get_feed_data_for_chat, remove_feed_from_db
 from update_checker import cancel_checking_job
 
 REMOVE_HELP_MESSAGE = "/remove - remove subscription for a given feed"
@@ -46,7 +46,7 @@ async def _request_feed_name(update: Update, _: ContextTypes.DEFAULT_TYPE) -> in
         return ConversationHandler.END
     all_feed_names = [
         [f"{feed_name} ({feed_type})"]
-        for feed_name, feed_type, _, _ in get_feed_data_for_chat(chat_id)
+        for feed_name, feed_type, _ in get_feed_data_for_chat(chat_id)
     ]
     await update.message.reply_text(
         "Select feed to remove, or /cancel",
@@ -86,7 +86,7 @@ async def _remove_subscription(update: Update, context: ContextTypes.DEFAULT_TYP
     chat_id = update.effective_chat.id
     feed_type, feed_name = context.user_data[_REMOVE_FEED]
     _logger.info(f"[{chat_id}] Confirmed [{feed_name}] [{feed_type}] for removal")
-    remove_feed_link_id_db(chat_id, feed_type, feed_name)
+    remove_feed_from_db(chat_id, feed_type, feed_name)
     cancel_checking_job(context, chat_id, feed_type, feed_name)
     await update.message.reply_text(
         f"Removed subscription for <b>{feed_name}</b>!", parse_mode="HTML"

@@ -27,7 +27,7 @@ async def _list(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
 async def _seed_feed_data(update: Update, feed_data: list[FeedData]) -> None:
     formatted_feed_data = [
         f"<b>{feed_name}</b> - {feed_type}"
-        for feed_name, feed_type, _, _ in feed_data
+        for feed_name, feed_type, _ in feed_data
     ]
     response = "Following feeds are subscribed:\n\n"
     response += "\n".join(sorted(formatted_feed_data))
