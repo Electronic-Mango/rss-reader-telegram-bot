@@ -1,8 +1,10 @@
 from collections import namedtuple
 from logging import getLogger
-from typing import Any
 
 from pymongo import MongoClient
+from pymongo.collection import Collection
+from pymongo.database import Database
+
 from settings import DB_HOST, DB_PORT, DB_FEED_DATA_NAME
 
 # TODO Is this namedtuple needed? Can this be normal tuple?
@@ -97,20 +99,17 @@ def remove_chat_collection(chat_id: str) -> None:
     chat_collection.drop()
 
 
-# TODO Add return type
-def _get_db():
+def _get_db() -> Database:
     db_client = MongoClient(DB_HOST, DB_PORT)
     return db_client[DB_FEED_DATA_NAME]
 
 
-# TODO Add return type
-def _get_collection(collection_name: str):
+def _get_collection(collection_name: str) -> Collection:
     db = _get_db()
     return db[str(collection_name)]
 
 
-# TODO Add return type
-def _parse_document(document: Any) -> FeedData:
+def _parse_document(document: dict) -> FeedData:
     if document is None:
         return None
     return FeedData(
