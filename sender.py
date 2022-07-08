@@ -6,36 +6,36 @@ Sends images/videos directly, removes hashtags, etc.
 from logging import getLogger
 from requests import get
 
-from telegram import InputMedia, InputMediaPhoto, InputMediaVideo
+from telegram import Bot, InputMedia, InputMediaPhoto, InputMediaVideo
 from telegram.ext import ContextTypes
 
-from feed_parser import FeedEntry, FeedMedia
 from settings import MAX_MEDIA_ITEMS_PER_MESSSAGE, MAX_MESSAGE_SIZE
 
 _logger = getLogger(__name__)
 
 
 async def send_update(
-    context: ContextTypes.DEFAULT_TYPE,
+    bot: Bot,
     chat_id: int,
     feed_type: str,
     feed_name: str,
-    entry: FeedEntry,
+    link: str,
+    summary: str,
+    media: list[tuple[str, str]]
 ) -> None:
     _logger.info(f"[{chat_id}] Sending update [{feed_name}] [{feed_type}]")
-    entry_url, summary, media = entry
-    message = _format_message(feed_type, feed_name, entry_url, summary)
+    message = _format_message(feed_type, feed_name, link, summary)
     if not media:
-        await context.bot.send_message(chat_id, message)
+        await bot.send_message(chat_id, message)
     else:
-        await _send_media_update(context, chat_id, message, media)
+        await _send_media_update(bot, chat_id, message, media)
 
 
 async def _send_media_update(
-    context: ContextTypes.DEFAULT_TYPE,
+    bot: Bot,
     chat_id: int,
     message: str,
-    media: list[FeedMedia],
+    media: list[tuple[str, str]],
 ) -> None:
     media_groups = [
         media[x : x + MAX_MEDIA_ITEMS_PER_MESSSAGE]
@@ -43,24 +43,24 @@ async def _send_media_update(
     ]
     # Only the last group should have a message
     for media_group in media_groups[:-1]:
-        await _handle_attachment_group(context, chat_id, media_group)
-    await _handle_attachment_group(context, chat_id, media_groups[-1], message)
+        await _handle_attachment_group(bot, chat_id, media_group)
+    await _handle_attachment_group(bot, chat_id, media_groups[-1], message)
 
 
 async def _handle_attachment_group(
-    context: ContextTypes.DEFAULT_TYPE,
+    bot: Bot,
     chat_id: int,
-    media_group: list[FeedMedia],
+    media_group: list[tuple[str, str]],
     message: str = None
 ) -> None:
     if len(media_group) == 1:
-        await _send_single_media_based_on_type(context, chat_id, *media_group[0], message)
+        await _send_single_media_based_on_type(bot, chat_id, *media_group[0], message)
     else:
         media_list = [_media_object(url, type) for url, type in media_group]
         # Only the first media should have a caption,
         # otherwise actual caption body won't be displayed directly in the message
         media_list[0].caption = message
-        await context.bot.send_media_group(chat_id, media_list)
+        await bot.send_media_group(chat_id, media_list)
 
 
 # TODO Consider extracting this to formatter.py,
@@ -79,16 +79,16 @@ def _format_message(feed_type: str, feed_name: str, entry_link: str, content: st
 
 
 async def _send_single_media_based_on_type(
-    context: ContextTypes.DEFAULT_TYPE,
+    bot: Bot,
     chat_id: int,
     url: str,
     type: str,
     message: str
 ) -> None:
     if _is_video(url, type):
-        await context.bot.send_video(chat_id, video=url, caption=message, supports_streaming=True)
+        await bot.send_video(chat_id, video=url, caption=message, supports_streaming=True)
     else:
-        await context.bot.send_photo(chat_id, photo=url, caption=message)
+        await bot.send_photo(chat_id, photo=url, caption=message)
 
 
 def _media_object(url: str, type: str) -> InputMedia:

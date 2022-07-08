@@ -41,9 +41,9 @@ async def _check_for_updates(context: ContextTypes.DEFAULT_TYPE) -> None:
         _logger.info(f"[{chat_id}] No new data for [{feed_name}] [{feed_type}]")
         return
     # TODO Clean up handling errors
-    for parsed_entry in [parse_entry(entry) for entry in not_handled_feed_entries]:
+    for link, summary, media in [parse_entry(entry) for entry in not_handled_feed_entries]:
         try:
-            await send_update(context, chat_id, feed_type, feed_name, parsed_entry)
+            await send_update(context.bot, chat_id, feed_type, feed_name, link, summary, media)
         except Forbidden:
             remove_chat_and_job(context, chat_id)
             return
