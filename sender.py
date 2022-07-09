@@ -24,7 +24,7 @@ async def send_update(
     media: list[tuple[str, str]]
 ) -> None:
     _logger.info(f"[{chat_id}] Sending update [{feed_name}] [{feed_type}]")
-    message = _format_message(feed_type, feed_name, link, summary)
+    message = _format_message(chat_id, feed_type, feed_name, link, summary)
     if not media:
         await bot.send_message(chat_id, message)
     else:
@@ -63,14 +63,21 @@ async def _handle_attachment_group(
         await bot.send_media_group(chat_id, media_list)
 
 
-def _format_message(feed_type: str, feed_name: str, entry_link: str, content: str) -> str:
+def _format_message(
+    chat_id: int,
+    feed_type: str,
+    feed_name: str,
+    entry_link: str,
+    content: str
+) -> str:
     message_text = f"{feed_name} on {feed_type}"
     if content:
         message_text += f":\n{content}"
-    max_message_size = MAX_MESSAGE_SIZE - 3 - 1 - len(entry_link) # 3 - "...",  1 - "\n"
-    if len(message_text) > max_message_size:
-        _logger.info(f"Trimming message")
-        message_text = f"{message_text[:max_message_size]}..."
+    effective_max_message_size = MAX_MESSAGE_SIZE - len("\n") - len(entry_link)
+    if len(message_text) > effective_max_message_size:
+        _logger.info(f"[{chat_id}] Trimming message")
+        effective_max_number_of_characters = effective_max_message_size - len("...")
+        message_text = f"{message_text[:effective_max_number_of_characters]}..."
     message_text += f"\n{entry_link}"
     return message_text
 
