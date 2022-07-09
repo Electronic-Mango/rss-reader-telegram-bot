@@ -40,8 +40,8 @@ async def _check_for_updates(context: ContextTypes.DEFAULT_TYPE) -> None:
     if not not_handled_feed_entries:
         _logger.info(f"[{chat_id}] No new data for [{feed_name}] [{feed_type}]")
         return
-    for link, summary, media in [parse_entry(entry) for entry in not_handled_feed_entries]:
-        await send_update(context.bot, chat_id, feed_type, feed_name, link, summary, media)
+    for link, summary, media_urls in [parse_entry(entry) for entry in not_handled_feed_entries]:
+        await send_update(context.bot, chat_id, feed_type, feed_name, link, summary, media_urls)
     latest_id = not_handled_feed_entries[-1].id
     update_latest_id_in_db(chat_id, feed_type, feed_name, latest_id)
     # TODO Is there a better way of handing this, than to overwrite the whole job data?

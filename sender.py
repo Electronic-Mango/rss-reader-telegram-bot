@@ -1,8 +1,3 @@
-"""
-Sender dedicated for Instagram feeds.
-Sends images/videos directly, removes hashtags, etc.
-"""
-
 from logging import getLogger
 from requests import get
 
@@ -21,46 +16,14 @@ async def send_update(
     feed_name: str,
     link: str,
     summary: str,
-    media: list[tuple[str, str]]
+    media_urls: list[str]
 ) -> None:
     _logger.info(f"[{chat_id}] Sending update [{feed_name}] [{feed_type}]")
     message = _format_message(chat_id, feed_type, feed_name, link, summary)
-    if not media:
+    if not media_urls:
         await bot.send_message(chat_id, message)
     else:
-        await _send_media_update(bot, chat_id, message, media)
-
-
-async def _send_media_update(
-    bot: Bot,
-    chat_id: int,
-    message: str,
-    media: list[tuple[str, str]],
-) -> None:
-    media_groups = [
-        media[x : x + MAX_MEDIA_ITEMS_PER_MESSSAGE]
-        for x in range(0, len(media), MAX_MEDIA_ITEMS_PER_MESSSAGE)
-    ]
-    # Only the last group should have a message
-    for media_group in media_groups[:-1]:
-        await _handle_attachment_group(bot, chat_id, media_group)
-    await _handle_attachment_group(bot, chat_id, media_groups[-1], message)
-
-
-async def _handle_attachment_group(
-    bot: Bot,
-    chat_id: int,
-    media_group: list[tuple[str, str]],
-    message: str = None
-) -> None:
-    if len(media_group) == 1:
-        await _send_single_media_based_on_type(bot, chat_id, *media_group[0], message)
-    else:
-        media_list = [_media_object(url, type) for url, type in media_group]
-        # Only the first media should have a caption,
-        # otherwise actual caption body won't be displayed directly in the message
-        media_list[0].caption = message
-        await bot.send_media_group(chat_id, media_list)
+        await _send_media_update(bot, chat_id, message, media_urls)
 
 
 def _format_message(
@@ -82,36 +45,52 @@ def _format_message(
     return message_text
 
 
-async def _send_single_media_based_on_type(
+async def _send_media_update(bot: Bot, chat_id: int, message: str, media_urls: list[str]) -> None:
+    media = [_get_media_content_and_type(url) for url in media_urls]
+    media_groups = [
+        media[x : x + MAX_MEDIA_ITEMS_PER_MESSSAGE]
+        for x in range(0, len(media), MAX_MEDIA_ITEMS_PER_MESSSAGE)
+    ]
+    # Only the last group should have a message
+    for media_group in media_groups[:-1]:
+        await _handle_attachment_group(bot, chat_id, media_group)
+    await _handle_attachment_group(bot, chat_id, media_groups[-1], message)
+
+
+def _get_media_content_and_type(url: str) -> tuple[bytes, str]:
+    response = get(url)
+    return response.content, response.headers["Content-Type"]
+
+
+async def _handle_attachment_group(
     bot: Bot,
     chat_id: int,
-    url: str,
-    type: str,
-    message: str
+    media_group: list[tuple[bytes, str]],
+    message: str = None
 ) -> None:
-    if _is_video(url, type):
-        await bot.send_video(chat_id, video=url, caption=message, supports_streaming=True)
+    if len(media_group) == 1:
+        await _send_single_media(bot, *media_group[0], message)
     else:
-        await bot.send_photo(chat_id, photo=url, caption=message)
+        media_list = [_media_object(media, type) for media, type in media_group]
+        # Only the first media should have a caption,
+        # otherwise actual caption body won't be displayed directly in the message
+        media_list[0].caption = message
+        await bot.send_media_group(chat_id, media_list)
 
 
-def _media_object(url: str, type: str) -> InputMedia:
-    if _is_video(url, type):
-        return InputMediaVideo(media=url, supports_streaming=True)
+async def _send_single_media(bot: Bot, media: bytes, type: str, message: str) -> None:
+    if _is_video(media, type):
+        await bot.send_video(chat_id, video=media, caption=message, supports_streaming=True)
     else:
-        return InputMediaPhoto(media=url)
+        await bot.send_photo(chat_id, photo=media, caption=message)
 
 
-# TODO Is there a better way to do this? Perhaps some python-telegram built-in function?
+def _media_object(media: bytes, type: str) -> InputMedia:
+    if _is_video(media, type):
+        return InputMediaVideo(media=media, supports_streaming=True)
+    else:
+        return InputMediaPhoto(media=media)
+
+
 def _is_video(url: str, type: str) -> bool:
-    if type is not None and "image" in type:
-        _logger.info(f"[{url}] [{type}] treated as image")
-        return False
-    response = get(url)
-    content_type = response.headers["Content-Type"]
-    if "video" in content_type:
-        _logger.info(f"[{url}] [{type}] [{content_type}] treated as video")
-        return True
-    else:
-        _logger.info(f"[{url}] [{type}] [{content_type}] treated as image")
-        return False
+    return "video" in type.lower()
