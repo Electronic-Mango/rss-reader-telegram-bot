@@ -1,4 +1,5 @@
 # TODO Consider allowing for adding feeds via single command as well
+# TODO Perhaps a "bulk" add command would fit better, rather than making this one more complex.
 
 from logging import getLogger
 

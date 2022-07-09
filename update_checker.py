@@ -59,7 +59,7 @@ def remove_chat_and_job(context: ContextTypes.DEFAULT_TYPE, chat_id: int) -> Non
     remove_chat_data(chat_id)
     chat_jobs = [
         job for job in context.job_queue.jobs()
-        if job.name.startswith(_update_checker_job_name_chat_prefix(chat_id))
+        if job.name.startswith(_check_updates_job_name_chat_prefix(chat_id))
     ]
     for job in chat_jobs:
         job.schedule_removal()
@@ -80,9 +80,11 @@ def cancel_checking_job(
         _logger.warn(f"[{chat_id}] Found [{len(jobs)}] jobs with name [{job_name}]")
 
 
+# TODO Calculate some unique job name, then when removing all jobs for a chat extract all data
+# about subscriptions for this chat from DB, calculate the name for them, then remove from queue.
 def _check_updates_job_name(chat_id: int, feed_type: str, feed_name: str) -> str:
-    return f"{_update_checker_job_name_chat_prefix(chat_id)}{feed_type}-{feed_name}"
+    return f"{_check_updates_job_name_chat_prefix(chat_id)}{feed_type}-{feed_name}"
 
 
-def _update_checker_job_name_chat_prefix(chat_id: int) -> str:
+def _check_updates_job_name_chat_prefix(chat_id: int) -> str:
     return f"check-updates-{chat_id}-"
