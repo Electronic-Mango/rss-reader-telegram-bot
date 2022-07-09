@@ -1,9 +1,9 @@
 from logging import getLogger
 
 from telegram.error import Forbidden
-from telegram.ext import ContextTypes, JobQueue
+from telegram.ext import ContextTypes, Job, JobQueue
 
-from db import remove_chat_data, update_latest_id_in_db
+from db import get_feed_data_for_chat, remove_chat_data, update_latest_id_in_db
 from feed_parser import parse_entry
 from feed_reader import get_not_handled_entries
 from sender import send_update
@@ -20,8 +20,9 @@ def check_for_updates_repeatedly(
     latest_id: str
 ) -> None:
     job_name = _check_updates_job_name(chat_id, feed_type, feed_name)
+    # TODO When can this situation actually occur?
     if job_queue.get_jobs_by_name(job_name):
-        _logger.info(f"Update checker job=[{job_name}] is already started")
+        _logger.warn(f"Update checker job=[{job_name}] is already started")
         return
     job_queue.run_repeating(
         callback=_check_for_updates,
@@ -45,7 +46,7 @@ async def _check_for_updates(context: ContextTypes.DEFAULT_TYPE) -> None:
         try:
             await send_update(context.bot, chat_id, feed_type, feed_name, link, summary, media)
         except Forbidden:
-            remove_chat_and_job(context, chat_id)
+            _remove_chat_and_job(context.job_queue, chat_id)
             return
     latest_id = not_handled_feed_entries[-1].id
     update_latest_id_in_db(chat_id, feed_type, feed_name, latest_id)
@@ -54,37 +55,32 @@ async def _check_for_updates(context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 # TODO Is this the best way of handling user removing and blocking the bot?
-def remove_chat_and_job(context: ContextTypes.DEFAULT_TYPE, chat_id: int) -> None:
+# TODO This is kind of duplicated in remove_all command,
+# could be cleaned up with error handling in _check_for_updates.
+def _remove_chat_and_job(job_queue: JobQueue, chat_id: int) -> None:
     _logger.warn(f"[{chat_id}] Couldn't send updates, removing from DB and stopping jobs")
+    cancel_checking_for_chat(job_queue, chat_id)
     remove_chat_data(chat_id)
-    chat_jobs = [
-        job for job in context.job_queue.jobs()
-        if job.name.startswith(_check_updates_job_name_chat_prefix(chat_id))
-    ]
-    for job in chat_jobs:
-        job.schedule_removal()
 
 
-# TODO If it was the last job, then remove everything from the DB
+def cancel_checking_for_chat(job_queue: JobQueue, chat_id: int) -> None:
+    for feed_type, feed_name, _ in get_feed_data_for_chat(chat_id):
+        cancel_checking_job(job_queue, chat_id, feed_type, feed_name)
+
+
 def cancel_checking_job(
-    context: ContextTypes.DEFAULT_TYPE,
+    job_queue: JobQueue,
     chat_id: int,
     feed_type: str,
     feed_name: str
 ) -> None:
     job_name = _check_updates_job_name(chat_id, feed_type, feed_name)
-    jobs = context.job_queue.get_jobs_by_name(job_name)
+    jobs = job_queue.get_jobs_by_name(job_name)
     for job in jobs:
         job.schedule_removal()
     if len(jobs) > 1:
         _logger.warn(f"[{chat_id}] Found [{len(jobs)}] jobs with name [{job_name}]")
 
 
-# TODO Calculate some unique job name, then when removing all jobs for a chat extract all data
-# about subscriptions for this chat from DB, calculate the name for them, then remove from queue.
 def _check_updates_job_name(chat_id: int, feed_type: str, feed_name: str) -> str:
-    return f"{_check_updates_job_name_chat_prefix(chat_id)}{feed_type}-{feed_name}"
-
-
-def _check_updates_job_name_chat_prefix(chat_id: int) -> str:
-    return f"check-updates-{chat_id}-"
+    return f"check-updates-job-{chat_id}-{feed_type}-{feed_name}"
