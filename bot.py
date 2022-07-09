@@ -5,7 +5,7 @@
 from logging import INFO, FileHandler, StreamHandler, basicConfig, getLogger
 from sys import stdout
 
-from telegram.ext import ApplicationBuilder, JobQueue
+from telegram.ext import Application, ApplicationBuilder, JobQueue
 
 from commands.add import add_conversation_handler
 from commands.hello import hello_command_handler
@@ -24,20 +24,14 @@ _logger = getLogger("bot.main")
 def _main() -> None:
     _configure_logging()
     initialize_db()
-    _logger.info("Bot starting...")
+    _logger.info("Creating application...")
     application = ApplicationBuilder().token(TOKEN).build()
-    _logger.info("Bot started, setting handlers...")
-    application.add_handler(start_help_command_handler())
-    application.add_handler(hello_command_handler())
-    application.add_handler(list_command_handler())
-    application.add_handler(add_conversation_handler())
-    application.add_handler(remove_conversation_handler())
-    application.add_handler(remove_all_conversation_handler())
-    application.add_error_handler(handle_errors)
-    _logger.info("Handlers configured, starting checking for updates...")
+    _logger.info("Configuring handlers...")
+    _configure_handlers(application)
+    _logger.info("Starting checking for updates...")
     # TODO Add a faster initial trigger for checking updates
     application.job_queue.run_repeating(check_for_all_updates, LOOKUP_INTERVAL_SECONDS)
-    _logger.info("Checking for updates started, starting polling...")
+    _logger.info("Starting polling...")
     application.run_polling()
 
 
@@ -50,6 +44,16 @@ def _configure_logging() -> None:
         level=INFO,
         handlers=logging_handlers,
     )
+
+
+def _configure_handlers(application: Application) -> None:
+    application.add_handler(start_help_command_handler())
+    application.add_handler(hello_command_handler())
+    application.add_handler(list_command_handler())
+    application.add_handler(add_conversation_handler())
+    application.add_handler(remove_conversation_handler())
+    application.add_handler(remove_all_conversation_handler())
+    application.add_error_handler(handle_errors)
 
 
 if __name__ == "__main__":
