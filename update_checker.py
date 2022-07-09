@@ -1,8 +1,10 @@
 from logging import getLogger
 
+from feedparser.util import FeedParserDict
+from telegram import Bot
 from telegram.ext import ContextTypes, JobQueue
 
-from db import get_feed_data_for_chat, update_latest_id_in_db
+from db import get_feed_data_for_chat, get_latest_id_from_db, update_latest_id_in_db
 from feed_parser import parse_entry
 from feed_reader import get_not_handled_entries
 from sender import send_update
@@ -15,8 +17,7 @@ def check_for_updates_repeatedly(
     job_queue: JobQueue,
     chat_id: int,
     feed_type: str,
-    feed_name: str,
-    latest_id: str
+    feed_name: str
 ) -> None:
     job_name = _check_updates_job_name(chat_id, feed_type, feed_name)
     # TODO When can this situation actually occur?
@@ -28,24 +29,34 @@ def check_for_updates_repeatedly(
         interval=LOOKUP_INTERVAL_SECONDS,
         name=job_name,
         chat_id=chat_id,
-        data=(feed_type, feed_name, latest_id),
+        data=(feed_type, feed_name),
     )
 
 
 async def _check_for_updates(context: ContextTypes.DEFAULT_TYPE) -> None:
     chat_id = context.job.chat_id
-    feed_type, feed_name, latest_id = context.job.data
+    feed_type, feed_name = context.job.data
     _logger.info(f"[{chat_id}] Checking for updates for [{feed_name}] [{feed_type}]")
+    latest_id = get_latest_id_from_db(chat_id, feed_type, feed_name)
     not_handled_feed_entries = get_not_handled_entries(feed_type, feed_name, latest_id)
     if not not_handled_feed_entries:
         _logger.info(f"[{chat_id}] No new data for [{feed_name}] [{feed_type}]")
-        return
-    for link, summary, media_urls in [parse_entry(entry) for entry in not_handled_feed_entries]:
-        await send_update(context.bot, chat_id, feed_type, feed_name, link, summary, media_urls)
+    else:
+        await _handle_update(context.bot, chat_id, feed_type, feed_name, not_handled_feed_entries)
+
+
+async def _handle_update(
+    bot: Bot,
+    chat_id: int,
+    feed_type: str,
+    feed_name: str,
+    not_handled_feed_entries: list[FeedParserDict]
+) -> None:
+    parsed_not_handled_entries = [parse_entry(entry) for entry in not_handled_feed_entries]
+    for link, summary, media_urls in parsed_not_handled_entries:
+        await send_update(bot, chat_id, feed_type, feed_name, link, summary, media_urls)
     latest_id = not_handled_feed_entries[-1].id
     update_latest_id_in_db(chat_id, feed_type, feed_name, latest_id)
-    # TODO Is there a better way of handing this, than to overwrite the whole job data?
-    context.job.data = (feed_type, feed_name, latest_id)
 
 
 def cancel_checking_for_chat(job_queue: JobQueue, chat_id: int) -> None:

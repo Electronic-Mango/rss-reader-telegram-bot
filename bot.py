@@ -52,8 +52,8 @@ def _configure_logging() -> None:
 
 
 def _start_all_checking_for_updates(job_queue: JobQueue) -> None:
-    for chat_id, feed_type, feed_name, latest_id in get_all_data_from_db():
-        check_for_updates_repeatedly(job_queue, chat_id, feed_type, feed_name, latest_id)
+    for chat_id, feed_type, feed_name, _ in get_all_data_from_db():
+        check_for_updates_repeatedly(job_queue, chat_id, feed_type, feed_name)
 
 
 if __name__ == "__main__":

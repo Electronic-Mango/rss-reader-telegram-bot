@@ -127,7 +127,7 @@ async def _store_subscription(
 ) -> None:
     latest_id = get_latest_id(feed_type, feed_name)
     add_feed_to_db(chat_id, feed_name, feed_type, latest_id)
-    check_for_updates_repeatedly(job_queue, chat_id, feed_type, feed_name, latest_id)
+    check_for_updates_repeatedly(job_queue, chat_id, feed_type, feed_name)
     await message.reply_text(
         f"Added subscription for <b>{feed_name}</b>!",
         parse_mode="HTML"
