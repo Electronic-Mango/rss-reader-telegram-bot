@@ -63,9 +63,6 @@ async def _handle_attachment_group(
         await bot.send_media_group(chat_id, media_list)
 
 
-# TODO Consider extracting this to formatter.py,
-# but at the same time other bots might allow for different formatting,
-# like bolding feed name, etc.
 def _format_message(feed_type: str, feed_name: str, entry_link: str, content: str) -> str:
     message_text = f"{feed_name} on {feed_type}"
     if content:
