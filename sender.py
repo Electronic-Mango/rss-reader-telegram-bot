@@ -1,6 +1,7 @@
 from logging import getLogger
 from requests import get
 
+from more_itertools import sliced
 from telegram import Bot, InputMedia, InputMediaPhoto, InputMediaVideo
 from telegram.ext import ContextTypes
 
@@ -47,10 +48,7 @@ def _format_message(
 
 async def _send_media_update(bot: Bot, chat_id: int, message: str, media_urls: list[str]) -> None:
     media = [_get_media_content_and_type(url) for url in media_urls]
-    media_groups = [
-        media[x : x + MAX_MEDIA_ITEMS_PER_MESSSAGE]
-        for x in range(0, len(media), MAX_MEDIA_ITEMS_PER_MESSSAGE)
-    ]
+    media_groups = list(sliced(media, MAX_MEDIA_ITEMS_PER_MESSSAGE))
     # Only the last group should have a message
     for media_group in media_groups[:-1]:
         await _handle_attachment_group(bot, chat_id, media_group)
@@ -69,28 +67,28 @@ async def _handle_attachment_group(
     message: str = None
 ) -> None:
     if len(media_group) == 1:
-        await _send_single_media(bot, *media_group[0], message)
+        await _send_single_media(bot, chat_id, *media_group[0], message)
     else:
-        media_list = [_media_object(media, type) for media, type in media_group]
+        input_media_list = [_media_object(media, type) for media, type in media_group]
         # Only the first media should have a caption,
-        # otherwise actual caption body won't be displayed directly in the message
-        media_list[0].caption = message
-        await bot.send_media_group(chat_id, media_list)
+        # otherwise actual caption body won't be displayed directly in the message.
+        input_media_list[0].caption = message
+        await bot.send_media_group(chat_id, input_media_list)
 
 
-async def _send_single_media(bot: Bot, media: bytes, type: str, message: str) -> None:
-    if _is_video(media, type):
+async def _send_single_media(bot: Bot, chat_id: int, media: bytes, type: str, message: str) -> None:
+    if _is_video(type):
         await bot.send_video(chat_id, video=media, caption=message, supports_streaming=True)
     else:
         await bot.send_photo(chat_id, photo=media, caption=message)
 
 
 def _media_object(media: bytes, type: str) -> InputMedia:
-    if _is_video(media, type):
+    if _is_video(type):
         return InputMediaVideo(media=media, supports_streaming=True)
     else:
         return InputMediaPhoto(media=media)
 
 
-def _is_video(url: str, type: str) -> bool:
+def _is_video(type: str) -> bool:
     return "video" in type.lower()
