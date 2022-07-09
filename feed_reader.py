@@ -47,7 +47,5 @@ def _get_parsed_feed(feed_type: str, feed_name: str) -> FeedParserDict:
     return parse(feed_link)
 
 
-# TODO Perhaps it would be worth it to store feed link in jobs, but not in DB?
-# This way there would be no need to parse it every time.
 def _get_feed_link(feed_type: str, feed_name: str) -> str:
     return RSS_FEEDS[feed_type].format(source_pattern=feed_name)
