@@ -1,4 +1,4 @@
-from itertools import takewhile
+from itertools import dropwhile, takewhile
 from logging import getLogger
 
 from dateutil.parser import parse as parse_date
@@ -12,18 +12,12 @@ _logger = getLogger(__name__)
 def get_latest_id(feed_type: str, feed_name: str) -> str:
     _logger.info(f"Getting latest ID for [{feed_name}] [{feed_type}]")
     entries = _get_sorted_entries(feed_type, feed_name)
-    if not entries:
-        return None
-    return entries[-1]["id"]
+    return entries[0]["id"] if entries else None
 
 
 def get_not_handled_entries(feed_type: str, feed_name: str, target_id: str) -> list[FeedParserDict]:
     _logger.info(f"Getting not handled entries for [{feed_name}] [{feed_type}]")
     entries = _get_sorted_entries(feed_type, feed_name)
-    if target_id is None:
-        return entries
-    # TODO Clean this part up, there's no need for double-reverse
-    entries.reverse()
     not_handled_entries = takewhile(lambda entry: entry.id != target_id, entries)
     not_handled_entries = list(not_handled_entries)
     not_handled_entries.reverse()
@@ -38,7 +32,7 @@ def feed_exists(feed_type: str, feed_name: str) -> bool:
 
 def _get_sorted_entries(feed_type: str, feed_name: str) -> list[FeedParserDict]:
     entries = _get_parsed_feed(feed_type, feed_name)["entries"]
-    return sorted(entries, key=lambda entry: parse_date(entry["published"]))
+    return sorted(entries, key=lambda entry: parse_date(entry["published"]), reverse=True)
 
 
 def _get_parsed_feed(feed_type: str, feed_name: str) -> FeedParserDict:
