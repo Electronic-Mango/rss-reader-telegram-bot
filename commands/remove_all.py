@@ -7,7 +7,7 @@ from telegram.ext.filters import COMMAND, TEXT
 from db import chat_has_feeds
 from error_handler import stop_jobs_and_remove_data
 
-REMOVE_ALL_HELP_MESSAGE = "/remove_all - remove all subscriptions"
+REMOVE_ALL_HELP_MESSAGE = "/removeall - remove all subscriptions"
 
 _CONFIRM_1, _CONFIRM_2 = range(2)
 _CONFIRM_1_YES = "Yes"
@@ -18,7 +18,7 @@ _logger = getLogger(__name__)
 
 def remove_all_conversation_handler() -> ConversationHandler:
     return ConversationHandler(
-        entry_points=[CommandHandler("remove_all", _request_confirmation_1)],
+        entry_points=[CommandHandler("removeall", _request_confirmation_1)],
         states={
             _CONFIRM_1: [MessageHandler(TEXT & ~COMMAND, _request_confirmation_2)],
             _CONFIRM_2: [MessageHandler(TEXT & ~COMMAND, _remove_all)],
