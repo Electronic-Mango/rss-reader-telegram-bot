@@ -13,7 +13,7 @@ from commands.list import list_command_handler
 from commands.remove import remove_conversation_handler
 from commands.remove_all import remove_all_conversation_handler
 from commands.start_help import start_help_command_handler
-from db import get_all_data_from_db, initialize_db
+from db import initialize_db
 from error_handler import handle_errors
 from settings import LOG_PATH, LOOKUP_INTERVAL_SECONDS, TOKEN
 from update_checker import check_for_all_updates

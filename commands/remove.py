@@ -7,7 +7,7 @@ from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import CommandHandler, ConversationHandler, ContextTypes, MessageHandler
 from telegram.ext.filters import COMMAND, TEXT
 
-from db import chat_has_feeds, get_feed_data_for_chat, remove_feed_from_db
+from db import chat_has_stored_feeds, get_stored_feed_type_and_name, remove_stored_feed
 
 REMOVE_HELP_MESSAGE = "/remove - remove subscription for a given feed"
 
@@ -39,13 +39,13 @@ async def _cancel(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
 async def _request_feed_name(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
     chat_id = update.effective_chat.id
     _logger.info(f"[{chat_id}] User requested removal of subscription")
-    if not chat_has_feeds(chat_id):
+    if not chat_has_stored_feeds(chat_id):
         _logger.info(f"[{chat_id}] No subscriptions to remove")
         await update.message.reply_text("No subscriptions to remove")
         return ConversationHandler.END
     all_feed_names = [
         [f"{feed_name} ({feed_type})"]
-        for feed_type, feed_name, _ in get_feed_data_for_chat(chat_id)
+        for feed_type, feed_name in get_stored_feed_type_and_name(chat_id)
     ]
     await update.message.reply_text(
         "Select feed to remove, or /cancel",
@@ -85,7 +85,7 @@ async def _remove_subscription(update: Update, context: ContextTypes.DEFAULT_TYP
     chat_id = update.effective_chat.id
     feed_type, feed_name = context.user_data[_REMOVE_FEED]
     _logger.info(f"[{chat_id}] Confirmed [{feed_name}] [{feed_type}] for removal")
-    remove_feed_from_db(chat_id, feed_type, feed_name)
+    remove_stored_feed(chat_id, feed_type, feed_name)
     await update.message.reply_text(
         f"Removed subscription for <b>{feed_name}</b>!", parse_mode="HTML"
     )

@@ -26,20 +26,23 @@ def initialize_db() -> None:
     _logger.info(f"Created index [{index}]")
 
 
-def get_all_data_from_db() -> list[tuple[int, str, str, str]]:
+def get_all_stored_data() -> list[tuple[int, str, str, str]]:
     _logger.info(f"Getting all data for all chats")
     return [
-        (document["chat_id"], *_parse_document(document))
+        (document["chat_id"], document["feed_type"], document["feed_name"], document["latest_id"])
         for document in _feed_collection.find({})
     ]
 
 
-def get_feed_data_for_chat(chat_id: int) -> list[tuple[str, str, str]]:
+def get_stored_feed_type_and_name(chat_id: int) -> list[tuple[str, str]]:
     _logger.info(f"[{chat_id}] Getting data")
-    return [_parse_document(document) for document in _feed_collection.find({"chat_id": chat_id})]
+    return [
+        (document["feed_type"], document["feed_name"])
+        for document in _feed_collection.find({"chat_id": chat_id})
+    ]
 
 
-def feed_is_in_db(chat_id: int, feed_type: str, feed_name: str) -> bool:
+def feed_is_already_stored(chat_id: int, feed_type: str, feed_name: str) -> bool:
     _logger.info(f"[{chat_id}] Checking for [{feed_type}] [{feed_name}]")
     return _feed_collection.count_documents(
         {"chat_id": chat_id, "feed_type": feed_type, "feed_name": feed_name},
@@ -47,12 +50,12 @@ def feed_is_in_db(chat_id: int, feed_type: str, feed_name: str) -> bool:
     )
 
 
-def chat_has_feeds(chat_id: int) -> bool:
+def chat_has_stored_feeds(chat_id: int) -> bool:
     _logger.info(f"[{chat_id}] Checking if chat has any feeds")
     return _feed_collection.count_documents({"chat_id": chat_id}, limit=1)
 
 
-def add_feed_to_db(chat_id: int, feed_name: str, feed_type: str, latest_id: str) -> None:
+def store_feed_data(chat_id: int, feed_name: str, feed_type: str, latest_id: str) -> None:
     _logger.info(
         f"[{chat_id}] "
         f"Inserting feed data "
@@ -66,7 +69,7 @@ def add_feed_to_db(chat_id: int, feed_name: str, feed_type: str, latest_id: str)
     _logger.info(f"[{chat_id}] Insert acknowledged=[{insert_result.acknowledged}]")
 
 
-def update_latest_id_in_db(chat_id: int, feed_type: str, feed_name: str, latest_id: str) -> None:
+def update_stored_latest_id(chat_id: int, feed_type: str, feed_name: str, latest_id: str) -> None:
     _logger.info(f"[{chat_id}] Updating latest item ID [{feed_type}] [{feed_name}] [{latest_id}]")
     _feed_collection.find_one_and_update(
         {"chat_id": chat_id, "feed_type": feed_type, "feed_name": feed_name},
@@ -75,7 +78,7 @@ def update_latest_id_in_db(chat_id: int, feed_type: str, feed_name: str, latest_
 
 
 # TODO Is returning deleted count needed?
-def remove_feed_from_db(chat_id: int, feed_type: str, feed_name: str) -> int:
+def remove_stored_feed(chat_id: int, feed_type: str, feed_name: str) -> int:
     _logger.info(f"[{chat_id}] Deleting [{feed_type}] [{feed_name}]")
     delete_result = _feed_collection.delete_many(
         {"chat_id": chat_id, "feed_type": feed_type, "feed_name": feed_name}
@@ -84,7 +87,7 @@ def remove_feed_from_db(chat_id: int, feed_type: str, feed_name: str) -> int:
     return delete_result.deleted_count
 
 
-def remove_chat_data(chat_id: int) -> None:
+def remove_stored_chat_data(chat_id: int) -> None:
     _logger.info(f"[{chat_id}] Deleting all data for chat")
     delete_result = _feed_collection.delete_many({"chat_id": chat_id})
     _log_delete_result(chat_id, delete_result)
@@ -96,7 +99,3 @@ def _log_delete_result(chat_id: int, delete_result: DeleteResult) -> None:
         f"acknowledged=[{delete_result.acknowledged}] "
         f"count=[{delete_result.deleted_count}]"
     )
-
-
-def _parse_document(document: dict) -> tuple[str, str, str]:
-    return (document["feed_type"], document["feed_name"], document["latest_id"])

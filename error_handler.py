@@ -4,7 +4,7 @@ from telegram import Update
 from telegram.error import Forbidden
 from telegram.ext import ContextTypes, JobQueue
 
-from db import remove_chat_data
+from db import remove_stored_chat_data
 
 _logger = getLogger(__name__)
 
@@ -18,6 +18,6 @@ async def handle_errors(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     _logger.warn(f"[{chat_id}] Error when handling update:", exc_info=error)
     if type(error) is Forbidden:
         _logger.warn(f"[{chat_id}] Cannot send updates to chat, removing chat data")
-        remove_chat_data(chat_id)
+        remove_stored_chat_data(chat_id)
     else:
         await context.bot.send_message(chat_id, f"Error when handling an update:\n{context.error}")

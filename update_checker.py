@@ -4,7 +4,7 @@ from feedparser.util import FeedParserDict
 from telegram import Bot
 from telegram.ext import ContextTypes, JobQueue
 
-from db import get_all_data_from_db, get_feed_data_for_chat, update_latest_id_in_db
+from db import get_all_stored_data, update_stored_latest_id
 from feed_parser import parse_entry
 from feed_reader import get_not_handled_entries
 from sender import send_update
@@ -15,7 +15,7 @@ _logger = getLogger(__name__)
 
 async def check_for_all_updates(context: ContextTypes.DEFAULT_TYPE) -> None:
     _logger.info("Starting checking for all updates")
-    for chat_id, feed_type, feed_name, latest_id in get_all_data_from_db():
+    for chat_id, feed_type, feed_name, latest_id in get_all_stored_data():
         await _check_for_updates(context.bot, chat_id, feed_type, feed_name, latest_id)
 
 
@@ -46,4 +46,4 @@ async def _handle_update(
     for link, summary, media_urls in parsed_not_handled_entries:
         await send_update(bot, chat_id, feed_type, feed_name, link, summary, media_urls)
     latest_id = not_handled_feed_entries[-1].id
-    update_latest_id_in_db(chat_id, feed_type, feed_name, latest_id)
+    update_stored_latest_id(chat_id, feed_type, feed_name, latest_id)
