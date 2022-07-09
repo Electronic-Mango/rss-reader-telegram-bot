@@ -1,9 +1,8 @@
 from logging import getLogger
 
-from telegram.error import Forbidden
-from telegram.ext import ContextTypes, Job, JobQueue
+from telegram.ext import ContextTypes, JobQueue
 
-from db import get_feed_data_for_chat, remove_chat_data, update_latest_id_in_db
+from db import get_feed_data_for_chat, update_latest_id_in_db
 from feed_parser import parse_entry
 from feed_reader import get_not_handled_entries
 from sender import send_update
@@ -41,26 +40,12 @@ async def _check_for_updates(context: ContextTypes.DEFAULT_TYPE) -> None:
     if not not_handled_feed_entries:
         _logger.info(f"[{chat_id}] No new data for [{feed_name}] [{feed_type}]")
         return
-    # TODO Clean up handling errors
     for link, summary, media in [parse_entry(entry) for entry in not_handled_feed_entries]:
-        try:
-            await send_update(context.bot, chat_id, feed_type, feed_name, link, summary, media)
-        except Forbidden:
-            _remove_chat_and_job(context.job_queue, chat_id)
-            return
+        await send_update(context.bot, chat_id, feed_type, feed_name, link, summary, media)
     latest_id = not_handled_feed_entries[-1].id
     update_latest_id_in_db(chat_id, feed_type, feed_name, latest_id)
     # TODO Is there a better way of handing this, than to overwrite the whole job data?
     context.job.data = (feed_type, feed_name, latest_id)
-
-
-# TODO Is this the best way of handling user removing and blocking the bot?
-# TODO This is kind of duplicated in remove_all command,
-# could be cleaned up with error handling in _check_for_updates.
-def _remove_chat_and_job(job_queue: JobQueue, chat_id: int) -> None:
-    _logger.warn(f"[{chat_id}] Couldn't send updates, removing from DB and stopping jobs")
-    cancel_checking_for_chat(job_queue, chat_id)
-    remove_chat_data(chat_id)
 
 
 def cancel_checking_for_chat(job_queue: JobQueue, chat_id: int) -> None:

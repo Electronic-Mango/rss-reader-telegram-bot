@@ -1,11 +1,11 @@
 from logging import getLogger
 
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
-from telegram.ext import ConversationHandler, CommandHandler, ContextTypes, MessageHandler
+from telegram.ext import CommandHandler, ContextTypes, ConversationHandler, MessageHandler
 from telegram.ext.filters import COMMAND, TEXT
 
-from db import chat_has_feeds, get_feed_data_for_chat, remove_chat_data
-from update_checker import cancel_checking_for_chat
+from db import chat_has_feeds
+from error_handler import stop_jobs_and_remove_data
 
 REMOVE_ALL_HELP_MESSAGE = "/remove_all - remove all subscriptions"
 
@@ -82,7 +82,6 @@ async def _remove_all(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
         return await _cancel(update, context)
     chat_id = update.effective_chat.id
     _logger.info(f"[{chat_id}] Removing all subscriptions")
-    cancel_checking_for_chat(context.job_queue, chat_id)
-    remove_chat_data(chat_id)
+    stop_jobs_and_remove_data(context.job_queue, chat_id)
     await update.message.reply_text("Removed all subscriptions")
     return ConversationHandler.END

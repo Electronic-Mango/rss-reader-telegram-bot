@@ -14,6 +14,7 @@ from commands.remove import remove_conversation_handler
 from commands.remove_all import remove_all_conversation_handler
 from commands.start_help import start_help_command_handler
 from db import get_all_data_from_db, initialize_db
+from error_handler import handle_errors
 from settings import LOG_PATH, TOKEN
 from update_checker import check_for_updates_repeatedly
 
@@ -32,6 +33,7 @@ def _main() -> None:
     application.add_handler(add_conversation_handler())
     application.add_handler(remove_conversation_handler())
     application.add_handler(remove_all_conversation_handler())
+    application.add_error_handler(handle_errors)
     _logger.info("Handlers configured, starting checking for updates...")
     _start_all_checking_for_updates(application.job_queue)
     _logger.info("Checking for updates started, starting polling...")
