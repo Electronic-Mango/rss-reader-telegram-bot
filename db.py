@@ -26,6 +26,14 @@ def initialize_db() -> None:
     _logger.info(f"Created index [{index}]")
 
 
+def get_all_data_from_db() -> list[tuple[int, str, str, str]]:
+    _logger.info(f"Getting all data for all chats")
+    return [
+        (document["chat_id"], *_parse_document(document))
+        for document in _feed_collection.find({})
+    ]
+
+
 def get_feed_data_for_chat(chat_id: int) -> list[tuple[str, str, str]]:
     _logger.info(f"[{chat_id}] Getting data")
     return [_parse_document(document) for document in _feed_collection.find({"chat_id": chat_id})]
@@ -58,24 +66,8 @@ def add_feed_to_db(chat_id: int, feed_name: str, feed_type: str, latest_id: str)
     _logger.info(f"[{chat_id}] Insert acknowledged=[{insert_result.acknowledged}]")
 
 
-def get_all_data_from_db() -> list[tuple[int, str, str, str]]:
-    _logger.info(f"Getting all data for all chats")
-    return [
-        (document["chat_id"], *_parse_document(document))
-        for document in _feed_collection.find({})
-    ]
-
-
-def get_latest_id_from_db(chat_id: int, feed_type: str, feed_name: str) -> str:
-    _logger.info(f"[{chat_id}] Getting latest item ID [{feed_type}] [{feed_name}]")
-    document = _feed_collection.find_one(
-        {"chat_id": chat_id, "feed_type": feed_type, "feed_name": feed_name}
-    )
-    return document["latest_id"]
-
-
 def update_latest_id_in_db(chat_id: int, feed_type: str, feed_name: str, latest_id: str) -> None:
-    _logger.info(f"[{chat_id}] Updating latest item ID [{feed_type}] [{feed_name}]")
+    _logger.info(f"[{chat_id}] Updating latest item ID [{feed_type}] [{feed_name}] [{latest_id}]")
     _feed_collection.find_one_and_update(
         {"chat_id": chat_id, "feed_type": feed_type, "feed_name": feed_name},
         {"$set": {"latest_id": latest_id}},

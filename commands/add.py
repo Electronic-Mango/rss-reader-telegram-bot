@@ -7,7 +7,6 @@ from telegram.ext.filters import TEXT, COMMAND
 from db import add_feed_to_db, feed_is_in_db
 from feed_reader import feed_exists, get_latest_id
 from settings import RSS_FEEDS
-from update_checker import check_for_updates_repeatedly
 
 ADD_HELP_MESSAGE = "/add - adds subscription for a given feed"
 
@@ -73,23 +72,17 @@ async def _handle_feed_names(update: Update, context: ContextTypes.DEFAULT_TYPE)
     feed_type = context.user_data[_FEED_TYPE]
     _logger.info(f"{chat_id} User send feed name {feed_names} for [{feed_type}]")
     for feed_name in feed_names:
-        await _handle_feed_name(update.message, context.job_queue, chat_id, feed_type, feed_name)
+        await _handle_feed_name(update.message, chat_id, feed_type, feed_name)
     return ConversationHandler.END
 
 
-async def _handle_feed_name(
-    message: Message,
-    job_queue: JobQueue,
-    chat_id: int,
-    feed_type: str,
-    feed_name: str
-) -> None:
+async def _handle_feed_name(message: Message, chat_id: int, feed_type: str, feed_name: str) -> None:
     if feed_is_in_db(chat_id, feed_type, feed_name):
         await _feed_with_given_name_already_exists(message, chat_id, feed_name, feed_type)
     elif not feed_exists(feed_type, feed_name):
         await _feed_does_not_exist(message, chat_id, feed_type, feed_name)
     else:
-        await _store_subscription(message, job_queue, chat_id, feed_type, feed_name)
+        await _store_subscription(message, chat_id, feed_type, feed_name)
 
 
 async def _feed_with_given_name_already_exists(
@@ -120,14 +113,12 @@ async def _feed_does_not_exist(
 
 async def _store_subscription(
     message: Message,
-    job_queue: JobQueue,
     chat_id: int,
     feed_type: str,
     feed_name: str
 ) -> None:
     latest_id = get_latest_id(feed_type, feed_name)
     add_feed_to_db(chat_id, feed_name, feed_type, latest_id)
-    check_for_updates_repeatedly(job_queue, chat_id, feed_type, feed_name)
     await message.reply_text(
         f"Added subscription for <b>{feed_name}</b>!",
         parse_mode="HTML"

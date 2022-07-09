@@ -8,7 +8,6 @@ from telegram.ext import CommandHandler, ConversationHandler, ContextTypes, Mess
 from telegram.ext.filters import COMMAND, TEXT
 
 from db import chat_has_feeds, get_feed_data_for_chat, remove_feed_from_db
-from update_checker import cancel_checking_job
 
 REMOVE_HELP_MESSAGE = "/remove - remove subscription for a given feed"
 
@@ -87,7 +86,6 @@ async def _remove_subscription(update: Update, context: ContextTypes.DEFAULT_TYP
     feed_type, feed_name = context.user_data[_REMOVE_FEED]
     _logger.info(f"[{chat_id}] Confirmed [{feed_name}] [{feed_type}] for removal")
     remove_feed_from_db(chat_id, feed_type, feed_name)
-    cancel_checking_job(context.job_queue, chat_id, feed_type, feed_name)
     await update.message.reply_text(
         f"Removed subscription for <b>{feed_name}</b>!", parse_mode="HTML"
     )
