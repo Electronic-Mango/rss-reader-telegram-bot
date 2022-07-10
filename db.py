@@ -75,14 +75,12 @@ def update_stored_latest_id(chat_id: int, feed_type: str, feed_name: str, latest
     )
 
 
-# TODO Is returning deleted count needed?
-def remove_stored_feed(chat_id: int, feed_type: str, feed_name: str) -> int:
+def remove_stored_feed(chat_id: int, feed_type: str, feed_name: str) -> None:
     _logger.info(f"[{chat_id}] Deleting [{feed_type}] [{feed_name}]")
     delete_result = _feed_collection.delete_many(
         {"chat_id": chat_id, "feed_type": feed_type, "feed_name": feed_name}
     )
     _log_delete_result(chat_id, delete_result)
-    return delete_result.deleted_count
 
 
 def remove_stored_chat_data(chat_id: int) -> None:
