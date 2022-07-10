@@ -16,7 +16,7 @@ async def send_update(
     feed_name: str,
     link: str,
     summary: str,
-    media_urls: list[str]
+    media_urls: list[str],
 ) -> None:
     _logger.info(f"[{chat_id}] Sending update [{feed_name}] [{feed_type}]")
     message = _format_message(chat_id, feed_type, feed_name, link, summary)
@@ -31,7 +31,7 @@ def _format_message(
     feed_type: str,
     feed_name: str,
     entry_link: str,
-    content: str
+    content: str,
 ) -> str:
     message_text = f"{feed_name} on {feed_type}"
     if content:
@@ -63,7 +63,7 @@ async def _handle_attachment_group(
     bot: Bot,
     chat_id: int,
     media_group: list[tuple[bytes, str]],
-    message: str = None
+    message: str = None,
 ) -> None:
     if len(media_group) == 1:
         await _send_single_media(bot, chat_id, *media_group[0], message)
@@ -77,16 +77,16 @@ async def _handle_attachment_group(
 
 async def _send_single_media(bot: Bot, chat_id: int, media: bytes, type: str, message: str) -> None:
     if _is_video(type):
-        await bot.send_video(chat_id, video=media, caption=message, supports_streaming=True)
+        await bot.send_video(chat_id, media, caption=message, supports_streaming=True)
     else:
-        await bot.send_photo(chat_id, photo=media, caption=message)
+        await bot.send_photo(chat_id, media, caption=message)
 
 
 def _media_object(media: bytes, type: str) -> InputMedia:
     if _is_video(type):
-        return InputMediaVideo(media=media, supports_streaming=True)
+        return InputMediaVideo(media, supports_streaming=True)
     else:
-        return InputMediaPhoto(media=media)
+        return InputMediaPhoto(media)
 
 
 def _is_video(type: str) -> bool:

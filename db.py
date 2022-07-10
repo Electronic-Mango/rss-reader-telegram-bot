@@ -19,7 +19,7 @@ def initialize_db() -> None:
     _logger.info("Creating DB index...")
     index = _feed_collection.create_index(
         [("chat_id", ASCENDING), ("feed_name", ASCENDING), ("feed_type", ASCENDING)],
-        unique=True
+        unique=True,
     )
     _logger.info(f"Created index [{index}]")
 
@@ -43,27 +43,24 @@ def get_stored_feed_type_and_name(chat_id: int) -> list[tuple[str, str]]:
 def feed_is_already_stored(chat_id: int, feed_type: str, feed_name: str) -> bool:
     _logger.info(f"[{chat_id}] Checking for [{feed_type}] [{feed_name}]")
     return _feed_collection.count_documents(
-        {"chat_id": chat_id, "feed_type": feed_type, "feed_name": feed_name},
-        limit=1
+        limit=1, filter={"chat_id": chat_id, "feed_type": feed_type, "feed_name": feed_name}
     )
 
 
 def chat_has_stored_feeds(chat_id: int) -> bool:
     _logger.info(f"[{chat_id}] Checking if chat has any feeds")
-    return _feed_collection.count_documents({"chat_id": chat_id}, limit=1)
+    return _feed_collection.count_documents(limit=1, filter={"chat_id": chat_id})
 
 
 def store_feed_data(chat_id: int, feed_name: str, feed_type: str, latest_id: str) -> None:
-    _logger.info(
-        f"[{chat_id}] "
-        f"Inserting feed data "
-        f"name=[{feed_name}] "
-        f"type=[{feed_type}] "
-        f"latest=[{latest_id}]"
-    )
-    insert_result = _feed_collection.insert_one({
-        "chat_id": chat_id, "feed_name": feed_name, "feed_type": feed_type, "latest_id": latest_id
-    })
+    _logger.info(f"[{chat_id}] Insert name=[{feed_name}] type=[{feed_type}] latest=[{latest_id}]")
+    feed_document = {
+        "chat_id": chat_id,
+        "feed_name": feed_name,
+        "feed_type": feed_type,
+        "latest_id": latest_id,
+    }
+    insert_result = _feed_collection.insert_one(feed_document)
     _logger.info(f"[{chat_id}] Insert acknowledged=[{insert_result.acknowledged}]")
 
 

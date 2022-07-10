@@ -86,7 +86,7 @@ async def _feed_with_given_name_already_exists(
     message: Message,
     chat_id: int,
     feed_name: str,
-    feed_type: str
+    feed_type: str,
 ) -> None:
     _logger.info(f"{chat_id} Feed [{feed_name}][{feed_type}] is subscribed")
     await message.reply_text(f"Subscription for <b>{feed_name}</b> ({feed_type}) already exists!")
@@ -96,7 +96,7 @@ async def _feed_does_not_exist(
     message: Message,
     chat_id: int,
     feed_type: str,
-    feed_name: str
+    feed_name: str,
 ) -> None:
     _logger.info(f"{chat_id} Feed [{feed_name}][{feed_type}] doesn't exist")
     await message.reply_text(f"Feed for source <b>{feed_name}</b> doesn't exist!")
@@ -106,7 +106,7 @@ async def _store_subscription(
     message: Message,
     chat_id: int,
     feed_type: str,
-    feed_name: str
+    feed_name: str,
 ) -> None:
     latest_id = get_latest_id(feed_type, feed_name)
     store_feed_data(chat_id, feed_name, feed_type, latest_id)

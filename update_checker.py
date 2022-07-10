@@ -23,7 +23,7 @@ async def _check_for_updates(
     chat_id: int,
     feed_type: str,
     feed_name: str,
-    latest_id: str
+    latest_id: str,
 ) -> None:
     _logger.info(f"[{chat_id}] Checking for updates for [{feed_name}] [{feed_type}]")
     not_handled_feed_entries = get_not_handled_entries(feed_type, feed_name, latest_id)
@@ -38,7 +38,7 @@ async def _handle_update(
     chat_id: int,
     feed_type: str,
     feed_name: str,
-    not_handled_feed_entries: list[FeedParserDict]
+    not_handled_feed_entries: list[FeedParserDict],
 ) -> None:
     _logger.info(f"[{chat_id}] Handling update [{feed_name}] [{feed_type}]")
     parsed_not_handled_entries = [parse_entry(entry) for entry in not_handled_feed_entries]

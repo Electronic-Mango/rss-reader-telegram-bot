@@ -1,6 +1,6 @@
 from logging import getLogger
 
-from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
+from telegram import Message, ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import CommandHandler, ContextTypes, ConversationHandler, MessageHandler
 from telegram.ext.filters import COMMAND, TEXT
 
@@ -38,9 +38,7 @@ async def _request_confirmation_1(update: Update, _: ContextTypes.DEFAULT_TYPE) 
     chat_id = update.effective_chat.id
     _logger.info(f"[{chat_id}] User requested removal of all subscriptions")
     if not chat_has_stored_feeds(chat_id):
-        _logger.info(f"[{chat_id}] No subscriptions to remove")
-        await update.message.reply_text("No subscriptions to remove")
-        return ConversationHandler.END
+        _no_feeds_to_remove(update.message, chat_id)
     confirmation_keyboard = [[_CONFIRM_1_YES, "No"]]
     await update.message.reply_text(
         "Confirm removal of all feeds",
@@ -52,6 +50,12 @@ async def _request_confirmation_1(update: Update, _: ContextTypes.DEFAULT_TYPE) 
         ),
     )
     return _CONFIRM_1
+
+
+async def _no_feeds_to_remove(message: Message, chat_id: int) -> int:
+    _logger.info(f"[{chat_id}] No subscriptions to remove")
+    await message.reply_text("No subscriptions to remove")
+    return ConversationHandler.END
 
 
 async def _request_confirmation_2(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:

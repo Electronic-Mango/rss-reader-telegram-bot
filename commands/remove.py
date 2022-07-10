@@ -11,8 +11,8 @@ from db import chat_has_stored_feeds, get_stored_feed_type_and_name, remove_stor
 
 REMOVE_HELP_MESSAGE = "/remove - remove subscription for a given feed"
 
-_CONFIRM_REMOVAL_YES = "Yes"
 _REMOVE_FEED, _CONFIRM = range(2)
+_CONFIRM_REMOVAL_YES = "Yes"
 
 _logger = getLogger(__name__)
 

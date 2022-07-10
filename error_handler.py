@@ -20,4 +20,5 @@ async def handle_errors(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         _logger.warn(f"[{chat_id}] Cannot send updates to chat, removing chat data")
         remove_stored_chat_data(chat_id)
     else:
-        await context.bot.send_message(chat_id, f"Error when handling an update:\n{context.error}")
+        error_message = f"Error when handling an update:\n{context.error}"
+        await context.bot.send_message(chat_id, error_message)
