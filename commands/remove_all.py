@@ -46,9 +46,7 @@ async def _request_confirmation_1(update: Update, _: ContextTypes.DEFAULT_TYPE) 
         "Confirm removal of all feeds",
         reply_markup=ReplyKeyboardMarkup(
             keyboard=confirmation_keyboard,
-            # Intentionally is not a one time keyboard.
-            # Confirming removal will trigger a second keyboard, which is one time.
-            # Cancellation will hide the keyboard.
+            one_time_keyboard=True,
             resize_keyboard=True,
             input_field_placeholder="Confirm removal",
         ),
