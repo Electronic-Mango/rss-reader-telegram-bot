@@ -1,11 +1,12 @@
 from logging import getLogger
 
-from feed_reader import feed_is_valid, get_latest_id
+from more_itertools import sliced
 from telegram import Message, ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import CommandHandler, ContextTypes, ConversationHandler, MessageHandler
 from telegram.ext.filters import COMMAND, TEXT
 
 from db import feed_is_already_stored, store_feed_data
+from feed_reader import feed_is_valid, get_latest_id
 from settings import RSS_FEEDS
 
 ADD_HELP_MESSAGE = "/add - adds subscription for a given feed"
@@ -39,10 +40,7 @@ async def _cancel(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
 async def _request_feed_type(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
     _logger.info(f"[{update.effective_chat.id}] User requested new subscription")
     all_feed_types = list(RSS_FEEDS.keys())
-    keyboard = [
-        all_feed_types[x : x + _FEED_TYPES_PER_KEYBOARD_ROW]
-        for x in range(0, len(all_feed_types), _FEED_TYPES_PER_KEYBOARD_ROW)
-    ]
+    keyboard = list(sliced(all_feed_types, _FEED_TYPES_PER_KEYBOARD_ROW))
     await update.message.reply_text(
         "Select source, or /cancel",
         reply_markup=ReplyKeyboardMarkup(
