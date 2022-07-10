@@ -36,12 +36,12 @@ def _format_message(
     message_text = f"{feed_name} on {feed_type}"
     if content:
         message_text += f":\n{content}"
-    effective_max_message_size = MAX_MESSAGE_SIZE - len("\n") - len(entry_link)
+    effective_max_message_size = MAX_MESSAGE_SIZE - len("\n\n") - len(entry_link)
     if len(message_text) > effective_max_message_size:
         _logger.info(f"[{chat_id}] Trimming message")
         effective_max_number_of_characters = effective_max_message_size - len("...")
         message_text = f"{message_text[:effective_max_number_of_characters]}..."
-    message_text += f"\n{entry_link}"
+    message_text += f"\n\n{entry_link}"
     return message_text
 
 

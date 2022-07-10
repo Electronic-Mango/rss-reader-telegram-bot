@@ -14,7 +14,7 @@ def _parse_summary(entry: FeedParserDict) -> str:
     # Perhaps appending them with "link: " would be better?
     # Right now some text in the form of a link will get removed.
     # Although appending "link" anywhere seem more like bot-related approach.
-    return "".join(text for text in all_text if text.parent.name not in ["a"])
+    return "".join(text for text in all_text).strip()
 
 
 def _parse_media_urls(entry: FeedParserDict) -> list[str]:
