@@ -15,7 +15,7 @@ from commands.remove_all import remove_all_conversation_handler
 from commands.start_help import start_help_command_handler
 from db import initialize_db
 from error_handler import handle_errors
-from settings import LOG_PATH, LOOKUP_INTERVAL_SECONDS, TOKEN
+from settings import LOG_PATH, LOOKUP_INITIAL_DELAY_SECONDS, LOOKUP_INTERVAL_SECONDS, TOKEN
 from update_checker import check_for_all_updates
 
 _logger = getLogger("bot.main")
@@ -24,14 +24,9 @@ _logger = getLogger("bot.main")
 def _main() -> None:
     _configure_logging()
     initialize_db()
-    _logger.info("Creating application...")
     application = ApplicationBuilder().token(TOKEN).build()
-    _logger.info("Configuring handlers...")
     _configure_handlers(application)
-    _logger.info("Starting checking for updates...")
-    # TODO Add a faster initial trigger for checking updates
-    application.job_queue.run_repeating(check_for_all_updates, LOOKUP_INTERVAL_SECONDS)
-    _logger.info("Starting polling...")
+    _start_checking_for_updates(application.job_queue)
     application.run_polling()
 
 
@@ -47,6 +42,7 @@ def _configure_logging() -> None:
 
 
 def _configure_handlers(application: Application) -> None:
+    _logger.info("Configuring handlers...")
     application.add_handler(start_help_command_handler())
     application.add_handler(hello_command_handler())
     application.add_handler(list_command_handler())
@@ -54,6 +50,15 @@ def _configure_handlers(application: Application) -> None:
     application.add_handler(remove_conversation_handler())
     application.add_handler(remove_all_conversation_handler())
     application.add_error_handler(handle_errors)
+
+
+def _start_checking_for_updates(job_queue: JobQueue) -> None:
+    _logger.info("Starting checking for updates...")
+    job_queue.run_repeating(
+        callback=check_for_all_updates,
+        interval=LOOKUP_INTERVAL_SECONDS,
+        first=LOOKUP_INITIAL_DELAY_SECONDS,
+    )
 
 
 if __name__ == "__main__":
