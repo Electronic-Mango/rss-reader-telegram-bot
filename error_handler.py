@@ -2,7 +2,7 @@ from logging import getLogger
 
 from telegram import Update
 from telegram.error import Forbidden
-from telegram.ext import ContextTypes, JobQueue
+from telegram.ext import ContextTypes
 
 from db import remove_stored_chat_data
 

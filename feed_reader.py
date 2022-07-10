@@ -1,9 +1,10 @@
-from itertools import dropwhile, takewhile
+from itertools import takewhile
 from logging import getLogger
 
 from dateutil.parser import parse as parse_date
 from feedparser import parse
 from feedparser.util import FeedParserDict
+
 from settings import RSS_FEEDS
 
 _logger = getLogger(__name__)

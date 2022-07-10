@@ -1,11 +1,11 @@
 from logging import getLogger
 
-from telegram import Message, ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
-from telegram.ext import CommandHandler, ConversationHandler, ContextTypes, JobQueue, MessageHandler
-from telegram.ext.filters import TEXT, COMMAND
-
-from db import store_feed_data, feed_is_already_stored
 from feed_reader import feed_exists, get_latest_id
+from telegram import Message, ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
+from telegram.ext import CommandHandler, ContextTypes, ConversationHandler, MessageHandler
+from telegram.ext.filters import COMMAND, TEXT
+
+from db import feed_is_already_stored, store_feed_data
 from settings import RSS_FEEDS
 
 ADD_HELP_MESSAGE = "/add - adds subscription for a given feed"

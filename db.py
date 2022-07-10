@@ -1,12 +1,10 @@
-from collections import namedtuple
 from logging import getLogger
 
 from pymongo import ASCENDING, MongoClient
 from pymongo.collection import Collection
-from pymongo.database import Database
 from pymongo.results import DeleteResult
 
-from settings import DB_HOST, DB_PORT, DB_COLLECTION_NAME, DB_NAME
+from settings import DB_COLLECTION_NAME, DB_HOST, DB_NAME, DB_PORT
 
 _logger = getLogger(__name__)
 _feed_collection: Collection = None

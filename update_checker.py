@@ -2,13 +2,12 @@ from logging import getLogger
 
 from feedparser.util import FeedParserDict
 from telegram import Bot
-from telegram.ext import ContextTypes, JobQueue
+from telegram.ext import ContextTypes
 
 from db import get_all_stored_data, update_stored_latest_id
 from feed_parser import parse_entry
 from feed_reader import get_not_handled_entries
 from sender import send_update
-from settings import LOOKUP_INTERVAL_SECONDS
 
 _logger = getLogger(__name__)
 

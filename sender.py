@@ -1,9 +1,8 @@
 from logging import getLogger
-from requests import get
 
 from more_itertools import sliced
+from requests import get
 from telegram import Bot, InputMedia, InputMediaPhoto, InputMediaVideo
-from telegram.ext import ContextTypes
 
 from settings import MAX_MEDIA_ITEMS_PER_MESSSAGE, MAX_MESSAGE_SIZE
 

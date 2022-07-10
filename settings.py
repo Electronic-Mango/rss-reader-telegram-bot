@@ -1,5 +1,6 @@
-from dotenv import load_dotenv
 from os import getenv
+
+from dotenv import load_dotenv
 from yaml import safe_load
 
 load_dotenv()

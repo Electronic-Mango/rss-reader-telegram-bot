@@ -1,5 +1,3 @@
-from collections import namedtuple
-
 from bs4 import BeautifulSoup
 from feedparser.util import FeedParserDict
 
