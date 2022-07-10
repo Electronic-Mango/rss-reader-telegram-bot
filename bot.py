@@ -19,6 +19,15 @@ from error_handler import handle_errors
 from settings import LOG_PATH, LOOKUP_INITIAL_DELAY_SECONDS, LOOKUP_INTERVAL_SECONDS, TOKEN
 from update_checker import check_for_all_updates
 
+_UPDATE_HANDLERS = [
+    start_help_command_handler(),
+    hello_command_handler(),
+    list_command_handler(),
+    add_conversation_handler(),
+    remove_conversation_handler(),
+    remove_all_conversation_handler(),
+]
+
 _logger = getLogger("bot.main")
 
 
@@ -44,12 +53,7 @@ def _configure_logging() -> None:
 
 def _configure_handlers(application: Application) -> None:
     _logger.info("Configuring handlers...")
-    application.add_handler(start_help_command_handler())
-    application.add_handler(hello_command_handler())
-    application.add_handler(list_command_handler())
-    application.add_handler(add_conversation_handler())
-    application.add_handler(remove_conversation_handler())
-    application.add_handler(remove_all_conversation_handler())
+    application.add_handlers(_UPDATE_HANDLERS)
     application.add_error_handler(handle_errors)
 
 
