@@ -3,4 +3,4 @@
 Feed name 1:
     http://feedlink1.com/{source_pattern}/rss
 Feed name 2:
-    https://feedlink2.com/{source_pattern}/rss
+    https://{source_pattern}.feedlink2.com/rss
