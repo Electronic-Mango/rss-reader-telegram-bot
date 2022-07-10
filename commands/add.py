@@ -1,6 +1,6 @@
 from logging import getLogger
 
-from feed_reader import feed_exists, get_latest_id
+from feed_reader import feed_is_valid, get_latest_id
 from telegram import Message, ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import CommandHandler, ContextTypes, ConversationHandler, MessageHandler
 from telegram.ext.filters import COMMAND, TEXT
@@ -79,8 +79,7 @@ async def _handle_feed_names(update: Update, context: ContextTypes.DEFAULT_TYPE)
 async def _handle_feed_name(message: Message, chat_id: int, feed_type: str, feed_name: str) -> None:
     if feed_is_already_stored(chat_id, feed_type, feed_name):
         await _feed_with_given_name_already_exists(message, chat_id, feed_name, feed_type)
-    # TODO feed_is_already_stored and feed_exists might be a bit confusing, consider renaming
-    elif not feed_exists(feed_type, feed_name):
+    elif not feed_is_valid(feed_type, feed_name):
         await _feed_does_not_exist(message, chat_id, feed_type, feed_name)
     else:
         await _store_subscription(message, chat_id, feed_type, feed_name)

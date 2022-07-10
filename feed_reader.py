@@ -25,7 +25,7 @@ def get_not_handled_entries(feed_type: str, feed_name: str, target_id: str) -> l
     return not_handled_entries
 
 
-def feed_exists(feed_type: str, feed_name: str) -> bool:
+def feed_is_valid(feed_type: str, feed_name: str) -> bool:
     _logger.info(f"Checking if [{feed_name}] [{feed_type}] feed exists")
     # 301 is a workaround for tumblr blogs with dedicated URLs
     return _get_parsed_feed(feed_type, feed_name)["status"] in [200, 301]
