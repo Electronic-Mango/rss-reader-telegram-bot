@@ -62,7 +62,6 @@ async def _request_confirmation_2(update: Update, context: ContextTypes.DEFAULT_
     confirmation_keyboard = [[_CONFIRM_2_YES, "No, don't remove"]]
     await update.message.reply_text(
         "Are you sure you want to remove <b>all</b> subscriptions?",
-        parse_mode="HTML",
         reply_markup=ReplyKeyboardMarkup(
             keyboard=confirmation_keyboard,
             one_time_keyboard=True,

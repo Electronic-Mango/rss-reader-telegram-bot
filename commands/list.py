@@ -31,4 +31,4 @@ async def _send_feed_data(message: Message, chat_id: int) -> None:
     ]
     response = "Following feeds are subscribed:\n"
     response += "\n".join(sorted(formatted_feed_data))
-    await message.reply_text(response, parse_mode="HTML")
+    await message.reply_text(response)

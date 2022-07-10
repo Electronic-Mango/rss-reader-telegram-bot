@@ -6,7 +6,7 @@
 from logging import INFO, FileHandler, StreamHandler, basicConfig, getLogger
 from sys import stdout
 
-from telegram.ext import Application, ApplicationBuilder, JobQueue
+from telegram.ext import Application, ApplicationBuilder, Defaults, JobQueue
 
 from commands.add import add_conversation_handler
 from commands.hello import hello_command_handler
@@ -25,7 +25,7 @@ _logger = getLogger("bot.main")
 def _main() -> None:
     _configure_logging()
     initialize_db()
-    application = ApplicationBuilder().token(TOKEN).build()
+    application = ApplicationBuilder().token(TOKEN).defaults(Defaults("HTML")).build()
     _configure_handlers(application)
     _start_checking_for_updates(application.job_queue)
     application.run_polling()

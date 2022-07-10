@@ -76,7 +76,6 @@ async def _confirm_removal(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     confirmation_keyboard = [[_CONFIRM_REMOVAL_YES, "No"]]
     await update.message.reply_text(
         f"Confirm removal of <b>{feed_name}</b> ({feed_type})",
-        parse_mode="HTML",
         reply_markup=ReplyKeyboardMarkup(
             keyboard=confirmation_keyboard,
             one_time_keyboard=True,
@@ -102,7 +101,5 @@ async def _remove_subscription(update: Update, context: ContextTypes.DEFAULT_TYP
     feed_type, feed_name = context.user_data[_REMOVE_FEED]
     _logger.info(f"[{chat_id}] Confirmed [{feed_name}] [{feed_type}] for removal")
     remove_stored_feed(chat_id, feed_type, feed_name)
-    await update.message.reply_text(
-        f"Removed subscription for <b>{feed_name}</b>!", parse_mode="HTML"
-    )
+    await update.message.reply_text(f"Removed subscription for <b>{feed_name}</b>!")
     return ConversationHandler.END

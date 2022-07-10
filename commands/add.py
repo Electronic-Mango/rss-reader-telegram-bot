@@ -58,8 +58,7 @@ async def _handle_feed_type(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     context.user_data[_FEED_TYPE] = feed_type
     _logger.info(f"[{update.effective_chat.id}] User selected type [{feed_type}], requesting name")
     await update.message.reply_text(
-        f"Send <b>{feed_type}</b> source, you can send multiple separated by a space, or /cancel",
-        parse_mode="HTML",
+        f"Send <b>{feed_type}</b> source, you can send multiple separated by a space, or /cancel"
     )
     return _FEED_NAME
 
@@ -90,10 +89,7 @@ async def _feed_with_given_name_already_exists(
     feed_type: str
 ) -> None:
     _logger.info(f"{chat_id} Feed [{feed_name}][{feed_type}] is subscribed")
-    await message.reply_text(
-        f"Subscription with name <b>{feed_name}</b> ({feed_type}) already exists!",
-        parse_mode="HTML",
-    )
+    await message.reply_text(f"Subscription for <b>{feed_name}</b> ({feed_type}) already exists!")
 
 
 async def _feed_does_not_exist(
@@ -103,10 +99,7 @@ async def _feed_does_not_exist(
     feed_name: str
 ) -> None:
     _logger.info(f"{chat_id} Feed [{feed_name}][{feed_type}] doesn't exist")
-    await message.reply_text(
-        f"Feed for source <b>{feed_name}</b> doesn't exist!",
-        parse_mode="HTML",
-    )
+    await message.reply_text(f"Feed for source <b>{feed_name}</b> doesn't exist!")
 
 
 async def _store_subscription(
@@ -117,7 +110,4 @@ async def _store_subscription(
 ) -> None:
     latest_id = get_latest_id(feed_type, feed_name)
     store_feed_data(chat_id, feed_name, feed_type, latest_id)
-    await message.reply_text(
-        f"Added subscription for <b>{feed_name}</b>!",
-        parse_mode="HTML"
-    )
+    await message.reply_text(f"Added subscription for <b>{feed_name}</b>!")
