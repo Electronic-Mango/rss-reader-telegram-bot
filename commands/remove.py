@@ -3,7 +3,7 @@
 from logging import getLogger
 from re import match
 
-from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
+from telegram import Message, ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import CommandHandler, ContextTypes, ConversationHandler, MessageHandler
 from telegram.ext.filters import COMMAND, TEXT
 
@@ -19,7 +19,7 @@ _logger = getLogger(__name__)
 
 def remove_conversation_handler() -> ConversationHandler:
     return ConversationHandler(
-        entry_points=[CommandHandler("remove", _request_feed_name)],
+        entry_points=[CommandHandler("remove", _handle_remove_request)],
         states={
             _REMOVE_FEED: [MessageHandler(TEXT & ~COMMAND, _confirm_removal)],
             _CONFIRM: [MessageHandler(TEXT & ~COMMAND, _remove_subscription)],
@@ -36,27 +36,36 @@ async def _cancel(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
     return ConversationHandler.END
 
 
-async def _request_feed_name(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
+async def _handle_remove_request(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
     chat_id = update.effective_chat.id
     _logger.info(f"[{chat_id}] User requested removal of subscription")
-    if not chat_has_stored_feeds(chat_id):
-        _logger.info(f"[{chat_id}] No subscriptions to remove")
-        await update.message.reply_text("No subscriptions to remove")
-        return ConversationHandler.END
-    all_feed_names = [
+    if chat_has_stored_feeds(chat_id):
+        return await _request_feed_to_remove(update.message, chat_id)
+    else:
+        return await _no_feeds_to_remove(update.message, chat_id)
+
+
+async def _request_feed_to_remove(message: Message, chat_id: int) -> int:
+    all_feed_names_keyboard = [
         [f"{feed_name} ({feed_type})"]
         for feed_type, feed_name in get_stored_feed_type_and_name(chat_id)
     ]
-    await update.message.reply_text(
+    await message.reply_text(
         "Select feed to remove, or /cancel",
         reply_markup=ReplyKeyboardMarkup(
-            keyboard=all_feed_names,
+            keyboard=all_feed_names_keyboard,
             one_time_keyboard=True,
             resize_keyboard=True,
             input_field_placeholder="Select feed to remove",
         ),
     )
     return _REMOVE_FEED
+
+
+async def _no_feeds_to_remove(message: Message, chat_id: int) -> int:
+    _logger.info(f"[{chat_id}] No subscriptions to remove")
+    await message.reply_text("No subscriptions to remove")
+    return ConversationHandler.END
 
 
 async def _confirm_removal(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -78,6 +87,13 @@ async def _confirm_removal(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     return _CONFIRM
 
 
+def _feed_name_and_type_from_keyboard_message(keyboard_message: str) -> tuple[str, str]:
+    _logger.info(keyboard_message)
+    keyboard_message_pattern = r"(.+)+ \((.+)\)"
+    keyboard_message_match = match(keyboard_message_pattern, keyboard_message)
+    return keyboard_message_match.groups()
+
+
 async def _remove_subscription(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     confirmation = update.message.text
     if confirmation != _CONFIRM_REMOVAL_YES:
@@ -90,10 +106,3 @@ async def _remove_subscription(update: Update, context: ContextTypes.DEFAULT_TYP
         f"Removed subscription for <b>{feed_name}</b>!", parse_mode="HTML"
     )
     return ConversationHandler.END
-
-
-def _feed_name_and_type_from_keyboard_message(keyboard_message: str) -> tuple[str, str]:
-    _logger.info(keyboard_message)
-    keyboard_message_pattern = r"(.+)+ \((.+)\)"
-    keyboard_message_match = match(keyboard_message_pattern, keyboard_message)
-    return keyboard_message_match.groups()
