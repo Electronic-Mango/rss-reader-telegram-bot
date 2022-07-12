@@ -6,8 +6,8 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY .env .
-COPY feeds.yaml .
+COPY *.toml .
+COPY *.yaml .
 COPY bot.py .
 COPY db.py .
 COPY error_handler.py .
