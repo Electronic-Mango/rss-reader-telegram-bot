@@ -1,25 +1,41 @@
 from os import getenv
+from typing import Any
 
 from dotenv import load_dotenv
+from toml import load
 from yaml import safe_load
 
 load_dotenv()
 
-TOKEN = getenv("TOKEN")
+_SETTINGS_TOML = load(getenv("SETTINGS_TOML_PATH", "settings.toml"))
 
-LOG_PATH = getenv("LOG_PATH")
 
-DB_HOST = getenv("DB_HOST")
-DB_PORT = int(getenv("DB_PORT"))
-DB_NAME = getenv("DB_NAME")
-DB_COLLECTION_NAME = getenv("DB_COLLECTION_NAME")
+def _load_config(table: str, key: str) -> Any:
+    env_name = f"{table}_{key}"
+    env_value = getenv(env_name)
+    return env_value if env_value is not None else _SETTINGS_TOML[table][key]
 
-LOOKUP_INTERVAL_SECONDS = float(getenv("LOOKUP_INTERVAL_SECONDS"))
-LOOKUP_INITIAL_DELAY_SECONDS = float(getenv("LOOKUP_INITIAL_DELAY_SECONDS"))
-LOOKUP_FEED_DELAY_SECONDS = float(getenv("LOOKUP_FEED_DELAY_SECONDS"))
+# TELEGRAM
+TOKEN = _load_config("TELEGRAM", "TOKEN")
 
-MAX_MESSAGE_SIZE = int(getenv("MAX_MESSAGE_SIZE"))
-MAX_MEDIA_ITEMS_PER_MESSSAGE = int(getenv("MAX_MEDIA_ITEMS_PER_MESSSAGE"))
+# UPDATES
+LOOKUP_INTERVAL_SECONDS = float(_load_config("UPDATES", "LOOKUP_INTERVAL_SECONDS"))
+LOOKUP_INITIAL_DELAY_SECONDS = float(_load_config("UPDATES", "LOOKUP_INITIAL_DELAY_SECONDS"))
+LOOKUP_FEED_DELAY_SECONDS = float(_load_config("UPDATES", "LOOKUP_FEED_DELAY_SECONDS"))
 
-with open(getenv("RSS_FEEDS_YAML_FILENAME"), "r") as feeds_yaml:
+# MESSAGES
+MAX_MESSAGE_SIZE = int(_load_config("MESSAGES", "MAX_MESSAGE_SIZE"))
+MAX_MEDIA_ITEMS_PER_MESSSAGE = int(_load_config("MESSAGES", "MAX_MEDIA_ITEMS_PER_MESSSAGE"))
+
+# LOGGING
+LOG_PATH = _load_config("LOGGING", "LOG_PATH")
+
+# DATABASE
+DB_HOST = _load_config("DATABASE", "DB_HOST")
+DB_PORT = int(_load_config("DATABASE", "DB_PORT"))
+DB_NAME = _load_config("DATABASE", "DB_NAME")
+DB_COLLECTION_NAME = _load_config("DATABASE", "DB_COLLECTION_NAME")
+
+# RSS
+with open(_load_config("RSS", "FEEDS_YAML_FILENAME"), "r") as feeds_yaml:
     RSS_FEEDS = safe_load(feeds_yaml)

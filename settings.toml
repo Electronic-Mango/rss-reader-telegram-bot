@@ -1,0 +1,27 @@
+# TOML configuration file with some sensible defaults, except Telegram bot token.
+# Each value can be replaced by environment variable (or variable in .env) with name "<TABLE>_<KEY>",
+# e.g. "TELEGRAM_TOKEN", "UPDATES_LOOKUP_INTERVAL_SECONDS", or "LOGGING_LOG_PATH". 
+
+[TELEGRAM]
+TOKEN = ""  # your telegram bot token
+
+[UPDATES]
+LOOKUP_INTERVAL_SECONDS = 3600  # how often should bot check for updates in seconds
+LOOKUP_INITIAL_DELAY_SECONDS = 30  # delay in seconds before first check for updates is run after bot is started
+LOOKUP_FEED_DELAY_SECONDS = 1  # Delay between update check for each stored feed
+
+[MESSAGES]
+MAX_MESSAGE_SIZE = 1024  # max text message size send by the bot
+MAX_MEDIA_ITEMS_PER_MESSSAGE = 10  # max number of media items per single message
+
+[LOGGING]
+LOG_PATH = "bot.log"  # relative path for bot internal logs, or empty/removed if no logging to file is required
+
+[DATABASE]
+DB_HOST = "localhost"  # MongoDB host name, here MongoDB is running locally
+DB_PORT = 27017  # MongoDB port, here it's MongoDB default port
+DB_NAME = "rss_reader"  # DB name with feed collection
+DB_COLLECTION_NAME = "feed_data"  # DB feed collection with feed data, stored in DB named above
+
+[RSS]
+FEEDS_YAML_FILENAME = "example.yaml"  # relative path to yaml file with definitions of all possible feeds
