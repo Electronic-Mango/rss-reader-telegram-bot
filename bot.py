@@ -42,15 +42,13 @@ def _main() -> None:
 
 
 def _configure_logging() -> None:
-    logging_handlers = [StreamHandler(stdout)]
-    if LOG_PATH:
-        logging_handlers += [
-            RotatingFileHandler(filename=LOG_PATH, maxBytes=MAX_BYTES, backupCount=BACKUP_COUNT)
-        ]
     basicConfig(
         format="[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s",
         level=INFO,
-        handlers=logging_handlers,
+        handlers=[
+            StreamHandler(stdout),
+            RotatingFileHandler(LOG_PATH, maxBytes=MAX_BYTES, backupCount=BACKUP_COUNT),
+        ],
     )
 
 
