@@ -6,7 +6,7 @@ from telegram.ext import CommandHandler, ContextTypes, ConversationHandler, Mess
 from telegram.ext.filters import COMMAND, TEXT
 
 from db import feed_is_already_stored, store_feed_data
-from feed_reader import feed_is_valid, get_latest_id
+from feed.reader import feed_is_valid, get_latest_id
 from settings import RSS_FEEDS
 
 ADD_HELP_MESSAGE = "/add - adds subscription for a given feed"

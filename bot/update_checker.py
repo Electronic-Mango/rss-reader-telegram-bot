@@ -5,8 +5,8 @@ from telegram import Bot
 from telegram.ext import ContextTypes, JobQueue
 
 from db import get_all_stored_data, update_stored_latest_id
-from feed_parser import parse_entry
-from feed_reader import get_not_handled_entries
+from feed.parser import parse_entry
+from feed.reader import get_not_handled_entries
 from bot.sender import send_update
 from settings import (
     LOOKUP_FEED_DELAY_SECONDS,
