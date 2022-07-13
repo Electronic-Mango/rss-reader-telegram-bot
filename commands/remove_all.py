@@ -38,7 +38,8 @@ async def _request_confirmation_1(update: Update, _: ContextTypes.DEFAULT_TYPE) 
     chat_id = update.effective_chat.id
     _logger.info(f"[{chat_id}] User requested removal of all subscriptions")
     if not chat_has_stored_feeds(chat_id):
-        _no_feeds_to_remove(update.message, chat_id)
+        await _no_feeds_to_remove(update.message, chat_id)
+        return
     confirmation_keyboard = [[_CONFIRM_1_YES, "No"]]
     await update.message.reply_text(
         "Confirm removal of all feeds",
