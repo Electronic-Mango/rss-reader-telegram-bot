@@ -8,12 +8,12 @@ from logging import getLogger
 from settings import TOKEN
 from telegram.ext import Application, ApplicationBuilder, Defaults
 
-from bot.commands.add import add_conversation_handler
-from bot.commands.hello import hello_command_handler
-from bot.commands.list import list_command_handler
-from bot.commands.remove import remove_conversation_handler
-from bot.commands.remove_all import remove_all_conversation_handler
-from bot.commands.start_help import start_help_command_handler
+from bot.command.add import add_conversation_handler
+from bot.command.hello import hello_command_handler
+from bot.command.list import list_command_handler
+from bot.command.remove import remove_conversation_handler
+from bot.command.remove_all import remove_all_conversation_handler
+from bot.command.start_help import start_help_command_handler
 from bot.error_handler import handle_errors
 from bot.update_checker import start_checking_for_updates
 
