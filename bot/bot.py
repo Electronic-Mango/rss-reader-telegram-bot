@@ -7,18 +7,18 @@ from logging import INFO, StreamHandler, basicConfig, getLogger
 from logging.handlers import RotatingFileHandler
 from sys import stdout
 
+from db import initialize_db
+from settings import BACKUP_COUNT, LOG_PATH, MAX_BYTES, TOKEN
 from telegram.ext import Application, ApplicationBuilder, Defaults
 
-from commands.add import add_conversation_handler
-from commands.hello import hello_command_handler
-from commands.list import list_command_handler
-from commands.remove import remove_conversation_handler
-from commands.remove_all import remove_all_conversation_handler
-from commands.start_help import start_help_command_handler
-from db import initialize_db
-from error_handler import handle_errors
-from settings import BACKUP_COUNT, LOG_PATH, MAX_BYTES, TOKEN
-from update_checker import start_checking_for_updates
+from bot.commands.add import add_conversation_handler
+from bot.commands.hello import hello_command_handler
+from bot.commands.list import list_command_handler
+from bot.commands.remove import remove_conversation_handler
+from bot.commands.remove_all import remove_all_conversation_handler
+from bot.commands.start_help import start_help_command_handler
+from bot.error_handler import handle_errors
+from bot.update_checker import start_checking_for_updates
 
 _UPDATE_HANDLERS = [
     start_help_command_handler(),
