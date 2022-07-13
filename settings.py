@@ -15,6 +15,7 @@ def _load_config(table: str, key: str) -> Any:
     env_value = getenv(env_name)
     return env_value if env_value is not None else _SETTINGS_TOML[table][key]
 
+
 # TELEGRAM
 TOKEN = _load_config("TELEGRAM", "TOKEN")
 
@@ -29,6 +30,8 @@ MAX_MEDIA_ITEMS_PER_MESSSAGE = int(_load_config("MESSAGES", "MAX_MEDIA_ITEMS_PER
 
 # LOGGING
 LOG_PATH = _load_config("LOGGING", "LOG_PATH")
+MAX_BYTES = _load_config("LOGGING", "MAX_BYTES")
+BACKUP_COUNT = _load_config("LOGGING", "BACKUP_COUNT")
 
 # DATABASE
 DB_HOST = _load_config("DATABASE", "DB_HOST")

@@ -16,6 +16,9 @@ MAX_MEDIA_ITEMS_PER_MESSSAGE = 10  # max number of media items per single messag
 
 [LOGGING]
 LOG_PATH = "bot.log"  # relative path for bot internal logs, or empty/removed if no logging to file is required
+MAX_BYTES = 1000000  # Number of bytes a log file can take
+BACKUP_COUNT = 10  # Number of kept log files, new ones are created when the last reaches MAX_BYTEs is size
+# Setting either MAX_BYTES or BACKUP_COUNT to 0 will disable log rotating
 
 [DATABASE]
 DB_HOST = "localhost"  # MongoDB host name, here MongoDB is running locally
