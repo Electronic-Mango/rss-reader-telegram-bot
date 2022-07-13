@@ -6,21 +6,22 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
+COPY main.py ./
+COPY settings.py ./
+COPY db.py ./
+COPY bot/bot.py ./bot/
+COPY bot/error_handler.py ./bot/
+COPY bot/update_checker.py ./bot/
+COPY bot/sender.py ./bot/
+COPY bot/command/add.py ./bot/command/
+COPY bot/command/hello.py ./bot/command/
+COPY bot/command/list.py ./bot/command/
+COPY bot/command/remove_all.py ./bot/command/
+COPY bot/command/remove.py ./bot/command/
+COPY bot/command/start_help.py ./bot/command/
+COPY feed/parser.py ./feed/
+COPY feed/reader.py ./feed/
 COPY *.toml ./
 COPY *.yaml ./
-COPY bot.py ./
-COPY db.py ./
-COPY error_handler.py ./
-COPY feed_parser.py ./
-COPY feed_reader.py ./
-COPY sender.py ./
-COPY settings.py ./
-COPY update_checker.py ./
-COPY commands/add.py ./commands/
-COPY commands/hello.py ./commands/
-COPY commands/list.py ./commands/
-COPY commands/remove_all.py ./commands/
-COPY commands/remove.py ./commands/
-COPY commands/start_help.py ./commands/
 
-CMD ["python3.10", "bot.py"]
+CMD ["python3.10", "main.py"]
