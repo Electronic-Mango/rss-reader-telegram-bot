@@ -5,7 +5,7 @@ from telegram import Message, ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import CommandHandler, ContextTypes, ConversationHandler, MessageHandler
 from telegram.ext.filters import COMMAND, TEXT
 
-from db import feed_is_already_stored, store_feed_data
+from db.db import feed_is_already_stored, store_feed_data
 from feed.reader import feed_is_valid, get_latest_id
 from settings import RSS_FEEDS
 

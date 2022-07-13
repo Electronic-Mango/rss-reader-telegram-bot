@@ -4,7 +4,7 @@ from telegram import Message, ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import CommandHandler, ContextTypes, ConversationHandler, MessageHandler
 from telegram.ext.filters import COMMAND, TEXT
 
-from db import chat_has_stored_feeds, remove_stored_chat_data
+from db.db import chat_has_stored_feeds, remove_stored_chat_data
 
 REMOVE_ALL_HELP_MESSAGE = "/removeall - remove all subscriptions"
 

@@ -4,7 +4,7 @@ from feedparser.util import FeedParserDict
 from telegram import Bot
 from telegram.ext import ContextTypes, JobQueue
 
-from db import get_all_stored_data, update_stored_latest_id
+from db.db import get_all_stored_data, update_stored_latest_id
 from feed.parser import parse_entry
 from feed.reader import get_not_handled_entries
 from bot.sender import send_update

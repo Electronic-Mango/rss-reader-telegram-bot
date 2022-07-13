@@ -4,7 +4,7 @@ from logging import getLogger
 from telegram import Message, Update
 from telegram.ext import CommandHandler, ContextTypes
 
-from db import chat_has_stored_feeds, get_stored_feed_type_and_name
+from db.db import chat_has_stored_feeds, get_stored_feed_type_and_name
 
 LIST_HELP_MESSAGE = "/list - list all subscriptions"
 

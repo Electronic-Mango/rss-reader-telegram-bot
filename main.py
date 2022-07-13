@@ -3,7 +3,7 @@ from logging.handlers import RotatingFileHandler
 from sys import stdout
 
 from bot.bot import run_bot
-from db import initialize_db
+from db.db import initialize_db
 from settings import BACKUP_COUNT, LOG_PATH, MAX_BYTES
 
 
