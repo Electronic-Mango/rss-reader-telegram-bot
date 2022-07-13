@@ -7,7 +7,7 @@ from telegram import Message, ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import CommandHandler, ContextTypes, ConversationHandler, MessageHandler
 from telegram.ext.filters import COMMAND, TEXT
 
-from db.db import chat_has_stored_feeds, get_stored_feed_type_and_name, remove_stored_feed
+from db.wrapper import chat_has_stored_feeds, get_stored_feed_type_and_name, remove_stored_feed
 
 REMOVE_HELP_MESSAGE = "/remove - remove subscription for a given feed"
 
