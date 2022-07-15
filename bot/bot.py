@@ -1,4 +1,3 @@
-# TODO Perhaps add "details" command showing feed link, etc.
 # TODO Was removing the FeedEntry/FeedMedia/FeedData namedtuples actually a good idea?
 # Perhaps a DataClass would be better? At least for FeedMedia, to avoid complex return types.
 
