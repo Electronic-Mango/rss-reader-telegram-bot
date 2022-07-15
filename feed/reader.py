@@ -47,8 +47,9 @@ def _get_parsed_feed(feed_type: str, feed_name: str) -> FeedParserDict:
 
 
 def _feed_is_valid(feed: FeedParserDict) -> bool:
-    # 301 is a workaround for tumblr blogs with dedicated URLs
-    return feed["status"] in [200, 301]
+    # 301 is a workaround for tumblr blogs with dedicated URLs.
+    # Checking for any entries is a workaround for feeds which always respond with code 200.
+    return feed["status"] in [200, 301] and "entries" in feed and feed["entries"]
 
 
 def _not_latest_entry(target_id: str, entry_id: str) -> bool:
