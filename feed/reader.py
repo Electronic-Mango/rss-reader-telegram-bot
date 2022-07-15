@@ -19,7 +19,7 @@ def get_latest_id(feed_type: str, feed_name: str) -> str:
 def get_not_handled_entries(feed_type: str, feed_name: str, target_id: str) -> list[FeedParserDict]:
     _logger.info(f"Getting not handled entries for [{feed_name}] [{feed_type}]")
     entries = _get_sorted_entries(feed_type, feed_name)
-    not_handled_entries = takewhile(lambda entry: entry.id != target_id, entries)
+    not_handled_entries = takewhile(lambda entry: _not_latest_entry(target_id, entry.id), entries)
     not_handled_entries = list(not_handled_entries)
     not_handled_entries.reverse()
     return not_handled_entries
@@ -44,3 +44,7 @@ def _get_parsed_feed(feed_type: str, feed_name: str) -> FeedParserDict:
 
 def _get_feed_link(feed_type: str, feed_name: str) -> str:
     return RSS_FEEDS[feed_type].format(source_pattern=feed_name)
+
+
+def _not_latest_entry(target_id: str, entry_id: str) -> bool:
+    return entry_id not in target_id and target_id not in entry_id
