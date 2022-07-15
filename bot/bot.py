@@ -1,7 +1,6 @@
 # TODO Perhaps add "details" command showing feed link, etc.
 # TODO Was removing the FeedEntry/FeedMedia/FeedData namedtuples actually a good idea?
 # Perhaps a DataClass would be better? At least for FeedMedia, to avoid complex return types.
-# TODO Perhaps add a "get" command, which will just dump a feed to a user
 
 from logging import getLogger
 
