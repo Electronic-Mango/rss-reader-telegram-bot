@@ -1,5 +1,3 @@
-# TODO Allow removing feed via a single command, rather than a conversation
-
 from logging import getLogger
 from re import match
 
