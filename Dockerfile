@@ -17,6 +17,7 @@ COPY bot/update_checker.py ./bot/
 COPY bot/sender.py ./bot/
 
 COPY bot/command/add.py ./bot/command/
+COPY bot/command/cancel.py ./bot/command/
 COPY bot/command/hello.py ./bot/command/
 COPY bot/command/list.py ./bot/command/
 COPY bot/command/remove_all.py ./bot/command/
