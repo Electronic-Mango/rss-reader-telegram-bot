@@ -4,6 +4,7 @@ from settings import TOKEN
 from telegram.ext import Application, ApplicationBuilder, Defaults
 
 from bot.command.add import add_conversation_handler
+from bot.command.cancel import cancel_command_handler
 from bot.command.hello import hello_command_handler
 from bot.command.list import list_command_handler
 from bot.command.remove import remove_conversation_handler
@@ -13,12 +14,13 @@ from bot.error_handler import handle_errors
 from bot.update_checker import start_checking_for_updates
 
 _UPDATE_HANDLERS = [
-    start_help_command_handler(),
+    add_conversation_handler(),
+    cancel_command_handler(),
     hello_command_handler(),
     list_command_handler(),
-    add_conversation_handler(),
     remove_conversation_handler(),
     remove_all_conversation_handler(),
+    start_help_command_handler(),
 ]
 
 _logger = getLogger(__name__)

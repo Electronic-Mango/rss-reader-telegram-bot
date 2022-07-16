@@ -4,6 +4,7 @@ from telegram import Update
 from telegram.ext import CommandHandler, ContextTypes
 
 from bot.command.add import ADD_HELP_MESSAGE
+from bot.command.cancel import CANCEL_HELP_MESSAGE
 from bot.command.hello import HELLO_HELP_MESSAGE
 from bot.command.list import LIST_HELP_MESSAGE
 from bot.command.remove import REMOVE_HELP_MESSAGE
@@ -15,6 +16,7 @@ HELP_MESSAGES = [
     ADD_HELP_MESSAGE,
     REMOVE_HELP_MESSAGE,
     REMOVE_ALL_HELP_MESSAGE,
+    CANCEL_HELP_MESSAGE,
 ]
 
 logger = getLogger(__name__)
