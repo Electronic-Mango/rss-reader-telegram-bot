@@ -1,5 +1,3 @@
-# TODO Perhaps add a detailed help view for each command?
-
 from logging import getLogger
 
 from telegram import Update
