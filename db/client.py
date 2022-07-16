@@ -12,8 +12,6 @@ _logger = getLogger(__name__)
 _feed_collection: Collection = None
 
 
-# TODO Is it a good idea to set _feed_collection here and even store collection as a global var?
-# It does work and allows for control when MongoClient is created, but I'm not sure.
 def initialize_db() -> None:
     _logger.info("Initalizing DB...")
     global _feed_collection
