@@ -1,9 +1,11 @@
 name: 'Submodule Notify Parent'
+
 on:
   push:
     branches:
       - main
   workflow_dispatch:
+
 jobs:
   notify:
     name: 'Submodule Notify Parent'
