@@ -2,31 +2,17 @@ from logging import getLogger
 
 from feedparser.util import FeedParserDict
 from telegram import Bot
-from telegram.ext import ContextTypes, JobQueue
+from telegram.ext import ContextTypes
 
 from db.wrapper import get_all_stored_data, update_stored_latest_id
 from feed.parser import parse_entry
 from feed.reader import get_not_handled_entries
 from bot.sender import send_update
-from settings import (
-    LOOKUP_FEED_DELAY_SECONDS,
-    LOOKUP_INITIAL_DELAY_SECONDS,
-    LOOKUP_INTERVAL_SECONDS,
-)
-
+from settings import LOOKUP_FEED_DELAY_SECONDS
 _logger = getLogger(__name__)
 
 
-def start_checking_for_updates(job_queue: JobQueue) -> None:
-    _logger.info("Starting checking for updates...")
-    job_queue.run_repeating(
-        callback=_check_for_all_updates,
-        interval=LOOKUP_INTERVAL_SECONDS,
-        first=LOOKUP_INITIAL_DELAY_SECONDS,
-    )
-
-
-async def _check_for_all_updates(context: ContextTypes.DEFAULT_TYPE) -> None:
+async def check_for_all_updates(context: ContextTypes.DEFAULT_TYPE) -> None:
     _logger.info("Starting checking for all updates")
     for delay, feed_data in enumerate(get_all_stored_data()):
         context.job_queue.run_once(
