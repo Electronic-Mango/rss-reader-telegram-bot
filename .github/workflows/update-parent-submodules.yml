@@ -1,0 +1,19 @@
+name: 'Submodule Notify Parent'
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+jobs:
+  notify:
+    name: 'Submodule Notify Parent'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Github REST API Call
+      env:
+        UPDATE_SUBMODULES_ACTION_TOKEN: ${{ secrets.UPDATE_SUBMODULES_ACTION_TOKEN }}
+        PARENT_REPO: ${{ secrets.PARENT_REPO }}
+        PARENT_BRANCH: main
+        WORKFLOW_ID: ${{ secrets.PARENT_WORKFLOW_ID }}
+      run: |
+        curl -fL --retry 3 -X POST -H "Accept: application/vnd.github.v3+json" -H "Authorization: token ${{ env.UPDATE_SUBMODULES_ACTION_TOKEN }}" https://api.github.com/repos/${{ env.PARENT_REPO }}/actions/workflows/${{ env.WORKFLOW_ID }}/dispatches -d '{"ref":"${{ env.PARENT_BRANCH }}"}'
