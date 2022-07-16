@@ -1,3 +1,12 @@
+"""
+Main bot module, which is responsible for:
+ - creating the bot itself
+ - configuring all command handlers
+ - starting a job checking for all RSS updates
+ 
+All these actions are triggered by a single function.
+"""
+
 from logging import getLogger
 
 from settings import TOKEN

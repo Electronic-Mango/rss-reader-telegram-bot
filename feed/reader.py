@@ -1,3 +1,7 @@
+"""
+Module handling all RSS requests.
+"""
+
 from itertools import takewhile
 from logging import getLogger
 
@@ -11,12 +15,17 @@ _logger = getLogger(__name__)
 
 
 def get_latest_id(feed_type: str, feed_name: str) -> str:
+    """Get latest ID for a given feed."""
     _logger.info(f"Getting latest ID for [{feed_name}] [{feed_type}]")
     entries = _get_sorted_entries(feed_type, feed_name)
     return entries[0]["id"] if entries else None
 
 
 def get_not_handled_entries(feed_type: str, feed_name: str, target_id: str) -> list[FeedParserDict]:
+    """
+    Get not yet handled entries for a given feed.
+    Return all elements from the feed list, until element with ID matching the target ID.
+    """
     _logger.info(f"Getting not handled entries for [{feed_name}] [{feed_type}]")
     entries = _get_sorted_entries(feed_type, feed_name)
     not_handled_entries = takewhile(lambda entry: _not_latest_entry(target_id, entry.id), entries)
@@ -26,6 +35,15 @@ def get_not_handled_entries(feed_type: str, feed_name: str, target_id: str) -> l
 
 
 def feed_is_valid(feed_type: str, feed_name: str) -> bool:
+    """
+    Check whether a given feed is valid and can be used.
+    
+    There are multiple conditions which a feed response needs to match:
+     - HTTP status code is either 200 or 301 (301 is a workaround for Tumblr blogs)
+     - there are any feed items in the response
+    Technically a feed can be valid, but without any items, when it was just created.
+    Checking for those items is an workaround for feeds which always responde with code 200.
+    """
     _logger.info(f"Checking if [{feed_name}] [{feed_type}] feed exists")
     parsed_feed = _get_parsed_feed(feed_type, feed_name)
     return _parsed_feed_is_valid(parsed_feed)
@@ -47,7 +65,7 @@ def _get_parsed_feed(feed_type: str, feed_name: str) -> FeedParserDict:
 
 
 def _parsed_feed_is_valid(feed: FeedParserDict) -> bool:
-    # 301 is a workaround for tumblr blogs with dedicated URLs.
+    # 301 is a workaround for Tumblr blogs with dedicated URLs.
     # Checking for any entries is a workaround for feeds which always respond with code 200.
     return feed["status"] in [200, 301] and "entries" in feed and feed["entries"]
 

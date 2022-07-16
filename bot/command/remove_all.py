@@ -1,3 +1,7 @@
+"""
+Module handling the "removeall" command, allowing users delete all subscriptions.
+"""
+
 from logging import getLogger
 
 from telegram import Message, ReplyKeyboardMarkup, ReplyKeyboardRemove, Update

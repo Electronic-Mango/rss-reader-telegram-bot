@@ -1,3 +1,16 @@
+"""
+Module storing all configuration data used by the bot.
+
+All information can be either read from a "settings.toml" file, or from environment variables,
+where environment variables will be used with higher priority.
+
+"settings.toml" is loaded either from the execution environment root,
+or from a path given by "SETTINGS_TOML_PATH" environment variable.
+
+In order to overwrite values from .toml the varialbe must follow a specific naming convention of
+<TABLE NAME>_<FIELD NAME>, e.g. TELEGRAM_TOKEN, UPDATES_LOOKUP_INTERVAL_SECONDS, etc.
+"""
+
 from os import getenv
 from typing import Any
 

@@ -1,3 +1,10 @@
+"""
+Module handling all errors within the bot.
+
+It can also detect when chat is deleted and stopped,
+after which all data related to this specific chat is deleted.
+"""
+
 from logging import getLogger
 
 from telegram import Update

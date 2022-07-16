@@ -1,3 +1,16 @@
+"""
+Module responsible for checking for RSS updates.
+
+Information about which RSS items should be checked is extracted from a DB.
+
+Each item will then be scheduled for update in a separate job.
+Created jobs have staggered trigger times, to avoid bottlenecks,
+where too many simultaneous messages are send to a chat.
+
+Accessing DB, reading and parsing the RSS feed and sending updates to chats
+is handled in separate modules.
+"""
+
 from logging import getLogger
 
 from feedparser.util import FeedParserDict
@@ -9,6 +22,7 @@ from feed.parser import parse_entry
 from feed.reader import get_not_handled_entries
 from bot.sender import send_update
 from settings import LOOKUP_FEED_DELAY_SECONDS
+
 _logger = getLogger(__name__)
 
 

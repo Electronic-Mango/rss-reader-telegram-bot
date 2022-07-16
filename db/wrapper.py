@@ -1,3 +1,13 @@
+"""
+Module handling application-specific DB functions.
+
+Contains only application-specific functions, none DB-specific ones.
+DB-specific functions are in the "client" module.
+
+This way it should be simple to switch to a different DB altogether,
+since this module won't have to be modified.
+"""
+
 from logging import getLogger
 
 from pymongo.results import DeleteResult
@@ -8,6 +18,7 @@ _logger = getLogger(__name__)
 
 
 def get_all_stored_data() -> list[tuple[int, str, str, str]]:
+    """Returns all data stored in the DB."""
     _logger.info(f"Getting all data for all chats")
     return [
         (document["chat_id"], document["feed_type"], document["feed_name"], document["latest_id"])
@@ -16,6 +27,7 @@ def get_all_stored_data() -> list[tuple[int, str, str, str]]:
 
 
 def get_stored_feed_type_and_name(chat_id: int) -> list[tuple[str, str]]:
+    """Get all data for a given chat_id stored in the DB."""
     _logger.info(f"[{chat_id}] Getting data")
     return [
         (document["feed_type"], document["feed_name"])
@@ -24,16 +36,19 @@ def get_stored_feed_type_and_name(chat_id: int) -> list[tuple[str, str]]:
 
 
 def feed_is_already_stored(chat_id: int, feed_type: str, feed_name: str) -> bool:
+    """Check if a given feed is already stored in the DB."""
     _logger.info(f"[{chat_id}] Checking for [{feed_type}] [{feed_name}]")
     return exists({"chat_id": chat_id, "feed_type": feed_type, "feed_name": feed_name})
 
 
 def chat_has_stored_feeds(chat_id: int) -> bool:
+    """Check if a given chat has any data stored in the DB."""
     _logger.info(f"[{chat_id}] Checking if chat has any feeds")
     return exists({"chat_id": chat_id})
 
 
 def store_feed_data(chat_id: int, feed_name: str, feed_type: str, latest_id: str) -> None:
+    """Store a given feed data in the DB."""
     _logger.info(f"[{chat_id}] Insert name=[{feed_name}] type=[{feed_type}] latest=[{latest_id}]")
     document = {
         "chat_id": chat_id,
@@ -46,6 +61,7 @@ def store_feed_data(chat_id: int, feed_name: str, feed_type: str, latest_id: str
 
 
 def update_stored_latest_id(chat_id: int, feed_type: str, feed_name: str, latest_id: str) -> None:
+    """Update "latest_id" for a given feed in the DB."""
     _logger.info(f"[{chat_id}] Updating latest item ID [{feed_type}] [{feed_name}] [{latest_id}]")
     update_one(
         {"chat_id": chat_id, "feed_type": feed_type, "feed_name": feed_name},
@@ -54,12 +70,14 @@ def update_stored_latest_id(chat_id: int, feed_type: str, feed_name: str, latest
 
 
 def remove_stored_feed(chat_id: int, feed_type: str, feed_name: str) -> None:
+    """Remove a given feed from the DB."""
     _logger.info(f"[{chat_id}] Deleting [{feed_type}] [{feed_name}]")
     result = delete_many({"chat_id": chat_id, "feed_type": feed_type, "feed_name": feed_name})
     _log_delete_result(chat_id, result)
 
 
 def remove_stored_chat_data(chat_id: int) -> None:
+    """Remove all data for a given chat from the DB."""
     _logger.info(f"[{chat_id}] Deleting all data for chat")
     result = delete_many({"chat_id": chat_id})
     _log_delete_result(chat_id, result)

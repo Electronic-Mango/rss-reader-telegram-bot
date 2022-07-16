@@ -1,3 +1,7 @@
+"""
+Module handling the "list" command, printing all subscribed feeds to the user.
+"""
+
 from logging import getLogger
 
 from telegram import Message, Update

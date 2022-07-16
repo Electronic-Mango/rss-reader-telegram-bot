@@ -1,3 +1,7 @@
+"""
+Main module, configures logging, intialized the DB and starts the bot.
+"""
+
 from logging import INFO, StreamHandler, basicConfig
 from logging.handlers import RotatingFileHandler
 from sys import stdout

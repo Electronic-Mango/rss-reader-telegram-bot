@@ -1,3 +1,8 @@
+"""
+Module handling the "hello" command, mostly used for simple debugging purposes.
+Bot always responds with "Hello there!" and that's it.
+"""
+
 from logging import getLogger
 
 from telegram import Update

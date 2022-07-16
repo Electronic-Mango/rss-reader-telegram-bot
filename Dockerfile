@@ -1,3 +1,5 @@
+# Dockerfile which can be used for deploying the bot as a Docker container.
+
 FROM python:3.10-alpine
 
 WORKDIR /app

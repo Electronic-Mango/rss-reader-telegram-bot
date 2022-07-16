@@ -1,3 +1,16 @@
+"""
+Module handling sending updates to a specific chat.
+
+Only bot-specific parsing and formatting of the messages is done here,
+more generic parsing out data from the RSS feed should be done beforehand.
+
+This module will recognize and handle situations where:
+ - there's only text message
+ - there's only one media item (photo or video)
+ - there are more than 10 media items, they will be split into multiple messages
+Only one media item will have a caption, so it's correctly displayed in chat.
+"""
+
 from logging import getLogger
 
 from more_itertools import sliced

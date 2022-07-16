@@ -1,3 +1,10 @@
+"""
+Module handling the "start" and "help" commands, printing basic usage and bot description.
+Responses for both "start" and "help" are the same.
+
+Description of each command is stored in the module handling this specific command.
+"""
+
 from logging import getLogger
 
 from telegram import ReplyKeyboardRemove, Update

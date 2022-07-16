@@ -1,3 +1,7 @@
+"""
+Module handling the "remove" command, allowing users to remove a single subscription.
+"""
+
 from logging import getLogger
 from re import match
 

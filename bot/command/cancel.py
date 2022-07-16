@@ -1,3 +1,10 @@
+"""
+Module handling the default response for "cancel" command.
+
+Normally, "cancel" command is send to stop a conversation-style command,
+here it's just informing the user, that there are no operations to cancel.
+"""
+
 from logging import getLogger
 
 from telegram import Update

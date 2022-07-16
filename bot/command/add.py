@@ -1,3 +1,7 @@
+"""
+Module handling the "add" command, allowing users to add new RSS subscriptions.
+"""
+
 from logging import getLogger
 
 from telegram import Message, ReplyKeyboardMarkup, ReplyKeyboardRemove, Update

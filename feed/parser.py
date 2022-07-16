@@ -1,3 +1,12 @@
+"""
+Module parsing data from the parsed RSS feed.
+
+Extracted information contains:
+ - link to the item
+ - description, which will be used as a update's message
+ - links to photos and videos
+"""
+
 from bs4 import BeautifulSoup
 from feedparser.util import FeedParserDict
 

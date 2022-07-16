@@ -1,3 +1,5 @@
+# Python requirements needed to run the bot.
+
 anyio==3.6.1
 APScheduler==3.9.1
 beautifulsoup4==4.11.1
