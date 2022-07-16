@@ -1,4 +1,3 @@
-# TODO Unify how feeds are printed when listing and when removing
 from logging import getLogger
 
 from telegram import Message, Update
@@ -26,7 +25,7 @@ async def _list(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
 
 async def _send_feed_data(message: Message, chat_id: int) -> None:
     formatted_feed_data = [
-        f"<b>{feed_name}</b> - {feed_type}"
+        f"<b>{feed_name}</b> ({feed_type})"
         for feed_type, feed_name in get_stored_feed_type_and_name(chat_id)
     ]
     response = "Following feeds are subscribed:\n"
