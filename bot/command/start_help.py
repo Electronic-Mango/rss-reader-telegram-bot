@@ -1,6 +1,6 @@
 from logging import getLogger
 
-from telegram import Update
+from telegram import ReplyKeyboardRemove, Update
 from telegram.ext import CommandHandler, ContextTypes
 
 from bot.command.add import ADD_HELP_MESSAGE
@@ -29,4 +29,4 @@ def start_help_command_handler() -> CommandHandler:
 async def _help(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
     logger.info(f"[{update.effective_chat.id}] Sending start/help")
     await update.message.reply_text("Simple Web Comics bot based on RSS feeds!")
-    await update.message.reply_text("\n".join(HELP_MESSAGES))
+    await update.message.reply_text("\n".join(HELP_MESSAGES), reply_markup=ReplyKeyboardRemove())
