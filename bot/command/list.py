@@ -28,6 +28,5 @@ async def _send_feed_data(message: Message, chat_id: int) -> None:
         f"<b>{feed_name}</b> ({feed_type})"
         for feed_type, feed_name in get_stored_feed_type_and_name(chat_id)
     ]
-    response = "Following feeds are subscribed:\n"
-    response += "\n".join(sorted(formatted_feed_data))
+    response = "Following feeds are subscribed:\n" + "\n".join(sorted(formatted_feed_data))
     await message.reply_text(response)

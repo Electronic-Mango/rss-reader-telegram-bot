@@ -68,11 +68,7 @@ async def _handle_attachment_group(
     if len(media_group) == 1:
         await _send_single_media(bot, chat_id, *media_group[0], message)
     else:
-        input_media_list = [_media_object(media, type) for media, type in media_group]
-        # Only the first media should have a caption,
-        # otherwise actual caption body won't be displayed directly in the message.
-        input_media_list[0].caption = message
-        await bot.send_media_group(chat_id, input_media_list)
+        await _send_media_group(bot, chat_id, media_group, message)
 
 
 async def _send_single_media(bot: Bot, chat_id: int, media: bytes, type: str, message: str) -> None:
@@ -80,6 +76,19 @@ async def _send_single_media(bot: Bot, chat_id: int, media: bytes, type: str, me
         await bot.send_video(chat_id, media, caption=message, supports_streaming=True)
     else:
         await bot.send_photo(chat_id, media, caption=message)
+
+
+async def _send_media_group(
+    bot: Bot,
+    chat_id: int,
+    media_group: list[tuple[bytes, str]],
+    message: str = None,
+) -> None:
+    input_media_list = [_media_object(media, type) for media, type in media_group]
+    # Only the first media should have a caption,
+    # otherwise actual caption body won't be displayed directly in the message.
+    input_media_list[0].caption = message
+    await bot.send_media_group(chat_id, input_media_list)
 
 
 def _media_object(media: bytes, type: str) -> InputMedia:

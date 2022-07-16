@@ -28,12 +28,12 @@ def get_not_handled_entries(feed_type: str, feed_name: str, target_id: str) -> l
 def feed_is_valid(feed_type: str, feed_name: str) -> bool:
     _logger.info(f"Checking if [{feed_name}] [{feed_type}] feed exists")
     parsed_feed = _get_parsed_feed(feed_type, feed_name)
-    return _feed_is_valid(parsed_feed)
+    return _parsed_feed_is_valid(parsed_feed)
 
 
 def _get_sorted_entries(feed_type: str, feed_name: str) -> list[FeedParserDict]:
     parsed_feed = _get_parsed_feed(feed_type, feed_name)
-    if not _feed_is_valid(parsed_feed):
+    if not _parsed_feed_is_valid(parsed_feed):
         _logger.error(f"Feed for [{feed_name}] [{feed_type}] is not valid anymore")
         return []
     entries = parsed_feed["entries"]
@@ -46,7 +46,7 @@ def _get_parsed_feed(feed_type: str, feed_name: str) -> FeedParserDict:
     return parse(feed_link)
 
 
-def _feed_is_valid(feed: FeedParserDict) -> bool:
+def _parsed_feed_is_valid(feed: FeedParserDict) -> bool:
     # 301 is a workaround for tumblr blogs with dedicated URLs.
     # Checking for any entries is a workaround for feeds which always respond with code 200.
     return feed["status"] in [200, 301] and "entries" in feed and feed["entries"]

@@ -40,11 +40,10 @@ async def _request_confirmation_1(update: Update, _: ContextTypes.DEFAULT_TYPE) 
     if not chat_has_stored_feeds(chat_id):
         await _no_feeds_to_remove(update.message, chat_id)
         return
-    confirmation_keyboard = [[_CONFIRM_1_YES, "No"]]
     await update.message.reply_text(
         "Confirm removal of all feeds",
         reply_markup=ReplyKeyboardMarkup(
-            keyboard=confirmation_keyboard,
+            keyboard=[[_CONFIRM_1_YES, "No"]],
             one_time_keyboard=True,
             resize_keyboard=True,
             input_field_placeholder="Confirm removal",
@@ -64,11 +63,10 @@ async def _request_confirmation_2(update: Update, context: ContextTypes.DEFAULT_
     if confirmation_1 != _CONFIRM_1_YES:
         return await _cancel(update, context)
     _logger.info(f"[{update.effective_chat.id}] User send first confirmation")
-    confirmation_keyboard = [["No, don't remove", _CONFIRM_2_YES]]
     await update.message.reply_text(
         "Are you sure you want to remove <b>all</b> subscriptions?",
         reply_markup=ReplyKeyboardMarkup(
-            keyboard=confirmation_keyboard,
+            keyboard=[["No, don't remove", _CONFIRM_2_YES]],
             one_time_keyboard=True,
             resize_keyboard=True,
             input_field_placeholder="Confirm removal",
