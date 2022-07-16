@@ -2,7 +2,6 @@ from bs4 import BeautifulSoup
 from feedparser.util import FeedParserDict
 
 
-# TODO Should used type here be "FeedParserDict", or just "dict"?
 def parse_entry(entry: FeedParserDict) -> tuple[str, str, list[str]]:
     return (entry["link"], _parse_summary(entry), _parse_media_urls(entry))
 
