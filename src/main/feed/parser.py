@@ -17,7 +17,7 @@ def parse_entry(entry: FeedParserDict) -> tuple[str, str, list[str]]:
 
 def _parse_description(entry: FeedParserDict) -> str:
     summary = BeautifulSoup(entry["summary"], "html.parser").find_all(text=True)
-    return "".join(text.strip() for text in summary).strip()
+    return "".join(text for text in summary).strip()
 
 
 def _parse_media_urls(entry: FeedParserDict) -> list[str]:
