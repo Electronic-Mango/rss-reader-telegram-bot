@@ -20,7 +20,7 @@ from telegram.ext import ContextTypes
 from bot.sender import send_update
 from db.wrapper import get_all_stored_data, update_stored_latest_id
 from feed.parser import parse_description, parse_media_links, parse_link
-from feed.reader import get_not_handled_entries
+from feed.reader import feed_is_valid, get_not_handled_entries
 from settings import LOOKUP_FEED_DELAY_SECONDS
 
 _logger = getLogger(__name__)
@@ -39,11 +39,20 @@ async def check_for_all_updates(context: ContextTypes.DEFAULT_TYPE) -> None:
 async def _check_for_updates(context: ContextTypes.DEFAULT_TYPE) -> None:
     chat_id, feed_type, feed_name, latest_id = context.job.data
     _logger.info(f"[{chat_id}] Checking for updates for [{feed_name}] [{feed_type}]")
-    not_handled_feed_entries = get_not_handled_entries(feed_type, feed_name, latest_id)
-    if not not_handled_feed_entries:
-        _logger.info(f"[{chat_id}] No new data for [{feed_name}] [{feed_type}]")
+    if feed_is_valid(feed_type, feed_name):
+        await _check_for_not_handled_entries(context.bot, chat_id, feed_type, feed_name, latest_id)
     else:
-        await _handle_update(context.bot, chat_id, feed_type, feed_name, not_handled_feed_entries)
+        _logger.error(f"Feed for [{feed_name}] [{feed_type}] is not valid anymore")
+
+
+async def _check_for_not_handled_entries(
+    bot: Bot, chat_id: int, feed_type: str, feed_name: str, latest_id: str
+) -> None:
+    not_handled_feed_entries = get_not_handled_entries(feed_type, feed_name, latest_id)
+    if not_handled_feed_entries:
+        await _handle_update(bot, chat_id, feed_type, feed_name, not_handled_feed_entries)
+    else:
+        _logger.info(f"[{chat_id}] No new data for [{feed_name}] [{feed_type}]")
 
 
 async def _handle_update(
