@@ -37,7 +37,7 @@ def get_not_handled_entries(feed_type: str, feed_name: str, target_id: str) -> l
 def feed_is_valid(feed_type: str, feed_name: str) -> bool:
     """
     Check whether a given feed is valid and can be used.
-    
+
     There are multiple conditions which a feed response needs to match:
      - HTTP status code is either 200 or 301 (301 is a workaround for Tumblr blogs)
      - there are any feed items in the response

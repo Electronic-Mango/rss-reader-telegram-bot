@@ -28,38 +28,38 @@ async def send_update(
     feed_type: str,
     feed_name: str,
     link: str,
-    summary: str,
-    media_urls: list[str],
+    description: str,
+    media_links: list[str],
 ) -> None:
     _logger.info(f"[{chat_id}] Sending update [{feed_name}] [{feed_type}]")
-    message = _format_message(chat_id, feed_type, feed_name, link, summary)
-    if not media_urls:
+    message = _format_message(chat_id, feed_type, feed_name, link, description)
+    if not media_links:
         await bot.send_message(chat_id, message)
     else:
-        await _send_media_update(bot, chat_id, message, media_urls)
+        await _send_media_update(bot, chat_id, message, media_links)
 
 
 def _format_message(
     chat_id: int,
     feed_type: str,
     feed_name: str,
-    entry_link: str,
+    link: str,
     content: str,
 ) -> str:
     message_text = f"{feed_name} on {feed_type}"
     if content:
         message_text += f":\n{content}"
-    effective_max_message_size = MAX_MESSAGE_SIZE - len("\n\n") - len(entry_link)
+    effective_max_message_size = MAX_MESSAGE_SIZE - len("\n\n") - len(link)
     if len(message_text) > effective_max_message_size:
         _logger.info(f"[{chat_id}] Trimming message")
         effective_max_number_of_characters = effective_max_message_size - len("...")
         message_text = f"{message_text[:effective_max_number_of_characters]}..."
-    message_text += f"\n\n{entry_link}"
+    message_text += f"\n\n{link}"
     return message_text
 
 
-async def _send_media_update(bot: Bot, chat_id: int, message: str, media_urls: list[str]) -> None:
-    media = [_get_media_content_and_type(url) for url in media_urls]
+async def _send_media_update(bot: Bot, chat_id: int, message: str, media_links: list[str]) -> None:
+    media = [_get_media_content_and_type(link) for link in media_links]
     media_groups = list(sliced(media, MAX_MEDIA_ITEMS_PER_MESSSAGE))
     # Only the last group should have a message
     for media_group in media_groups[:-1]:
@@ -67,8 +67,8 @@ async def _send_media_update(bot: Bot, chat_id: int, message: str, media_urls: l
     await _handle_attachment_group(bot, chat_id, media_groups[-1], message)
 
 
-def _get_media_content_and_type(url: str) -> tuple[bytes, str]:
-    response = get(url)
+def _get_media_content_and_type(link: str) -> tuple[bytes, str]:
+    response = get(link)
     return response.content, response.headers["Content-Type"]
 
 
