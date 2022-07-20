@@ -22,7 +22,7 @@ def parse_description(entry: FeedParserDict) -> str:
 
 def parse_media_links(entry: FeedParserDict) -> list[str]:
     if "media_content" in entry:
-        return [media.url for media in entry.media_content]
+        return [media["url"] for media in entry.media_content]
     media_source = BeautifulSoup(entry.summary, "html.parser")
     media_elements = media_source.find_all(["img", "source"])
     return [media["src"] for media in media_elements]
