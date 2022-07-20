@@ -31,5 +31,5 @@ ENTRIES = [
 def test_get_not_handled_entries(
     latest_id: str, expected_entries: list[FeedParserDict], mocker: MockerFixture
 ) -> None:
-    mocker.patch("feed.reader.parse", return_value={"entries": ENTRIES})
+    mocker.patch("feed.reader.parse", return_value=FeedParserDict({"entries": ENTRIES}))
     assert expected_entries == get_not_handled_entries(FEED_TYPE, FEED_NAME, latest_id)
