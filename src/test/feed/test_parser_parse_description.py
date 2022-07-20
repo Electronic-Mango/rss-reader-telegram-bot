@@ -6,5 +6,5 @@ ENTRY = FeedParserDict({"summary": "\n\n\n<b>bold text</b><a>\n\nlink text</a> r
 EXPECTED_DESCRIPTION = "bold text\n\nlink text raw\ntext"
 
 
-def test_get_not_handled_entries() -> None:
+def test_parse_description() -> None:
     assert EXPECTED_DESCRIPTION == parse_description(ENTRY)
