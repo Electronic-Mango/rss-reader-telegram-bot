@@ -28,6 +28,6 @@ LATEST_ENTRY = {"published": "05.05.2005", "id": EXPECTED_LATEST_ID}
         ENTRIES[:2] + [LATEST_ENTRY] + ENTRIES[2:],
     ],
 )
-def test_get_latest_id(entries: dict, mocker: MockerFixture) -> None:
+def test_get_latest_id(entries: list[dict], mocker: MockerFixture) -> None:
     mocker.patch("feed.reader.parse", return_value={"entries": entries})
     assert EXPECTED_LATEST_ID == get_latest_id(FEED_TYPE, FEED_NAME)
