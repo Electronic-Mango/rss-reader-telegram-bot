@@ -1,4 +1,4 @@
-name: 'Submodule Notify Parent'
+name: Notify parent repository
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   notify:
-    name: 'Submodule Notify Parent'
+    name: Notify parent repository
     runs-on: ubuntu-latest
     steps:
     - name: Github REST API Call

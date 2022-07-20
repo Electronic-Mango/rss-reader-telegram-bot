@@ -1,4 +1,4 @@
-name: Verify code formatting with black
+name: Black
 
 on:
   push:
