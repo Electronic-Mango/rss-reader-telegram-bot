@@ -9,7 +9,7 @@ on:
 
 jobs:
   verify:
-    name: Code verification with flake8 and pytest
+    name: Code verification
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
