@@ -19,7 +19,7 @@ _logger = getLogger(__name__)
 async def handle_errors(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     error = context.error
     if update is None and context.job is None:
-        _logger.error(f"Unexpected error occured:", exc_info=error)
+        _logger.error("Unexpected error occured:", exc_info=error)
         return
     chat_id = update.effective_chat.id if update is not None else context.job.chat_id
     _logger.warn(f"[{chat_id}] Error when handling update:", exc_info=error)

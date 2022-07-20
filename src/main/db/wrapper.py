@@ -19,7 +19,7 @@ _logger = getLogger(__name__)
 
 def get_all_stored_data() -> list[tuple[int, str, str, str]]:
     """Returns all data stored in the DB."""
-    _logger.info(f"Getting all data for all chats")
+    _logger.info("Getting all data for all chats")
     return [
         (document["chat_id"], document["feed_type"], document["feed_name"], document["latest_id"])
         for document in find_many()
