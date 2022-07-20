@@ -16,7 +16,7 @@ def parse_link(entry: FeedParserDict) -> str:
 
 
 def parse_description(entry: FeedParserDict) -> str:
-    summary = BeautifulSoup(entry.summary, "html.parser").find_all(text=True)
+    summary = BeautifulSoup(entry.summary, "html.parser").find_all(string=True)
     return "".join(text for text in summary).strip()
 
 
