@@ -4,12 +4,13 @@ Module handling the "add" command, allowing users to add new RSS subscriptions.
 
 from logging import getLogger
 
+from feedparser import FeedParserDict
 from telegram import Message, ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import CommandHandler, ContextTypes, ConversationHandler, MessageHandler
 from telegram.ext.filters import COMMAND, TEXT
 
 from db.wrapper import feed_is_already_stored, store_feed_data
-from feed.reader import feed_is_valid, get_latest_id
+from feed.reader import feed_is_valid, get_latest_id, get_parsed_feed
 from settings import RSS_FEEDS
 
 ADD_HELP_MESSAGE = "/add - adds subscription for a given feed"
@@ -75,10 +76,12 @@ async def _handle_feed_names(update: Update, context: ContextTypes.DEFAULT_TYPE)
 async def _handle_feed_name(message: Message, chat_id: int, feed_type: str, feed_name: str) -> None:
     if feed_is_already_stored(chat_id, feed_type, feed_name):
         await _feed_with_given_name_already_exists(message, chat_id, feed_name, feed_type)
-    elif not feed_is_valid(feed_type, feed_name):
-        await _feed_does_not_exist(message, chat_id, feed_type, feed_name)
+        return
+    parsed_feed = get_parsed_feed(feed_type, feed_name)
+    if feed_is_valid(parsed_feed):
+        await _store_subscription(message, chat_id, parsed_feed, feed_type, feed_name)
     else:
-        await _store_subscription(message, chat_id, feed_type, feed_name)
+        await _feed_does_not_exist(message, chat_id, feed_type, feed_name)
 
 
 async def _feed_with_given_name_already_exists(
@@ -104,9 +107,10 @@ async def _feed_does_not_exist(
 async def _store_subscription(
     message: Message,
     chat_id: int,
+    parsed_feed: FeedParserDict,
     feed_type: str,
     feed_name: str,
 ) -> None:
-    latest_id = get_latest_id(feed_type, feed_name)
+    latest_id = get_latest_id(parsed_feed)
     store_feed_data(chat_id, feed_name, feed_type, latest_id)
     await message.reply_text(f"Added subscription for <b>{feed_name}</b>!")

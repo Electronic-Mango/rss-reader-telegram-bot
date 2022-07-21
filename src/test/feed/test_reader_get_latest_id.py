@@ -2,7 +2,6 @@ from unittest.mock import patch
 
 from feedparser import FeedParserDict
 from pytest import mark
-from pytest_mock import MockerFixture
 
 from feed.reader import get_latest_id
 
@@ -29,6 +28,6 @@ LATEST_ENTRY = FeedParserDict({"published": "05.05.2005", "id": EXPECTED_LATEST_
         ENTRIES[:2] + [LATEST_ENTRY] + ENTRIES[2:],
     ],
 )
-def test_get_latest_id(entries: list[FeedParserDict], mocker: MockerFixture) -> None:
-    mocker.patch("feed.reader.parse", return_value=FeedParserDict({"entries": entries}))
-    assert EXPECTED_LATEST_ID == get_latest_id(FEED_TYPE, FEED_NAME)
+def test_get_latest_id(entries: list[FeedParserDict]) -> None:
+    feed = FeedParserDict({"href": FEED_LINK, "entries": entries})
+    assert EXPECTED_LATEST_ID == get_latest_id(feed)

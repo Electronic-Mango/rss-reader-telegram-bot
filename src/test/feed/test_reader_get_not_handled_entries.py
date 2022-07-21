@@ -2,14 +2,12 @@ from unittest.mock import patch
 
 from feedparser import FeedParserDict
 from pytest import mark
-from pytest_mock import MockerFixture
 
 from feed.reader import get_not_handled_entries
 
 FEED_TYPE = "FEED_TYPE"
 FEED_NAME = "FEED_NAME"
 FEED_LINK = "FEED_LINK"
-
 ENTRIES = [
     FeedParserDict({"published": "01.01.2001", "id": "ID-1"}),
     FeedParserDict({"published": "02.02.2002", "id": "ID-2"}),
@@ -28,8 +26,7 @@ ENTRIES = [
         ("ID-3", ENTRIES[3:]),
     ],
 )
-def test_get_not_handled_entries(
-    latest_id: str, expected_entries: list[FeedParserDict], mocker: MockerFixture
-) -> None:
-    mocker.patch("feed.reader.parse", return_value=FeedParserDict({"entries": ENTRIES}))
-    assert expected_entries == get_not_handled_entries(FEED_TYPE, FEED_NAME, latest_id)
+def test_get_not_handled_entries(latest_id: str, expected_entries: list[FeedParserDict]) -> None:
+    # mocker.patch("feed.reader.parse", return_value=FeedParserDict({"entries": ENTRIES}))
+    feed = FeedParserDict({"href": FEED_LINK, "entries": ENTRIES})
+    assert expected_entries == get_not_handled_entries(feed, latest_id)
