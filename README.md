@@ -11,6 +11,7 @@ A simple Telegram bot sending updates for RSS feeds, build with [`python-telegra
  - [Requirements](#requirements)
  - [Configuration](#configuration)
    - [Bot parameters](#bot-parameters)
+   - [Whitelisting](#whitelisting)
    - [Supplying RSS feed links](#supplying-rss-feed-links)
    - [Storing chat data](#storing-chat-data)
    - [Docker](#docker)
@@ -49,7 +50,7 @@ Bot can be restricted to allow only specific users to execute bot commands via `
 When left empty everyone will be able to access the bot.
 
 You can specify multiple users delimiting them via value in `ALLOWED_USERNAMES_DELIMITER` in `settings.toml`.
-By default a single `,` with no spaces is used for delimiter.
+By default a single `,` with no spaces is used.
 
 
 ### Supplying RSS feed links
