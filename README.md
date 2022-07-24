@@ -44,6 +44,12 @@ This way you can provide your own Telegram bot token without modifying project f
 This can be especially useful when running the bot in a Docker container.
 
 
+### Whitelisting
+Bot can be restricted to allow only specific user to execute commands via `TELEGRAM` - `ALLOWED_USERNAME` value in `settings.toml` or `TELEGRAM_ALLOWED_USERNAME` environment variable.
+When it is set to a specific username, then only this one user will be able to access bot commands.
+When left empty everyone will be able to access the bot.
+
+
 ### Supplying RSS feed links
 
 Bot doesn't allow users to directly specify a RSS link to follow, instead it stores all available links in a YAML configuration file and allows users to pick one of types defined there.
