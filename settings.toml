@@ -4,7 +4,8 @@
 
 [TELEGRAM]
 TOKEN = ""  # your telegram bot token
-ALLOWED_USERNAME = ""  # username which can use the bot, or leave empty for public use
+ALLOWED_USERNAMES_DELIMITER = ","  # delimiter splitting users in the field below
+ALLOWED_USERNAMES = ""  # usernames which can use the bot, leave empty for public access
 
 [UPDATES]
 LOOKUP_INTERVAL_SECONDS = 3600  # how often should bot check for updates in seconds

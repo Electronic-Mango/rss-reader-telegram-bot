@@ -23,7 +23,7 @@ load_dotenv()
 _SETTINGS_TOML = load(getenv("SETTINGS_TOML_PATH", "settings.toml"))
 
 
-def _load_config(table: str, key: str) -> Any:
+def _load_config(table: str, key: str) -> str:
     env_name = f"{table}_{key}"
     env_value = getenv(env_name)
     return env_value if env_value is not None else _SETTINGS_TOML[table][key]
@@ -31,8 +31,8 @@ def _load_config(table: str, key: str) -> Any:
 
 # TELEGRAM
 TOKEN = _load_config("TELEGRAM", "TOKEN")
-ALLOWED_USERNAME = _load_config("TELEGRAM", "ALLOWED_USERNAME")
-ALLOWED_USERNAME = ALLOWED_USERNAME if ALLOWED_USERNAME else None
+ALLOWED_USERNAMES_DELIMITER = _load_config("TELEGRAM", "ALLOWED_USERNAMES_DELIMITER")
+ALLOWED_USERNAMES = _load_config("TELEGRAM", "ALLOWED_USERNAMES").split(ALLOWED_USERNAMES_DELIMITER)
 
 # UPDATES
 LOOKUP_INTERVAL_SECONDS = float(_load_config("UPDATES", "LOOKUP_INTERVAL_SECONDS"))
