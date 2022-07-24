@@ -11,7 +11,7 @@ A simple Telegram bot sending updates for RSS feeds, build with [`python-telegra
  - [Requirements](#requirements)
  - [Configuration](#configuration)
    - [Bot parameters](#bot-parameters)
-   - [Whitelisting](#whitelisting)
+   - [Restricting access to bot commands](#restricting-access-to-bot-commands)
    - [Supplying RSS feed links](#supplying-rss-feed-links)
    - [Storing chat data](#storing-chat-data)
    - [Docker](#docker)
@@ -45,7 +45,7 @@ This way you can provide your own Telegram bot token without modifying project f
 This can be especially useful when running the bot in a Docker container.
 
 
-### Whitelisting
+### Restricting access to bot commands
 Bot can be restricted to allow only specific users to execute bot commands via `TELEGRAM` - `ALLOWED_USERNAMES` value in `settings.toml` or `TELEGRAM_ALLOWED_USERNAMES` environment variable.
 When left empty everyone will be able to access the bot.
 
