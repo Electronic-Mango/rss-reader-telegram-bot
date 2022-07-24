@@ -25,7 +25,7 @@ A simple Telegram bot sending updates for RSS feeds, build with [`python-telegra
 ## Requirements
 
 This bot was built with `Python 3.10` and [`python-telegram-bot`](https://github.com/python-telegram-bot/python-telegram-bot).
-Full list of Python requirements is in the `requirements.txt` file, you can use it to install all of them using it.
+Full list of Python requirements is in the `requirements.txt` file, you can use it to install all of them.
 
 
 ## Configuration
