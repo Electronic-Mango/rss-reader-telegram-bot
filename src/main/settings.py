@@ -32,7 +32,11 @@ def _load_config(table: str, key: str) -> str:
 # TELEGRAM
 TOKEN = _load_config("TELEGRAM", "TOKEN")
 ALLOWED_USERNAMES_DELIMITER = _load_config("TELEGRAM", "ALLOWED_USERNAMES_DELIMITER")
-ALLOWED_USERNAMES = _load_config("TELEGRAM", "ALLOWED_USERNAMES").split(ALLOWED_USERNAMES_DELIMITER)
+ALLOWED_USERNAMES = [
+    username
+    for username in _load_config("TELEGRAM", "ALLOWED_USERNAMES").split(ALLOWED_USERNAMES_DELIMITER)
+    if username
+]
 
 # UPDATES
 LOOKUP_INTERVAL_SECONDS = float(_load_config("UPDATES", "LOOKUP_INTERVAL_SECONDS"))
