@@ -4,6 +4,7 @@
 
 [TELEGRAM]
 TOKEN = ""  # your telegram bot token
+ALLOWED_USERNAME = ""  # username which can use the bot, or leave empty for public use
 
 [UPDATES]
 LOOKUP_INTERVAL_SECONDS = 3600  # how often should bot check for updates in seconds

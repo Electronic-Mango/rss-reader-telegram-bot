@@ -9,6 +9,7 @@ from telegram import Message, ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import CommandHandler, ContextTypes, ConversationHandler, MessageHandler
 from telegram.ext.filters import COMMAND, TEXT
 
+from bot.user_filter import USER_FILTER
 from db.wrapper import feed_is_already_stored, store_feed_data
 from feed.reader import feed_is_valid, get_latest_id, get_parsed_feed
 from settings import RSS_FEEDS
@@ -22,12 +23,12 @@ _logger = getLogger(__name__)
 
 def add_conversation_handler() -> ConversationHandler:
     return ConversationHandler(
-        entry_points=[CommandHandler("add", _request_feed_type)],
+        entry_points=[CommandHandler("add", _request_feed_type, USER_FILTER)],
         states={
-            _FEED_TYPE: [MessageHandler(TEXT & ~COMMAND, _handle_feed_type)],
-            _FEED_NAME: [MessageHandler(TEXT & ~COMMAND, _handle_feed_names)],
+            _FEED_TYPE: [MessageHandler(USER_FILTER & TEXT & ~COMMAND, _handle_feed_type)],
+            _FEED_NAME: [MessageHandler(USER_FILTER & TEXT & ~COMMAND, _handle_feed_names)],
         },
-        fallbacks=[CommandHandler("cancel", _cancel)],
+        fallbacks=[CommandHandler("cancel", _cancel, USER_FILTER)],
     )
 
 

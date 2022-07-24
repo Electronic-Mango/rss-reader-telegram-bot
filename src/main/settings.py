@@ -31,6 +31,7 @@ def _load_config(table: str, key: str) -> Any:
 
 # TELEGRAM
 TOKEN = _load_config("TELEGRAM", "TOKEN")
+ALLOWED_USERNAME = _load_config("TELEGRAM", "ALLOWED_USERNAME")
 
 # UPDATES
 LOOKUP_INTERVAL_SECONDS = float(_load_config("UPDATES", "LOOKUP_INTERVAL_SECONDS"))

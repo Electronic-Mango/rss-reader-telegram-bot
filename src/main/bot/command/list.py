@@ -7,6 +7,7 @@ from logging import getLogger
 from telegram import Message, Update
 from telegram.ext import CommandHandler, ContextTypes
 
+from bot.user_filter import USER_FILTER
 from db.wrapper import chat_has_stored_feeds, get_stored_feed_type_and_name
 
 LIST_HELP_MESSAGE = "/list - list all subscriptions"
@@ -15,7 +16,7 @@ _logger = getLogger(__name__)
 
 
 def list_command_handler() -> CommandHandler:
-    return CommandHandler("list", _list)
+    return CommandHandler("list", _list, USER_FILTER)
 
 
 async def _list(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:

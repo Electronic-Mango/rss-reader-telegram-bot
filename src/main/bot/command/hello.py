@@ -8,13 +8,15 @@ from logging import getLogger
 from telegram import Update
 from telegram.ext import CommandHandler, ContextTypes
 
+from bot.user_filter import USER_FILTER
+
 HELLO_HELP_MESSAGE = "/hello - say hello to the bot"
 
 _logger = getLogger(__name__)
 
 
 def hello_command_handler() -> CommandHandler:
-    return CommandHandler("hello", _hello)
+    return CommandHandler("hello", _hello, USER_FILTER)
 
 
 async def _hello(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:

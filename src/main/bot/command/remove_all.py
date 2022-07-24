@@ -8,6 +8,7 @@ from telegram import Message, ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import CommandHandler, ContextTypes, ConversationHandler, MessageHandler
 from telegram.ext.filters import COMMAND, TEXT
 
+from bot.user_filter import USER_FILTER
 from db.wrapper import chat_has_stored_feeds, remove_stored_chat_data
 
 REMOVE_ALL_HELP_MESSAGE = "/removeall - remove all subscriptions"
@@ -21,12 +22,12 @@ _logger = getLogger(__name__)
 
 def remove_all_conversation_handler() -> ConversationHandler:
     return ConversationHandler(
-        entry_points=[CommandHandler("removeall", _request_confirmation_1)],
+        entry_points=[CommandHandler("removeall", _request_confirmation_1, USER_FILTER)],
         states={
-            _CONFIRM_1: [MessageHandler(TEXT & ~COMMAND, _request_confirmation_2)],
-            _CONFIRM_2: [MessageHandler(TEXT & ~COMMAND, _remove_all)],
+            _CONFIRM_1: [MessageHandler(USER_FILTER & TEXT & ~COMMAND, _request_confirmation_2)],
+            _CONFIRM_2: [MessageHandler(USER_FILTER & TEXT & ~COMMAND, _remove_all)],
         },
-        fallbacks=[CommandHandler("cancel", _cancel)],
+        fallbacks=[CommandHandler("cancel", _cancel, USER_FILTER)],
     )
 
 

@@ -16,6 +16,7 @@ from bot.command.hello import HELLO_HELP_MESSAGE
 from bot.command.list import LIST_HELP_MESSAGE
 from bot.command.remove import REMOVE_HELP_MESSAGE
 from bot.command.remove_all import REMOVE_ALL_HELP_MESSAGE
+from bot.user_filter import USER_FILTER
 
 HELP_MESSAGES = [
     HELLO_HELP_MESSAGE,
@@ -30,7 +31,7 @@ logger = getLogger(__name__)
 
 
 def start_help_command_handler() -> CommandHandler:
-    return CommandHandler(["start", "help"], _help)
+    return CommandHandler(["start", "help"], _help, USER_FILTER)
 
 
 async def _help(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:

@@ -10,13 +10,15 @@ from logging import getLogger
 from telegram import Update
 from telegram.ext import CommandHandler, ContextTypes
 
+from bot.user_filter import USER_FILTER
+
 CANCEL_HELP_MESSAGE = "/cancel - cancel the current operation"
 
 _logger = getLogger(__name__)
 
 
 def cancel_command_handler() -> CommandHandler:
-    return CommandHandler("cancel", _cancel)
+    return CommandHandler("cancel", _cancel, USER_FILTER)
 
 
 async def _cancel(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
