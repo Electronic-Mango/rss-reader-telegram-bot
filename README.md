@@ -50,7 +50,7 @@ Bot can be restricted to allow only specific users to execute bot commands via `
 When left empty everyone will be able to access the bot.
 
 You can specify multiple users delimiting them via value in `ALLOWED_USERNAMES_DELIMITER` in `settings.toml`.
-By default a single `,` with no spaces is used.
+By default a single `,` is used. Any whitespaces in resulting usernames are automatically stripped.
 
 
 ### Supplying RSS feed links

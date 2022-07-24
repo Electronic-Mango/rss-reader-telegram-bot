@@ -33,9 +33,9 @@ def _load_config(table: str, key: str) -> str:
 TOKEN = _load_config("TELEGRAM", "TOKEN")
 ALLOWED_USERNAMES_DELIMITER = _load_config("TELEGRAM", "ALLOWED_USERNAMES_DELIMITER")
 ALLOWED_USERNAMES = [
-    username
+    username.strip()
     for username in _load_config("TELEGRAM", "ALLOWED_USERNAMES").split(ALLOWED_USERNAMES_DELIMITER)
-    if username
+    if username.strip()
 ]
 
 # UPDATES
