@@ -9,6 +9,7 @@ ALLOWED_USERNAMES = ""  # usernames which can use the bot, leave empty for publi
 
 [UPDATES]
 LOOKUP_INTERVAL = 3600  # how often should bot check for updates in seconds
+LOOKUP_INTERVAL_RANDOMNESS = 0  # Random delay added to lookup interval, from 0 to specified value, or disabled with 0
 LOOKUP_INITIAL_DELAY = 30  # delay in seconds before first check for updates is run after bot is started
 LOOKUP_FEED_DELAY = 1  # Delay between update check for each stored feed
 LOOKUP_FEED_DELAY_RANDOMNESS = 0  # Additional random delay, from 0 to specified value, or disabled with 0

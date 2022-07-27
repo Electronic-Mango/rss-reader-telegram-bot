@@ -23,7 +23,12 @@ from bot.sender import send_update
 from db.wrapper import get_all_stored_data, update_stored_latest_id
 from feed.parser import parse_description, parse_media_links, parse_link
 from feed.reader import feed_is_valid, get_not_handled_entries, get_parsed_feed
-from settings import LOOKUP_FEED_DELAY, LOOKUP_FEED_DELAY_RANDOMNESS, QUIET_HOURS
+from settings import (
+    LOOKUP_FEED_DELAY,
+    LOOKUP_FEED_DELAY_RANDOMNESS,
+    LOOKUP_INTERVAL_RANDOMNESS,
+    QUIET_HOURS,
+)
 
 _logger = getLogger(__name__)
 
@@ -32,12 +37,18 @@ async def check_for_all_updates(context: ContextTypes.DEFAULT_TYPE) -> None:
     if datetime.now().hour in QUIET_HOURS:
         _logger.info("Quiet hour, skipping checking for updates")
         return
+    lookup_interval = randrange(max(LOOKUP_INTERVAL_RANDOMNESS, 1))  # randrange(1) always returns 0
+    _logger.info(f"Delaying checking for updates for [{lookup_interval}] seconds")
+    context.job_queue.run_once(callback=_delayed_check_for_all_updates, when=lookup_interval)
+
+
+async def _delayed_check_for_all_updates(context: ContextTypes.DEFAULT_TYPE) -> None:
     _logger.info("Starting checking for all updates")
     delay = 0
     for feed_data in get_all_stored_data():
         context.job_queue.run_once(callback=_check_for_updates, when=delay, data=feed_data)
         delay += LOOKUP_FEED_DELAY
-        delay += randrange(max(LOOKUP_FEED_DELAY_RANDOMNESS, 1))
+        delay += randrange(max(LOOKUP_FEED_DELAY_RANDOMNESS, 1))  # randrange(1) always returns 0
 
 
 async def _check_for_updates(context: ContextTypes.DEFAULT_TYPE) -> None:
