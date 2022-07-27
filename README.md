@@ -15,6 +15,7 @@ A simple Telegram bot sending updates for RSS feeds, build with [`python-telegra
    - [Supplying RSS feed links](#supplying-rss-feed-links)
    - [Storing chat data](#storing-chat-data)
    - [Quiet hours](#quiet-hours)
+   - [Delay randomness when checking for updates](#delay-randomness-when-checking-for-updates)
    - [Docker](#docker)
  - [Running the bot](#running-the-bot)
  - [Other details](#other-details)
@@ -93,6 +94,12 @@ You can configure hours where bot won't check for RSS updates via `QUIET_HOURS` 
 QUIET_HOURS = "0 1 2 3 4 5 6"
 ```
 You can pad the hours with `0`, however it's not necessary.
+
+
+### Delay randomness when checking for updates
+You can configure additional, random, delay when checking for individual feeds via `LOOKUP_FEED_DELAY_RANDOM_SECONDS` in `settings.toml` or `UPDATES_LOOKUP_FEED_DELAY_RANDOM_SECONDS` environment variable.
+
+This delay is additional delay to `LOOKUP_FEED_DELAY_SECONDS` between `0` and configured value. Setting the parameter to `0` will disable this additional randomness altogether.
 
 
 ### Docker
