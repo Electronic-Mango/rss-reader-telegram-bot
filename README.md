@@ -14,6 +14,7 @@ A simple Telegram bot sending updates for RSS feeds, build with [`python-telegra
    - [Restricting access to bot commands](#restricting-access-to-bot-commands)
    - [Supplying RSS feed links](#supplying-rss-feed-links)
    - [Storing chat data](#storing-chat-data)
+   - [Quiet hours](#quiet-hours)
    - [Docker](#docker)
  - [Running the bot](#running-the-bot)
  - [Other details](#other-details)
