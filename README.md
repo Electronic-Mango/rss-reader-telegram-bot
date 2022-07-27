@@ -86,6 +86,14 @@ This means, that you can change feed links without the need of re-adding all you
 Just make sure, that feed type stays the same.
 
 
+### Quiet hours
+You can configure hours where bot won't check for RSS updates via `QUIET_HOURS` parameter in `settings.toml` or `UPDATES_QUIET_HOURS` environment variable. Add whatever hours you don't want updates in 24h format separated by spaces. For example these values will stop the bot from checking for updates from midnight to 7AM:
+```toml
+QUIET_HOURS = "0 1 2 3 4 5 6"
+```
+You can pad the hours with `0`, however it's not necessary.
+
+
 ### Docker
 
 There's a Dockerfile in the repo, which will build a Docker image with for the bot using `python:3.10-slim` as base.
