@@ -23,7 +23,7 @@ from bot.sender import send_update
 from db.wrapper import get_all_stored_data, update_stored_latest_id
 from feed.parser import parse_description, parse_media_links, parse_link
 from feed.reader import feed_is_valid, get_not_handled_entries, get_parsed_feed
-from settings import LOOKUP_FEED_DELAY_RANDOM_SECONDS, LOOKUP_FEED_DELAY_SECONDS, QUIET_HOURS
+from settings import LOOKUP_FEED_DELAY, LOOKUP_FEED_DELAY_RANDOMNESS, QUIET_HOURS
 
 _logger = getLogger(__name__)
 
@@ -36,8 +36,8 @@ async def check_for_all_updates(context: ContextTypes.DEFAULT_TYPE) -> None:
     delay = 0
     for feed_data in get_all_stored_data():
         context.job_queue.run_once(callback=_check_for_updates, when=delay, data=feed_data)
-        delay += LOOKUP_FEED_DELAY_SECONDS
-        delay += randrange(max(LOOKUP_FEED_DELAY_RANDOM_SECONDS, 1))
+        delay += LOOKUP_FEED_DELAY
+        delay += randrange(max(LOOKUP_FEED_DELAY_RANDOMNESS, 1))
 
 
 async def _check_for_updates(context: ContextTypes.DEFAULT_TYPE) -> None:

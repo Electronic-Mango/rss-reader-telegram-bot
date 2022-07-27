@@ -21,7 +21,7 @@ from bot.command.remove_all import remove_all_conversation_handler
 from bot.command.start_help import start_help_command_handler
 from bot.error_handler import handle_errors
 from bot.update_checker import check_for_all_updates
-from settings import LOOKUP_INITIAL_DELAY_SECONDS, LOOKUP_INTERVAL_SECONDS
+from settings import LOOKUP_INITIAL_DELAY, LOOKUP_INTERVAL
 
 _UPDATE_HANDLERS = [
     add_conversation_handler(),
@@ -53,6 +53,6 @@ def _start_checking_for_updates(job_queue: JobQueue) -> None:
     _logger.info("Starting checking for updates...")
     job_queue.run_repeating(
         callback=check_for_all_updates,
-        interval=LOOKUP_INTERVAL_SECONDS,
-        first=LOOKUP_INITIAL_DELAY_SECONDS,
+        interval=LOOKUP_INTERVAL,
+        first=LOOKUP_INITIAL_DELAY,
     )

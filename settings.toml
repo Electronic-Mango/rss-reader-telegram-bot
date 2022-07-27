@@ -1,6 +1,6 @@
 # TOML configuration file with some sensible defaults, except Telegram bot token.
 # Each value can be replaced by environment variable (or variable in .env) with name "<TABLE>_<KEY>",
-# e.g. "TELEGRAM_TOKEN", "UPDATES_LOOKUP_INTERVAL_SECONDS", or "LOGGING_LOG_PATH". 
+# e.g. "TELEGRAM_TOKEN", "UPDATES_LOOKUP_INTERVAL", or "LOGGING_LOG_PATH". 
 
 [TELEGRAM]
 TOKEN = ""  # your telegram bot token
@@ -8,10 +8,10 @@ ALLOWED_USERNAMES_DELIMITER = ","  # delimiter splitting users in the field belo
 ALLOWED_USERNAMES = ""  # usernames which can use the bot, leave empty for public access
 
 [UPDATES]
-LOOKUP_INTERVAL_SECONDS = 3600  # how often should bot check for updates in seconds
-LOOKUP_INITIAL_DELAY_SECONDS = 30  # delay in seconds before first check for updates is run after bot is started
-LOOKUP_FEED_DELAY_SECONDS = 1  # Delay between update check for each stored feed
-LOOKUP_FEED_DELAY_RANDOM_SECONDS = 0  # Additional random delay, from 0 to specified value, or disabled with 0
+LOOKUP_INTERVAL = 3600  # how often should bot check for updates in seconds
+LOOKUP_INITIAL_DELAY = 30  # delay in seconds before first check for updates is run after bot is started
+LOOKUP_FEED_DELAY = 1  # Delay between update check for each stored feed
+LOOKUP_FEED_DELAY_RANDOMNESS = 0  # Additional random delay, from 0 to specified value, or disabled with 0
 QUIET_HOURS = ""  # Hours in 24h format where bot won't check for updates, separated by a space
 
 [MESSAGES]

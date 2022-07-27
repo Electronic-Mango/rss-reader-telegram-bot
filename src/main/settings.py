@@ -8,7 +8,7 @@ where environment variables will be used with higher priority.
 or from a path given by "SETTINGS_TOML_PATH" environment variable.
 
 In order to overwrite values from .toml the varialbe must follow a specific naming convention of
-<TABLE NAME>_<FIELD NAME>, e.g. TELEGRAM_TOKEN, UPDATES_LOOKUP_INTERVAL_SECONDS, etc.
+<TABLE NAME>_<FIELD NAME>, e.g. TELEGRAM_TOKEN, UPDATES_LOOKUP_INTERVAL, etc.
 """
 
 from os import getenv
@@ -39,10 +39,10 @@ ALLOWED_USERNAMES = [
 ]
 
 # UPDATES
-LOOKUP_INTERVAL_SECONDS = float(_load_config("UPDATES", "LOOKUP_INTERVAL_SECONDS"))
-LOOKUP_INITIAL_DELAY_SECONDS = float(_load_config("UPDATES", "LOOKUP_INITIAL_DELAY_SECONDS"))
-LOOKUP_FEED_DELAY_SECONDS = float(_load_config("UPDATES", "LOOKUP_FEED_DELAY_SECONDS"))
-LOOKUP_FEED_DELAY_RANDOM_SECONDS = int(_load_config("UPDATES", "LOOKUP_FEED_DELAY_RANDOM_SECONDS"))
+LOOKUP_INTERVAL = float(_load_config("UPDATES", "LOOKUP_INTERVAL"))
+LOOKUP_INITIAL_DELAY = float(_load_config("UPDATES", "LOOKUP_INITIAL_DELAY"))
+LOOKUP_FEED_DELAY = float(_load_config("UPDATES", "LOOKUP_FEED_DELAY"))
+LOOKUP_FEED_DELAY_RANDOMNESS = int(_load_config("UPDATES", "LOOKUP_FEED_DELAY_RANDOMNESS"))
 QUIET_HOURS = {int(hour) for hour in _load_config("UPDATES", "QUIET_HOURS").split()}
 
 # MESSAGES

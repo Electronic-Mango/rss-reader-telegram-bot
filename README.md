@@ -40,7 +40,7 @@ Detailed description of each parameter is described there.
 Almost all fields are filled with sensible defaults, except the Telegram bot token.
 By default the `settings.toml` in the project root will be used, however this can be overriden by `SETTINGS_TOML_PATH` environment variable.
 
-Each field in the `settings.toml` can be also overriden using environment variables, where their names are `<TABLE NAME>_<FIELD NAME>`, e.g. `TELEGRAM_TOKEN`, `UPDATES_LOOKUP_INTERVAL_SECONDS`, or `LOGGING_LOG_PATH`.
+Each field in the `settings.toml` can be also overriden using environment variables, where their names are `<TABLE NAME>_<FIELD NAME>`, e.g. `TELEGRAM_TOKEN`, `UPDATES_LOOKUP_INTERVAL`, or `LOGGING_LOG_PATH`.
 Environment variables will be treated with higher priority, than values in `settings.toml`.
 
 This way you can provide your own Telegram bot token without modifying project files.
@@ -97,9 +97,9 @@ You can pad the hours with `0`, however it's not necessary.
 
 
 ### Delay randomness when checking for updates
-You can configure additional, random, delay when checking for individual feeds via `LOOKUP_FEED_DELAY_RANDOM_SECONDS` in `settings.toml` or `UPDATES_LOOKUP_FEED_DELAY_RANDOM_SECONDS` environment variable.
+You can configure additional, random, delay when checking for individual feeds via `LOOKUP_FEED_DELAY_RANDOMNESS` in `settings.toml` or `UPDATES_LOOKUP_FEED_DELAY_RANDOMNESS` environment variable.
 
-This delay is additional delay to `LOOKUP_FEED_DELAY_SECONDS` between `0` and configured value. Setting the parameter to `0` will disable this additional randomness altogether.
+This delay is additional delay to `LOOKUP_FEED_DELAY` between `0` and configured value. Setting the parameter to `0` will disable this additional randomness altogether.
 
 
 ### Docker
@@ -146,14 +146,14 @@ It's not a perfect solution, but it works for my use case.
 
 ### Checking for updates
 
-Bot check for updates for all subscriptions in a regular intervals, configured by the `settings.toml` parameter `UPDATES` - `LOOKUP_INTERVAL_SECONDS`, or the `UPDATES_LOOKUP_INTERVAL_SECONDS` environment variable.
+Bot check for updates for all subscriptions in a regular intervals, configured by the `settings.toml` parameter `UPDATES` - `LOOKUP_INTERVAL`, or the `UPDATES_LOOKUP_INTERVAL` environment variable.
 
 By default it will check for updates every hour.
 
-A different parameter `LOOKUP_FEED_DELAY_SECONDS` configures the delay between checking each feed.
+A different parameter `LOOKUP_FEED_DELAY` configures the delay between checking each feed.
 This should prevent the bot from stopping responding to commands when it's checking for updates, since it might take a while.
 
-You should check how long checking for each update takes in your case and modify the `LOOKUP_FEED_DELAY_SECONDS` accordingly, so the bot has the time to respond to commands in the mean time.
+You should check how long checking for each update takes in your case and modify the `LOOKUP_FEED_DELAY` accordingly, so the bot has the time to respond to commands in the mean time.
 At the same time it shouldn't be so big, that last checks are done when next iteration of checking for updates starts.
 
 ### Sending updates and message formatting
