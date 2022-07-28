@@ -13,4 +13,4 @@ COPY src/main ./src/main
 COPY *.toml ./
 COPY *.yaml ./
 
-CMD ["python3.10", "src/main/main.py"]
+CMD ["python", "src/main/main.py"]
