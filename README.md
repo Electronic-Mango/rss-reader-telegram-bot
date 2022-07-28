@@ -21,6 +21,7 @@ A simple Telegram bot sending updates for RSS feeds, build with [`python-telegra
  - [Other details](#other-details)
    - [Deciding which feeds are valid](#deciding-which-feeds-are-valid)
    - [Checking for updates](#checking-for-updates)
+   - [Randomness in delays and checking for updates](#randomness-in-delays-and-checking-for-updates)
    - [Sending updates and message formatting](#sending-updates-and-message-formatting)
    - [Detecting when user blocks the bot and clearing chat data](#detecting-when-user-blocks-the-bot-and-clearing-chat-data)
 
@@ -129,12 +130,12 @@ for an example of how you can deploy this bot via Docker Compose.
 
 Running the bot is quite simple:
 
- 1. Create a Telegram bot via [BotFather](https://core.telegram.org/bots#6-botfather)
- 1. Set up `MongoDB`, I use a [MongoDB Docker container](https://hub.docker.com/_/mongo)
- 1. Configure DB-related parameters in the bot, default ones assume the DB is running locally
- 1. Configure Telegram bot token parameters
- 1. Supply RSS feed links
- 1. Run the `main.py` file, or use a Docker container
+1. Create a Telegram bot via [BotFather](https://core.telegram.org/bots#6-botfather)
+1. Set up `MongoDB`, I use a [MongoDB Docker container](https://hub.docker.com/_/mongo)
+1. Configure DB-related parameters in the bot, default ones assume the DB is running locally
+1. Configure Telegram bot token parameters
+1. Supply RSS feed links
+1. Run the `main.py` file, or use a Docker container
 
 
 ## Other details
@@ -143,8 +144,8 @@ Running the bot is quite simple:
 
 Bot will assume that a given feed link (for a specific source, not a general one) is valid if it passes two conditions:
 
- 1. HTTP response code is either 200 or 301
- 1. feed has any entries already
+1. HTTP response code is either 200 or 301
+1. feed has any entries already
 
 The second one means, that you can't subscribe to feeds which do exist, but don't have any entries yet.
 It does, however, allow for a much better validation of links, since some RSS feeds will always respond with code 200, even if the feed is not valid.
@@ -163,6 +164,26 @@ This should prevent the bot from stopping responding to commands when it's check
 You should check how long checking for each update takes in your case and modify the `LOOKUP_FEED_DELAY` accordingly, so the bot has the time to respond to commands in the mean time.
 At the same time it shouldn't be so big, that last checks are done when next iteration of checking for updates starts.
 
+
+### Randomness in delays and checking for updates
+
+Randomness can be added to checking for updates on two levels:
+1. Main job triggering check for each feed via `LOOKUP_INTERVAL_RANDOMNESS`
+1. Between individual feeds via `LOOKUP_FEED_DELAY_RANDOMNESS`
+
+Main job still triggers every exactly `LOOKUP_INTERVAL` seconds.
+However only responsibility of this job is triggering delayed checks.
+These delayed checks will happen after between `0` and `LOOKUP_INTERVAL_RANDOMNESS` seconds.
+
+Delay between checking each feed is `LOOKUP_FEED_DELAY` plus a random value between `0` and `LOOKUP_FEED_DELAY_RANDOMNESS`.
+So minimum amount of seconds between checking for each feed is `LOOKUP_FEED_DELAY` and maximum is `LOOKUP_FEED_DELAY + LOOKUP_FEED_DELAY_RANDOMNESS`.
+
+However, the main job isn't taking into account any of the additional delays and randomness, it still triggers every `LOOKUP_INTERVAL`, triggering delayed job every `0` to `LOOKUP_INTERVAL_RANDOMNESS` seconds, etc.
+
+So minimum amout of secods between triggering checking for updates is `LOOKUP_INTERVAL - LOOKUP_INTERVAL_RANDOMNESS` and maximum is `LOOKUP_INTERVAL + LOOKUP_INTERVAL_RANDOMNESS`.
+This, however, doesn't take into account neither `LOOKUP_FEED_DELAY` nor `LOOKUP_FEED_DELAY_RANDOMNESS`.
+
+
 ### Sending updates and message formatting
 
 Each RSS feed entry will be sent in a separate message.
@@ -172,8 +193,8 @@ Each message will contain the RSS feed source and type, text of an RSS entry sum
 It won't contain the title, since in my use case it was just duplicating the summary anyways.
 
 To add a title to the messages two files need to be changed:
- - `parser.py` - title will need to be extracted from the RSS entry
- - `sender.py` - title from the last entry needs to be added to the message
+- `parser.py` - title will need to be extracted from the RSS entry
+- `sender.py` - title from the last entry needs to be added to the message
 
 Both files are quite simple, so it shouldn't be a problem.
 
