@@ -12,7 +12,6 @@ In order to overwrite values from .toml the varialbe must follow a specific nami
 """
 
 from os import getenv
-from typing import Any
 
 from dotenv import load_dotenv
 from toml import load
@@ -62,5 +61,5 @@ DB_NAME = _load_config("DATABASE", "DB_NAME")
 DB_COLLECTION_NAME = _load_config("DATABASE", "DB_COLLECTION_NAME")
 
 # RSS
-with open(_load_config("RSS", "FEEDS_YAML_FILENAME"), "r") as feeds_yaml:
-    RSS_FEEDS = safe_load(feeds_yaml)
+with open(_load_config("RSS", "FEEDS_YAML_FILENAME"), "r") as feeds_yml:
+    RSS_FEEDS = safe_load(feeds_yml)
