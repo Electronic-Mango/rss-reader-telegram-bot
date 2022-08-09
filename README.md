@@ -62,7 +62,7 @@ Bot doesn't allow users to directly specify a RSS link to follow, instead it sto
 
 This might not be the best approach, however it was most suitable for my use case, as it simplified the process of subscribing to RSS feeds.
 
-There's a template `feed_links.yaml` file which contains examples of how to define RSS links for the bot.
+There's a template `feed_links.yml` file which contains examples of how to define RSS links for the bot.
 You can either modify this file directly, or supply your own file by either modifying the `RSS` - `FEEDS_YAML_FILENAME` parameter in `settings.toml`, or by overriding it via `RSS_FEEDS_YAML_FILENAME` environment variable.
 
 Only feed names (or types) will be displayed to users, link themselves are not.

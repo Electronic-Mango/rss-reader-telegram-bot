@@ -11,6 +11,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY src/main ./src/main
 
 COPY *.toml ./
-COPY *.yaml ./
+COPY *.yml ./
 
 CMD ["python", "src/main/main.py"]

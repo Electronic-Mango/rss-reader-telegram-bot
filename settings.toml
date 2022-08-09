@@ -32,4 +32,4 @@ DB_NAME = "rss_reader"  # DB name with feed collection
 DB_COLLECTION_NAME = "feed_data"  # DB feed collection with feed data, stored in DB named above
 
 [RSS]
-FEEDS_YAML_FILENAME = "feed_links.yaml"  # relative path to yaml file with definitions of all possible feeds
+FEEDS_YAML_FILENAME = "feed_links.yml"  # relative path to YAML file with definitions of all possible feeds
