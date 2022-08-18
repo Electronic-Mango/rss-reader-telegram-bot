@@ -122,7 +122,7 @@ All of this can be done without modifying project files by using environment var
 You can also supply RSS feed links without modifying the project by overriding `RSS_FEEDS_YAML_FILENAME` environment variable to point to a file in a mounted volume.
 
 You can also check out my repository
-[RSS reader Telegram bot Docker deployment](https://github.com/Electronic-Mango/rss-reader-telegram-bot-docker-compose)
+[RSS reader Telegram bot Docker deployment](https://github.com/Electronic-Mango/rss-reader-telegram-bot-docker-deployment)
 for an example of how you can deploy this bot via Docker Compose.
 
 
