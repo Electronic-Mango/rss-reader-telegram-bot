@@ -37,10 +37,21 @@ _logger = getLogger(__name__)
 
 
 def run_bot() -> None:
-    application = ApplicationBuilder().token(TOKEN).defaults(Defaults("HTML")).build()
+    application = _prepare_application()
     _configure_handlers(application)
     _start_checking_for_updates(application.job_queue)
     application.run_polling()
+
+
+def _prepare_application() -> Application:
+    # TODO Add persistence to inline keyboard queries
+    return (
+        ApplicationBuilder()
+        .token(TOKEN)
+        .defaults(Defaults("HTML"))
+        .arbitrary_callback_data(True)
+        .build()
+    )
 
 
 def _configure_handlers(application: Application) -> None:
