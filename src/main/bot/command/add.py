@@ -37,9 +37,10 @@ def add_conversation_handler() -> ConversationHandler:
             _FEED_NAME: [
                 CallbackQueryHandler(_handle_go_back_to_feed_types),
                 MessageHandler(USER_FILTER & TEXT & ~COMMAND, _handle_feed_names),
+                CommandHandler("cancel", _cancel, USER_FILTER),
             ],
         },
-        fallbacks=[CommandHandler("cancel", _cancel, USER_FILTER)],
+        fallbacks=[CommandHandler("add", _request_feed_type, USER_FILTER)],
     )
 
 
