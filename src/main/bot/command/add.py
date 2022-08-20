@@ -47,7 +47,7 @@ async def _cancel(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
 async def _request_feed_type(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
     _logger.info(f"[{update.effective_chat.id}] User requested new subscription")
     await update.message.reply_text(
-        "Select source, or /cancel",
+        "Select source for new subscription",
         reply_markup=InlineKeyboardMarkup(
             [[InlineKeyboardButton(name, callback_data=name)] for name in RSS_FEEDS.keys()]
         ),

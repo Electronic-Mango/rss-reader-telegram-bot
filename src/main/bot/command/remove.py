@@ -56,7 +56,7 @@ async def _request_feed_to_remove(message: Message, chat_id: int) -> int:
         for feed_type, feed_name in get_stored_feed_type_and_name(chat_id)
     ]
     await message.reply_text(
-        "Select feed to remove, or /cancel",
+        "Select feed to remove",
         reply_markup=InlineKeyboardMarkup(keyboard),
     )
     return _REMOVE_FEED
