@@ -5,8 +5,14 @@ Module handling the "add" command, allowing users to add new RSS subscriptions.
 from logging import getLogger
 
 from feedparser import FeedParserDict
-from telegram import Message, ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
-from telegram.ext import CommandHandler, ContextTypes, ConversationHandler, MessageHandler
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Message, Update
+from telegram.ext import (
+    CallbackQueryHandler,
+    CommandHandler,
+    ContextTypes,
+    ConversationHandler,
+    MessageHandler,
+)
 from telegram.ext.filters import COMMAND, TEXT
 
 from bot.user_filter import USER_FILTER
@@ -25,7 +31,7 @@ def add_conversation_handler() -> ConversationHandler:
     return ConversationHandler(
         entry_points=[CommandHandler("add", _request_feed_type, USER_FILTER)],
         states={
-            _FEED_TYPE: [MessageHandler(USER_FILTER & TEXT & ~COMMAND, _handle_feed_type)],
+            _FEED_TYPE: [CallbackQueryHandler(_handle_feed_type)],
             _FEED_NAME: [MessageHandler(USER_FILTER & TEXT & ~COMMAND, _handle_feed_names)],
         },
         fallbacks=[CommandHandler("cancel", _cancel, USER_FILTER)],
@@ -34,9 +40,7 @@ def add_conversation_handler() -> ConversationHandler:
 
 async def _cancel(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
     _logger.info(f"[{update.effective_chat.id}] User cancelled adding subscription")
-    await update.message.reply_text(
-        "Cancelled adding subscription", reply_markup=ReplyKeyboardRemove()
-    )
+    await update.message.reply_text("Cancelled adding subscription")
     return ConversationHandler.END
 
 
@@ -44,21 +48,20 @@ async def _request_feed_type(update: Update, _: ContextTypes.DEFAULT_TYPE) -> in
     _logger.info(f"[{update.effective_chat.id}] User requested new subscription")
     await update.message.reply_text(
         "Select source, or /cancel",
-        reply_markup=ReplyKeyboardMarkup(
-            keyboard=[[feed_name] for feed_name in RSS_FEEDS.keys()],
-            one_time_keyboard=True,
-            resize_keyboard=True,
-            input_field_placeholder="Select feed type",
+        reply_markup=InlineKeyboardMarkup(
+            [[InlineKeyboardButton(name, callback_data=name)] for name in RSS_FEEDS.keys()]
         ),
     )
     return _FEED_TYPE
 
 
 async def _handle_feed_type(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    feed_type = update.message.text
+    query = update.callback_query
+    await query.answer()
+    feed_type = query.data
     context.user_data[_FEED_TYPE] = feed_type
     _logger.info(f"[{update.effective_chat.id}] User selected type [{feed_type}], requesting name")
-    await update.message.reply_text(
+    await query.edit_message_text(
         f"Send <b>{feed_type}</b> source, you can send multiple separated by a space, or /cancel"
     )
     return _FEED_NAME
