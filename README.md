@@ -12,6 +12,7 @@ A simple Telegram bot sending updates for RSS feeds, build with [`python-telegra
  - [Configuration](#configuration)
    - [Bot parameters](#bot-parameters)
    - [Restricting access to bot commands](#restricting-access-to-bot-commands)
+   - [Persistence](#persistence)
    - [Supplying RSS feed links](#supplying-rss-feed-links)
    - [Storing chat data](#storing-chat-data)
    - [Quiet hours](#quiet-hours)
@@ -55,6 +56,19 @@ When left empty everyone will be able to access the bot.
 
 You can specify multiple users delimiting them via value in `ALLOWED_USERNAMES_DELIMITER` in `settings.toml`.
 By default a single `,` is used. Any whitespaces in resulting usernames are automatically stripped.
+
+
+### Persistence
+
+Bot uses pickled file for storing persistence data between restarts.
+By default `persistence` file in the project root is used.
+Its path can be tweaked via `settings.toml` or environment variable.
+
+All conversation-style commands are persistent.
+This means, that their state should be preserved after bot has been restarted, you can just continue the conversation afterwards.
+
+When deploying the bot via Docker I'd recommend changing the path to persistence pickled file into a mounted volume.
+Otherwise it will be stored directly in the container and it will be removed with it.
 
 
 ### Supplying RSS feed links
@@ -122,6 +136,10 @@ All of this can be done without modifying project files by using environment var
 
 You can also supply RSS feed links without modifying the project by overriding `RSS_FEEDS_YAML_FILENAME` environment variable to point to a file in a mounted volume.
 
+When deploying the bot via Docker I'd recommend changing the path to persistence pickled file into a mounted volume.
+Otherwise it will be stored directly in the container and it will be removed with it.
+You can do that either by modifying `TELEGRAM` - `PERSISTENCE_FILE` value in `settings.toml` or by supplying `TELEGRAM_PERSISTENCE_FILE` environment variable.
+
 You can also check out my repository
 [RSS reader Telegram bot Docker deployment](https://github.com/Electronic-Mango/rss-reader-telegram-bot-docker-deployment)
 for an example of how you can deploy this bot via Docker Compose.
@@ -152,6 +170,7 @@ Running the bot is quite simple:
 
 
 ## Other details
+
 
 ### Deciding which feeds are valid
 
