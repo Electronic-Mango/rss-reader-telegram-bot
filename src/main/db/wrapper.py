@@ -36,13 +36,13 @@ def get_stored_feed_type_and_name(chat_id: int) -> list[tuple[str, str]]:
 
 
 def feed_is_already_stored(chat_id: int, feed_type: str, feed_name: str) -> bool:
-    """Check if a given feed is already stored in the DB."""
+    """Check if given feed is already stored in the DB."""
     _logger.info(f"[{chat_id}] Checking for [{feed_type}] [{feed_name}]")
     return exists({"chat_id": chat_id, "feed_type": feed_type, "feed_name": feed_name})
 
 
 def chat_has_stored_feeds(chat_id: int) -> bool:
-    """Check if a given chat has any data stored in the DB."""
+    """Check if given chat has any data stored in the DB."""
     _logger.info(f"[{chat_id}] Checking if chat has any feeds")
     return exists({"chat_id": chat_id})
 
@@ -70,7 +70,7 @@ def update_stored_latest_id(chat_id: int, feed_type: str, feed_name: str, latest
 
 
 def remove_stored_feed(chat_id: int, feed_type: str, feed_name: str) -> None:
-    """Remove a given feed from the DB."""
+    """Remove given feed from the DB."""
     _logger.info(f"[{chat_id}] Deleting [{feed_type}] [{feed_name}]")
     result = delete_many({"chat_id": chat_id, "feed_type": feed_type, "feed_name": feed_name})
     _log_delete_result(chat_id, result)
