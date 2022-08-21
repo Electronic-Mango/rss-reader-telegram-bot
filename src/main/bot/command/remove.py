@@ -110,7 +110,7 @@ async def _remove_subscription(update: Update, _: ContextTypes.DEFAULT_TYPE) -> 
     return ConversationHandler.END
 
 
-async def _prepare_feed_button(name: str, type: str) -> InlineKeyboardButton:
+def _prepare_feed_button(name: str, type: str) -> InlineKeyboardButton:
     return InlineKeyboardButton(f"{name} ({type})", callback_data=_RemoveFeedData(name, type))
 
 
