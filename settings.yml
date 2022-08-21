@@ -1,0 +1,53 @@
+# YAML file with all configuration variables needed by the bot.
+# Values from this file can be overwritten by another YAML
+# which path is supplied by CUSTOM_SETTINGS_PATH environment variable.
+# Second YAML doesn't have to contain all parameters, only the ones to overwrite.
+
+telegram:
+  # Your telegram bot token.
+  token:
+  # List of usernames which can use the bot.
+  allowed_usernames: []
+  # File used for storing command states between bot restarts.
+  persistence_file: persistence
+  updates:
+    # How often should bot check for updates in seconds.
+    lookup_interval: 3600
+    # Random delay added to lookup interval, from 0 to specified value, or disabled with 0.
+    lookup_interval_randomness: 0
+    # Delay in seconds before first check for updates is run after bot is started.
+    lookup_initial_delay: 30
+    # Delay between update check for each stored feed.
+    lookup_feed_delay: 10
+    # Additional random delay, from 0 to specified value, or disabled with 0.
+    lookup_feed_delay_randomness: 0
+    # List of hours in 24h (without padded 0) format where bot won't check for updates.
+    quiet_hours: [0, 1, 2, 3, 4, 5, 6, 7, 23]
+  messages:
+    # Max text message size send by the bot.
+    max_message_size: 1024
+    # Max number of media items per single message.
+    max_media_items_per_message: 10
+
+logging:
+  # Path for bot internal logs.
+  log_path: bot.log
+  # Max size of a single logfile in bytes.
+  max_bytes: 1000000
+  # Number of kept log files, new ones are created when the last reaches max_bytes is size.
+  backup_count: 10
+  # Setting either max_bytes or backup_count to 0 will disable log rotating.
+
+database:
+  # MongoDB host name, here MongoDB is running locally.
+  host: localhost
+  # MongoDB port, here it's MongoDB default port.
+  port: 27017
+  # DB name with feed collection.
+  name: rss_reader
+  # DB feed collection with feed data, stored in DB named above.
+  collection_name: feed_data
+
+rss:
+  # Path to YAML file with definitions of all possible feeds.
+  feeds_yaml_filename: feed_links.yml

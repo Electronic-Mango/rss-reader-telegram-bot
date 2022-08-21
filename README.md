@@ -37,32 +37,38 @@ Full list of Python requirements is in the `requirements.txt` file, you can use 
 ## Configuration
 
 ### Bot parameters
-Configuration for the bot is stored in the `settings.toml` file.
+Configuration parameters for the bot are stored in a configuration YAML file.
+Default parameters are stored in `settings.yml` file in the project root.
 Detailed description of each parameter is described there.
 
 Almost all fields are filled with sensible defaults, except the Telegram bot token.
-By default the `settings.toml` in the project root will be used, however this can be overriden by `SETTINGS_TOML_PATH` environment variable.
-
-Each field in the `settings.toml` can be also overriden using environment variables, where their names are `<TABLE NAME>_<FIELD NAME>`, e.g. `TELEGRAM_TOKEN`, `UPDATES_LOOKUP_INTERVAL`, or `LOGGING_LOG_PATH`.
-Environment variables will be treated with higher priority, than values in `settings.toml`.
+Values from the default file can be overwritten by a custom YAML file, which path can be supplied by `CUSTOM_SETTINGS_PATH` environment variable.
+Only specific parameters can be configured in the custom file.
+All parameters missing from custom YAML will be taken from default YAML instead.
 
 This way you can provide your own Telegram bot token without modifying project files.
 This can be especially useful when running the bot in a Docker container.
 
+Most basic custom YAML can contains only Telegram bot token:
+
+```yaml
+telegram:
+  token: your-telegram-bot-token
+```
+
 
 ### Restricting access to bot commands
-Bot can be restricted to allow only specific users to execute bot commands via `TELEGRAM` - `ALLOWED_USERNAMES` value in `settings.toml` or `TELEGRAM_ALLOWED_USERNAMES` environment variable.
-When left empty everyone will be able to access the bot.
+Bot can be restricted to allow only specific users to execute bot commands via `telegram` - `allowed_usernames` value in configuration YAML.
+When the list is left empty everyone will be able to access the bot.
 
-You can specify multiple users delimiting them via value in `ALLOWED_USERNAMES_DELIMITER` in `settings.toml`.
-By default a single `,` is used. Any whitespaces in resulting usernames are automatically stripped.
+You can specify multiple users, as the value in YAML is a list.
 
 
 ### Persistence
 
 Bot uses pickled file for storing persistence data between restarts.
 By default `persistence` file in the project root is used.
-Its path can be tweaked via `settings.toml` or environment variable.
+Its path can be tweaked via configuration YAML.
 
 All conversation-style commands are persistent.
 This means, that their state should be preserved after bot has been restarted, you can just continue the conversation afterwards.
@@ -78,9 +84,9 @@ Bot doesn't allow users to directly specify a RSS link to follow, instead it sto
 This might not be the best approach, however it was most suitable for my use case, as it simplified the process of subscribing to RSS feeds.
 
 There's a template `feed_links.yml` file which contains examples of how to define RSS links for the bot.
-You can either modify this file directly, or supply your own file by either modifying the `RSS` - `FEEDS_YAML_FILENAME` parameter in `settings.toml`, or by overriding it via `RSS_FEEDS_YAML_FILENAME` environment variable.
+You can either modify this file directly, or supply your own file by either modifying the `rss` - `feeds_yaml_filename` parameter in configuration YAML.
 
-Only feed names (or types) will be displayed to users, link themselves are not.
+Only feed names (or types) will be displayed to users, links themselves are not.
 
 Additionally, since RSS links are not stored together with subscription data, you can change the RSS links without the need of re-adding all your subscriptions.
 Just make sure, that feed type stays the same.
@@ -88,8 +94,9 @@ Just make sure, that feed type stays the same.
 
 ### Storing chat data
 Bot uses a separate MongoDB to store chat data.
-DB host and port can be configured via `DB_HOST` and `DB_PORT` parameters in `settings.toml`, or environment variables `DATABASE_DB_HOST` and `DATABSE_DB_PORT`.
-Parameters `DB_NAME` and `DB_COLLECTION_NAME` specify names of DB and collection where all the data will be stored.
+DB configuration is stored in `database` section of configuration YAML.
+DB host and port can be configured via `host` and `port` parameters.
+Parameters `name` and `collection_name` specify names of DB and collection where all the data will be stored.
 
 All data is stored within a single collection, for simplicity, so the latter parameters don't matter much.
 
@@ -105,22 +112,30 @@ Just make sure, that feed type stays the same.
 
 
 ### Quiet hours
-You can configure hours where bot won't check for RSS updates via `QUIET_HOURS` parameter in `settings.toml` or `UPDATES_QUIET_HOURS` environment variable. Add whatever hours you don't want updates in 24h format separated by spaces. For example these values will stop the bot from checking for updates from midnight to 7AM:
-```toml
-QUIET_HOURS = "0 1 2 3 4 5 6"
+You can configure hours where bot won't check for RSS updates via `quiet_hours` parameter in configuration YAML in `telegram` - `updates` section.
+Add whatever hours you don't want updates in 24h format.
+For example these values will stop the bot from checking for updates from 11PM to 8AM:
+
+```yml
+telegram:
+  updates:
+    quiet_hours: [23, 0, 1, 2, 3, 4, 5, 6, 7]
 ```
-You can pad the hours with `0`, however it's not necessary.
+
+Just don't pad the values with `0`, as they will be then treated as strings, rather than ints.
 
 
 ### Randomness when checking for updates
 You can configure additional delay when checking for updates on two levels - main job checking for all updates and between individual feeds.
 
-Delay in the main loop checking for all updates can be added via `LOOKUP_INTERVAL_RANDOMNESS` parameter in `settings.toml` or `UPDATES_LOOKUP_INTERVAL_RANDOMNESS` environment variable.
-Main job still triggers every `LOOKUP_INTERVAL`, however it will only trigger a new delayed job which will check for all updates.
-This job is scheduled after `0` to `LOOKUP_INTERVAL_RANDOMNESS` seconds.
+Parameters related to updates, delays and randomness are in `telegram` - `updates` section of configuration YAML.
 
-Additional random delay when checking for individual feeds can be configured via `LOOKUP_FEED_DELAY_RANDOMNESS` in `settings.toml` or `UPDATES_LOOKUP_FEED_DELAY_RANDOMNESS` environment variable.
-It is an additional delay to `LOOKUP_FEED_DELAY` between `0` and configured value.
+Delay in the main loop checking for all updates can be added via `lookup_interval_randomness` parameter.
+Main job still triggers every `lookup_interval`, however it will only trigger a new delayed job which will check for all updates.
+This job is scheduled after `0` to `lookup_interval_randomness` seconds.
+
+Additional random delay when checking for individual feeds can be configured via `lookup_feed_delay_randomness` parameter.
+It is an additional delay to `lookup_feed_delay` between `0` and configured value.
 
 Setting parameters to `0` will disable their respective randomness.
 
@@ -132,13 +147,15 @@ You can set all configuration parameters using environment variables for Docker 
 
 Keep in mind, that running the bot in a Docker container might require changing DB IP address (as the default one is `localhost`) and possibly RSS feed links if you're using a self-hosted RSS feed, like [`RSS-Bridge`](https://github.com/RSS-Bridge/rss-bridge) or [`RSSHub`](https://github.com/DIYgod/RSSHub).
 
-All of this can be done without modifying project files by using environment variables.
+When supplying configuration parameters, you can add a custom configuration YAML to a mounted volume and point to it via `CUSTOM_SETTINGS_PATH` environment variable in the container.
+This way configuration YAML with your bot token isn't inserted directly in the container.
+Also, you can provide custom configuration without modifying project files.
 
-You can also supply RSS feed links without modifying the project by overriding `RSS_FEEDS_YAML_FILENAME` environment variable to point to a file in a mounted volume.
+You can in a similar way supply feed links.
 
-When deploying the bot via Docker I'd recommend changing the path to persistence pickled file into a mounted volume.
+When deploying the bot via Docker I'd also recommend changing the path to persistence pickled file into a mounted volume.
 Otherwise it will be stored directly in the container and it will be removed with it.
-You can do that either by modifying `TELEGRAM` - `PERSISTENCE_FILE` value in `settings.toml` or by supplying `TELEGRAM_PERSISTENCE_FILE` environment variable.
+You can do that either by modifying `telegram` - `persistence_file` value in configuration YAML.
 
 You can also check out my repository
 [RSS reader Telegram bot Docker deployment](https://github.com/Electronic-Mango/rss-reader-telegram-bot-docker-deployment)
@@ -171,7 +188,6 @@ Running the bot is quite simple:
 
 ## Other details
 
-
 ### Deciding which feeds are valid
 
 Bot will assume that a given feed link (for a specific source, not a general one) is valid if it passes two conditions:
@@ -186,34 +202,34 @@ It's not a perfect solution, but it works for my use case.
 
 ### Checking for updates
 
-Bot check for updates for all subscriptions in a regular intervals, configured by the `settings.toml` parameter `UPDATES` - `LOOKUP_INTERVAL`, or the `UPDATES_LOOKUP_INTERVAL` environment variable.
+Bot check for updates for all subscriptions in a regular intervals, configured by the configuration YAML parameter `telegram` - `updates` - `lookup_interval`.
 
 By default it will check for updates every hour.
 
-A different parameter `LOOKUP_FEED_DELAY` configures the delay between checking each feed.
+A different parameter `lookup_feed_delay` configures the delay between checking each feed.
 This should prevent the bot from stopping responding to commands when it's checking for updates, since it might take a while.
 
-You should check how long checking for each update takes in your case and modify the `LOOKUP_FEED_DELAY` accordingly, so the bot has the time to respond to commands in the mean time.
+You should check how long checking for each update takes in your case and modify the `lookup_feed_delay` accordingly, so the bot has the time to respond to commands in the mean time.
 At the same time it shouldn't be so big, that last checks are done when next iteration of checking for updates starts.
 
 
 ### Randomness in delays and checking for updates
 
 Randomness can be added to checking for updates on two levels:
-1. Main job triggering check for each feed via `LOOKUP_INTERVAL_RANDOMNESS`
-1. Between individual feeds via `LOOKUP_FEED_DELAY_RANDOMNESS`
+1. Main job triggering check for each feed via `lookup_interval_randomness`
+1. Between individual feeds via `lookup_feed_delay_randomness`
 
-Main job still triggers every exactly `LOOKUP_INTERVAL` seconds.
+Main job still triggers every exactly `lookup_interval` seconds.
 However only responsibility of this job is triggering delayed checks.
-These delayed checks will happen after between `0` and `LOOKUP_INTERVAL_RANDOMNESS` seconds.
+These delayed checks will happen after between `0` and `lookup_interval_randomness` seconds.
 
-Delay between checking each feed is `LOOKUP_FEED_DELAY` plus a random value between `0` and `LOOKUP_FEED_DELAY_RANDOMNESS`.
-So minimum amount of seconds between checking for each feed is `LOOKUP_FEED_DELAY` and maximum is `LOOKUP_FEED_DELAY + LOOKUP_FEED_DELAY_RANDOMNESS`.
+Delay between checking each feed is `lookup_feed_delay` plus a random value between `0` and `lookup_feed_delay_randomness`.
+So minimum amount of seconds between checking for each feed is `lookup_feed_delay` and maximum is `lookup_feed_delay + lookup_feed_delay_randomness`.
 
-However, the main job isn't taking into account any of the additional delays and randomness, it still triggers every `LOOKUP_INTERVAL`, triggering delayed job every `0` to `LOOKUP_INTERVAL_RANDOMNESS` seconds, etc.
+However, the main job isn't taking into account any of the additional delays and randomness, it still triggers every `lookup_interval`, triggering delayed job every `0` to `lookup_interval_randomness` seconds, etc.
 
-So minimum amout of secods between triggering checking for updates is `LOOKUP_INTERVAL - LOOKUP_INTERVAL_RANDOMNESS` and maximum is `LOOKUP_INTERVAL + LOOKUP_INTERVAL_RANDOMNESS`.
-This, however, doesn't take into account neither `LOOKUP_FEED_DELAY` nor `LOOKUP_FEED_DELAY_RANDOMNESS`.
+So minimum amout of secods between triggering checking for updates is `lookup_interval - lookup_interval_randomness` and maximum is `lookup_interval + lookup_interval_randomness`.
+This, however, doesn't take into account neither `lookup_feed_delay` nor `lookup_feed_delay_randomness`.
 
 
 ### Sending updates and message formatting

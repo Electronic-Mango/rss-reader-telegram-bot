@@ -1,66 +1,67 @@
 """
-Module storing all configuration data used by the bot.
-
-All information can be either read from a "settings.toml" file, or from environment variables,
-where environment variables will be used with higher priority.
-
-"settings.toml" is loaded either from the execution environment root,
-or from a path given by "SETTINGS_TOML_PATH" environment variable.
-
-In order to overwrite values from .toml the varialbe must follow a specific naming convention of
-<TABLE NAME>_<FIELD NAME>, e.g. TELEGRAM_TOKEN, UPDATES_LOOKUP_INTERVAL, etc.
+Module holding all configuration parameters for the project based on "settings.yml" file.
+Additional parameters, overwritting the default ones can be loaded from a file defined in
+"CUSTOM_SETTINGS_PATH" environment variable.
+This overwritting file doesn't have to contain everything, only values to overwrite.
 """
 
-from os import getenv
-
+from functools import reduce
 from dotenv import load_dotenv
-from toml import load
+from os import getenv
+from typing import Any
+
+from mergedeep import merge
 from yaml import safe_load
 
 load_dotenv()
-
-_SETTINGS_TOML = load(getenv("SETTINGS_TOML_PATH", "settings.toml"))
-
-
-def _load_config(table: str, key: str) -> str:
-    env_name = f"{table}_{key}"
-    env_value = getenv(env_name)
-    return env_value if env_value is not None else _SETTINGS_TOML[table][key]
+_DEFAULT_SETTINGS_PATH = "settings.yml"
+_CUSTOM_SETTINGS_PATH_VARIABLE_NAME = "CUSTOM_SETTINGS_PATH"
+_CUSTOM_SETTINGS_PATH = getenv(_CUSTOM_SETTINGS_PATH_VARIABLE_NAME)
 
 
-# TELEGRAM
-TOKEN = _load_config("TELEGRAM", "TOKEN")
-ALLOWED_USERNAMES_DELIMITER = _load_config("TELEGRAM", "ALLOWED_USERNAMES_DELIMITER")
-ALLOWED_USERNAMES = [
-    username.strip()
-    for username in _load_config("TELEGRAM", "ALLOWED_USERNAMES").split(ALLOWED_USERNAMES_DELIMITER)
-    if username.strip()
-]
-PERSISTENCE_FILE = _load_config("TELEGRAM", "PERSISTENCE_FILE")
+def _load_settings(settings_path: str) -> dict[str, Any]:
+    with open(settings_path) as settings_yaml:
+        return safe_load(settings_yaml)
 
-# UPDATES
-LOOKUP_INTERVAL = float(_load_config("UPDATES", "LOOKUP_INTERVAL"))
-LOOKUP_INTERVAL_RANDOMNESS = int(_load_config("UPDATES", "LOOKUP_INTERVAL_RANDOMNESS"))
-LOOKUP_INITIAL_DELAY = float(_load_config("UPDATES", "LOOKUP_INITIAL_DELAY"))
-LOOKUP_FEED_DELAY = float(_load_config("UPDATES", "LOOKUP_FEED_DELAY"))
-LOOKUP_FEED_DELAY_RANDOMNESS = int(_load_config("UPDATES", "LOOKUP_FEED_DELAY_RANDOMNESS"))
-QUIET_HOURS = {int(hour) for hour in _load_config("UPDATES", "QUIET_HOURS").split()}
 
-# MESSAGES
-MAX_MESSAGE_SIZE = int(_load_config("MESSAGES", "MAX_MESSAGE_SIZE"))
-MAX_MEDIA_ITEMS_PER_MESSSAGE = int(_load_config("MESSAGES", "MAX_MEDIA_ITEMS_PER_MESSSAGE"))
+_SETTINGS = merge(
+    _load_settings(_DEFAULT_SETTINGS_PATH),
+    _load_settings(_CUSTOM_SETTINGS_PATH) if _CUSTOM_SETTINGS_PATH else {},
+)
 
-# LOGGING
-LOG_PATH = _load_config("LOGGING", "LOG_PATH")
-MAX_BYTES = _load_config("LOGGING", "MAX_BYTES")
-BACKUP_COUNT = _load_config("LOGGING", "BACKUP_COUNT")
 
-# DATABASE
-DB_HOST = _load_config("DATABASE", "DB_HOST")
-DB_PORT = int(_load_config("DATABASE", "DB_PORT"))
-DB_NAME = _load_config("DATABASE", "DB_NAME")
-DB_COLLECTION_NAME = _load_config("DATABASE", "DB_COLLECTION_NAME")
+def _load_config(*keys: tuple[str]) -> Any:
+    return reduce(lambda table, key: table[key], keys, _SETTINGS)
 
-# RSS
-with open(_load_config("RSS", "FEEDS_YAML_FILENAME"), "r") as feeds_yml:
+
+# telegram
+TOKEN = _load_config("telegram", "token")
+ALLOWED_USERNAMES = _load_config("telegram", "allowed_usernames")
+PERSISTENCE_FILE = _load_config("telegram", "persistence_file")
+
+# telegram updates
+LOOKUP_INTERVAL = _load_config("telegram", "updates", "lookup_interval")
+LOOKUP_INTERVAL_RANDOMNESS = _load_config("telegram", "updates", "lookup_interval_randomness")
+LOOKUP_INITIAL_DELAY = _load_config("telegram", "updates", "lookup_initial_delay")
+LOOKUP_FEED_DELAY = _load_config("telegram", "updates", "lookup_feed_delay")
+LOOKUP_FEED_DELAY_RANDOMNESS = _load_config("telegram", "updates", "lookup_feed_delay_randomness")
+QUIET_HOURS = _load_config("telegram", "updates", "quiet_hours")
+
+# telegram messages
+MAX_MESSAGE_SIZE = _load_config("telegram", "messages", "max_message_size")
+MAX_MEDIA_ITEMS_PER_MESSSAGE = _load_config("telegram", "messages", "max_media_items_per_message")
+
+# logging
+LOG_PATH = _load_config("logging", "log_path")
+MAX_BYTES = _load_config("logging", "max_bytes")
+BACKUP_COUNT = _load_config("logging", "backup_count")
+
+# database
+DB_HOST = _load_config("database", "host")
+DB_PORT = _load_config("database", "port")
+DB_NAME = _load_config("database", "name")
+DB_COLLECTION_NAME = _load_config("database", "collection_name")
+
+# rss
+with open(_load_config("rss", "feeds_yaml_filename"), "r") as feeds_yml:
     RSS_FEEDS = safe_load(feeds_yml)
