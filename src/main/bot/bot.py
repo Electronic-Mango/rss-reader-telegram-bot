@@ -9,27 +9,29 @@ All these actions are triggered by a single function.
 
 from logging import getLogger
 
-from settings import TOKEN
 from telegram.ext import Application, ApplicationBuilder, Defaults, JobQueue
 
-from bot.command.add import add_conversation_handler
+from bot.command.add import add_followup_handler, add_initial_handler
 from bot.command.cancel import cancel_command_handler
 from bot.command.hello import hello_command_handler
 from bot.command.list import list_command_handler
-from bot.command.remove import remove_conversation_handler
-from bot.command.remove_all import remove_all_conversation_handler
+from bot.command.remove import remove_followup_handler, remove_initial_handler
+from bot.command.remove_all import remove_all_followup_handler, remove_all_initial_handler
 from bot.command.start_help import start_help_command_handler
 from bot.error_handler import handle_errors
 from bot.update_checker import check_for_all_updates
-from settings import LOOKUP_INITIAL_DELAY, LOOKUP_INTERVAL
+from settings import LOOKUP_INITIAL_DELAY, LOOKUP_INTERVAL, TOKEN
 
 _UPDATE_HANDLERS = [
-    add_conversation_handler(),
+    add_initial_handler(),
+    add_followup_handler(),
     cancel_command_handler(),
     hello_command_handler(),
     list_command_handler(),
-    remove_conversation_handler(),
-    remove_all_conversation_handler(),
+    remove_initial_handler(),
+    remove_followup_handler(),
+    remove_all_initial_handler(),
+    remove_all_followup_handler(),
     start_help_command_handler(),
 ]
 
