@@ -19,7 +19,7 @@ _CONFIRM_REMOVAL_YES = "Yes"
 _CONFIRM_REMOVAL_NO = "No"
 _GO_BACK = "« Back to subscriptions"
 
-_RemoveFeedData = namedtuple("RemoveFeedData", ["feed_type", "feed_name"])
+_RemoveFeedData = namedtuple("_RemoveFeedData", ["feed_type", "feed_name"])
 _logger = getLogger(__name__)
 
 
@@ -40,6 +40,8 @@ def remove_followup_handler() -> ConversationHandler:
         },
         fallbacks=[CallbackQueryHandler(_cancel)],
         per_message=True,
+        name="remove_followup_handler",
+        persistent=True,
     )
 
 

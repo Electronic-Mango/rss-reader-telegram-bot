@@ -9,7 +9,7 @@ All these actions are triggered by a single function.
 
 from logging import getLogger
 
-from telegram.ext import Application, ApplicationBuilder, Defaults, JobQueue
+from telegram.ext import Application, ApplicationBuilder, Defaults, JobQueue, PicklePersistence
 
 from bot.command.add import add_followup_handler, add_initial_handler
 from bot.command.cancel import cancel_command_handler
@@ -20,7 +20,7 @@ from bot.command.remove_all import remove_all_followup_handler, remove_all_initi
 from bot.command.start_help import start_help_command_handler
 from bot.error_handler import handle_errors
 from bot.update_checker import check_for_all_updates
-from settings import LOOKUP_INITIAL_DELAY, LOOKUP_INTERVAL, TOKEN
+from settings import LOOKUP_INITIAL_DELAY, LOOKUP_INTERVAL, PERSISTENCE_FILE, TOKEN
 
 _UPDATE_HANDLERS = [
     add_initial_handler(),
@@ -46,12 +46,12 @@ def run_bot() -> None:
 
 
 def _prepare_application() -> Application:
-    # TODO Add persistence to inline keyboard queries
     return (
         ApplicationBuilder()
         .token(TOKEN)
         .defaults(Defaults("HTML"))
         .arbitrary_callback_data(True)
+        .persistence(PicklePersistence(PERSISTENCE_FILE))
         .build()
     )
 

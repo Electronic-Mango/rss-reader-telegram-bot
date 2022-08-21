@@ -26,7 +26,7 @@ ADD_HELP_MESSAGE = "/add - adds subscription for a given feed"
 _FEED_NAME_STATE = range(1)
 _FEED_TYPE_DATA_KEY = "FEED_TYPE_CONTEXT_DATA_KEY"
 
-_AddFeedData = namedtuple("AddFeedData", ["feed_type"])
+_AddFeedData = namedtuple("_AddFeedData", ["feed_type"])
 _logger = getLogger(__name__)
 
 
@@ -47,6 +47,8 @@ def add_followup_handler() -> ConversationHandler:
         },
         fallbacks=[CommandHandler("cancel", _cancel, USER_FILTER)],
         allow_reentry=True,
+        name="add_followup_handler",
+        persistent=True,
     )
 
 

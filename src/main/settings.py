@@ -36,6 +36,7 @@ ALLOWED_USERNAMES = [
     for username in _load_config("TELEGRAM", "ALLOWED_USERNAMES").split(ALLOWED_USERNAMES_DELIMITER)
     if username.strip()
 ]
+PERSISTENCE_FILE = _load_config("TELEGRAM", "PERSISTENCE_FILE")
 
 # UPDATES
 LOOKUP_INTERVAL = float(_load_config("UPDATES", "LOOKUP_INTERVAL"))

@@ -20,7 +20,7 @@ _CONFIRM_1_NO = "No"
 _CONFIRM_2_YES = "Yes, I'm sure"
 _CONFIRM_2_NO = "No, don't remove"
 
-_RemoveAllData = namedtuple("RemoveAll", ["cnf"])
+_RemoveAllData = namedtuple("_RemoveAllData", ["cnf"])
 _logger = getLogger(__name__)
 
 
@@ -42,6 +42,8 @@ def remove_all_followup_handler() -> ConversationHandler:
         },
         fallbacks=[CallbackQueryHandler(_cancel)],
         per_message=True,
+        name="remove_all_followup_handler",
+        persistent=True,
     )
 
 

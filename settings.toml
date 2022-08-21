@@ -6,14 +6,15 @@
 TOKEN = ""  # your telegram bot token
 ALLOWED_USERNAMES_DELIMITER = ","  # delimiter splitting users in the field below
 ALLOWED_USERNAMES = ""  # usernames which can use the bot, leave empty for public access
+PERSISTENCE_FILE = "persistence"  # file used for storing command states between bot restarts
 
 [UPDATES]
 LOOKUP_INTERVAL = 3600  # how often should bot check for updates in seconds
-LOOKUP_INTERVAL_RANDOMNESS = 0  # Random delay added to lookup interval, from 0 to specified value, or disabled with 0
+LOOKUP_INTERVAL_RANDOMNESS = 0  # random delay added to lookup interval, from 0 to specified value, or disabled with 0
 LOOKUP_INITIAL_DELAY = 30  # delay in seconds before first check for updates is run after bot is started
-LOOKUP_FEED_DELAY = 1  # Delay between update check for each stored feed
-LOOKUP_FEED_DELAY_RANDOMNESS = 0  # Additional random delay, from 0 to specified value, or disabled with 0
-QUIET_HOURS = ""  # Hours in 24h format where bot won't check for updates, separated by a space
+LOOKUP_FEED_DELAY = 1  # delay between update check for each stored feed
+LOOKUP_FEED_DELAY_RANDOMNESS = 0  # additional random delay, from 0 to specified value, or disabled with 0
+QUIET_HOURS = ""  # hours in 24h format where bot won't check for updates, separated by a space
 
 [MESSAGES]
 MAX_MESSAGE_SIZE = 1024  # max text message size send by the bot
@@ -21,9 +22,9 @@ MAX_MEDIA_ITEMS_PER_MESSSAGE = 10  # max number of media items per single messag
 
 [LOGGING]
 LOG_PATH = "bot.log"  # relative path for bot internal logs
-MAX_BYTES = 1000000  # Number of bytes a log file can take
-BACKUP_COUNT = 10  # Number of kept log files, new ones are created when the last reaches MAX_BYTEs is size
-# Setting either MAX_BYTES or BACKUP_COUNT to 0 will disable log rotating
+MAX_BYTES = 1000000  # number of bytes a log file can take
+BACKUP_COUNT = 10  # number of kept log files, new ones are created when the last reaches MAX_BYTEs is size
+# setting either MAX_BYTES or BACKUP_COUNT to 0 will disable log rotating
 
 [DATABASE]
 DB_HOST = "localhost"  # MongoDB host name, here MongoDB is running locally
