@@ -18,6 +18,7 @@ A simple Telegram bot sending updates for RSS feeds, build with [`python-telegra
    - [Randomness when checking for updates](#randomness-when-checking-for-updates)
    - [Docker](#docker)
  - [Running the bot](#running-the-bot)
+ - [Commands](#commands)
  - [Other details](#other-details)
    - [Deciding which feeds are valid](#deciding-which-feeds-are-valid)
    - [Checking for updates](#checking-for-updates)
@@ -136,6 +137,18 @@ Running the bot is quite simple:
 1. Configure Telegram bot token parameters
 1. Supply RSS feed links
 1. Run the `main.py` file, or use a Docker container
+
+
+## Commands
+
+ * `/help` - print help information with all commands
+ * `/start` - the same as `/help`
+ * `/hello` - say hello to the bot
+ * `/list` - list all subscriptions
+ * `/add` - adds subscription for a given feed
+ * `/remove` - remove subscription for a given feed
+ * `/removeall` - remove all subscriptions
+ * `/cancel` - cancel the current operation, currently used only when adding new subscriptions
 
 
 ## Other details
