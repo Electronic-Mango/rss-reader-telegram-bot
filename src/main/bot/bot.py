@@ -14,7 +14,7 @@ from telegram.ext import Application, ApplicationBuilder, Defaults, JobQueue, Pi
 from bot.command.add import add_followup_handler, add_initial_handler
 from bot.command.cancel import cancel_command_handler
 from bot.command.hello import hello_command_handler
-from bot.command.list import list_command_handler
+from bot.command.list.handler import list_initial_handler, list_followup_handler
 from bot.command.remove import remove_followup_handler, remove_initial_handler
 from bot.command.remove_all import remove_all_followup_handler, remove_all_initial_handler
 from bot.command.start_help import start_help_command_handler
@@ -27,7 +27,8 @@ _UPDATE_HANDLERS = [
     add_followup_handler(),
     cancel_command_handler(),
     hello_command_handler(),
-    list_command_handler(),
+    list_initial_handler(),
+    list_followup_handler(),
     remove_initial_handler(),
     remove_followup_handler(),
     remove_all_initial_handler(),

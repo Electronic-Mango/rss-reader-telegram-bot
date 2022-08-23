@@ -8,6 +8,7 @@ This way it should be simple to switch to a different DB altogether,
 since this module won't have to be modified.
 """
 
+from collections import defaultdict
 from logging import getLogger
 
 from pymongo.results import DeleteResult
@@ -26,6 +27,7 @@ def get_all_stored_data() -> list[tuple[int, str, str, str]]:
     ]
 
 
+# TODO Eventually this should be merged with get_stored_feed_type_to_names
 def get_stored_feed_type_and_name(chat_id: int) -> list[tuple[str, str]]:
     """Get all data for a given chat_id stored in the DB."""
     _logger.info(f"[{chat_id}] Getting data")
@@ -33,6 +35,15 @@ def get_stored_feed_type_and_name(chat_id: int) -> list[tuple[str, str]]:
         (document["feed_type"], document["feed_name"])
         for document in find_many({"chat_id": chat_id})
     ]
+
+
+def get_stored_feed_type_to_names(chat_id: int) -> dict[str, list[str]]:
+    """Get all data for a given chat_id stored in the DB."""
+    _logger.info(f"[{chat_id}] Getting data")
+    feed_type_to_names = defaultdict(list)
+    for document in find_many({"chat_id": chat_id}):
+        feed_type_to_names[document["feed_type"]].append(document["feed_name"])
+    return feed_type_to_names
 
 
 def feed_is_already_stored(chat_id: int, feed_type: str, feed_name: str) -> bool:
