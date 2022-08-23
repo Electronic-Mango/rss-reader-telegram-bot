@@ -1,3 +1,7 @@
+"""
+States used by "list" command conversation handler.
+"""
+
 from enum import Enum, auto
 
 

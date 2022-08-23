@@ -1,3 +1,8 @@
+"""
+Module handling printing feed names from selected type.
+Also allows going back to the list of all types.
+"""
+
 from logging import getLogger
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update

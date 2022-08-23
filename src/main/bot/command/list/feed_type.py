@@ -1,3 +1,7 @@
+"""
+Module handling listing available feed types.
+"""
+
 from logging import getLogger
 from typing import Callable
 
@@ -12,6 +16,7 @@ _logger = getLogger(__name__)
 
 
 async def initial_list_request(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
+    """Initial list of types directly after "list" command is run"""
     chat_id = update.effective_chat.id
     _logger.info(f"[{chat_id}] Initial request of feed type")
     chat_data = get_stored_feed_type_to_names(chat_id)
@@ -19,6 +24,7 @@ async def initial_list_request(update: Update, _: ContextTypes.DEFAULT_TYPE) -> 
 
 
 async def followup_list_request(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
+    """Go back to the list of types from the list of names"""
     query = update.callback_query
     await query.answer()
     chat_id = update.effective_chat.id
