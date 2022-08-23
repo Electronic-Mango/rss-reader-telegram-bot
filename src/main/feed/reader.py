@@ -5,7 +5,6 @@ Module handling all RSS requests.
 from itertools import takewhile
 from logging import getLogger
 
-from dateutil.parser import parse as parse_date
 from feedparser import parse
 from feedparser.util import FeedParserDict
 
@@ -58,7 +57,11 @@ def get_not_handled_entries(feed: FeedParserDict, target_id: str) -> list[FeedPa
 
 
 def _get_sorted_entries(feed: FeedParserDict) -> list[FeedParserDict]:
-    return sorted(feed.entries, key=lambda entry: parse_date(entry.published), reverse=True)
+    return sorted(
+        feed.entries,
+        key=lambda entry: entry.get("published_parsed") or entry.get("updated_parsed"),
+        reverse=True,
+    )
 
 
 def _not_latest_entry(target_id: str, entry_id: str) -> bool:
