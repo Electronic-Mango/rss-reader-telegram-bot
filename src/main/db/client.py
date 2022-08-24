@@ -65,6 +65,11 @@ def find_many(filter: Mapping[str, Any] = None) -> Cursor:
     return _feed_collection.find(filter)
 
 
+def find_one(filter: Mapping[str, Any] = None) -> Cursor:
+    """Wrapper for "find_one" DB function."""
+    return _feed_collection.find_one(filter)
+
+
 def exists(filter: Mapping[str, Any]) -> bool:
     """Check if there are any documents from a given filter, using count_documents DB function."""
     return _feed_collection.count_documents(filter, limit=1)

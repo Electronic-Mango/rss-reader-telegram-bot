@@ -3,7 +3,15 @@ from unittest.mock import MagicMock, patch
 from pymongo import ASCENDING
 from pytest import mark
 
-from db.client import delete_many, exists, find_many, initialize_db, insert_one, update_one
+from db.client import (
+    delete_many,
+    exists,
+    find_many,
+    find_one,
+    initialize_db,
+    insert_one,
+    update_one,
+)
 from settings import DB_COLLECTION_NAME, DB_HOST, DB_NAME, DB_PORT
 
 collection_mock = MagicMock()
@@ -39,6 +47,7 @@ def test_initialize_db(mongo_client_mock: MagicMock) -> None:
         (delete_many, "delete_many", (filter,)),
         (update_one, "find_one_and_update", (filter, document)),
         (find_many, "find", (filter,)),
+        (find_one, "find_one", (filter,)),
         (exists, "count_documents", (filter,)),
     ],
 )
