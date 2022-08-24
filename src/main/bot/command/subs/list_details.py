@@ -36,8 +36,8 @@ def _generate_description(type: str, name: str, date: str) -> str:
         f"Subscription name: <b>{name}</b>",
     ]
     if date:
-        parsed_date = datetime.fromisoformat(date).strftime("%Y.%m.%d %H:%M:%S UCT")
-        details.append(f"Last updated: <b>{parsed_date}</b>")
+        parsed_date = datetime.fromisoformat(date).strftime("%Y.%m.%d %H:%M:%S")
+        details.append(f"Last updated (UCT): <b>{parsed_date}</b>")
     return "\n".join(details)
 
 
