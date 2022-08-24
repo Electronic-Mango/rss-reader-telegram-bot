@@ -8,7 +8,7 @@ from typing import Callable
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import ContextTypes
 
-from bot.command.list.conversation_state import State
+from bot.command.list.conversation_state import ConversationState
 from bot.command.list.query_data import ListNamesData
 from db.wrapper import get_stored_feed_type_to_names
 
@@ -30,7 +30,7 @@ async def followup_list_feed_types(update: Update, _: ContextTypes.DEFAULT_TYPE)
     chat_id = update.effective_chat.id
     _logger.info(f"[{chat_id}] Followup request of feed type")
     await _send_types_list(query.edit_message_text, *query.data)
-    return State.LIST_TYPES
+    return ConversationState.LIST_TYPES
 
 
 async def _send_types_list(response_callback: Callable, chat_data: dict[str, list[str]]) -> None:

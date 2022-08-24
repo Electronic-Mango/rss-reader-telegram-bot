@@ -8,7 +8,7 @@ This way whole conversation handler can be handler per each message.
 
 from telegram.ext import CallbackQueryHandler, CommandHandler, ConversationHandler
 
-from bot.command.list.conversation_state import State
+from bot.command.list.conversation_state import ConversationState
 from bot.command.list.fallback import fallback
 from bot.command.list.feed_name import list_names
 from bot.command.list.feed_type import followup_list_feed_types, initial_list_feed_types
@@ -28,8 +28,8 @@ def list_followup_handler() -> ConversationHandler:
             CallbackQueryHandler(list_names, lambda data: isinstance(data, ListNamesData))
         ],
         states={
-            State.LIST_NAMES: [CallbackQueryHandler(followup_list_feed_types)],
-            State.LIST_TYPES: [CallbackQueryHandler(list_names)],
+            ConversationState.LIST_NAMES: [CallbackQueryHandler(followup_list_feed_types)],
+            ConversationState.LIST_TYPES: [CallbackQueryHandler(list_names)],
         },
         fallbacks=[CallbackQueryHandler(fallback)],
         per_message=True,
