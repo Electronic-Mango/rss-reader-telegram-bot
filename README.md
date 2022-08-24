@@ -179,7 +179,6 @@ Running the bot is quite simple:
  * `/help` - print help information with all commands
  * `/start` - the same as `/help`
  * `/hello` - say hello to the bot
- * `/list` - list all subscriptions
  * `/add` - adds subscription for a given feed
  * `/subscriptions` - list and manage your subscriptions
  * `/removeall` - remove all subscriptions
