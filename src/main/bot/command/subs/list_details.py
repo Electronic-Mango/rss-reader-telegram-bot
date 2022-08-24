@@ -6,6 +6,7 @@ Allows going back to list of specific subscriptions and list of all types.
 from datetime import datetime
 from logging import getLogger
 
+from dateutil.tz import tzlocal, tzutc
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import ContextTypes
 
@@ -30,14 +31,14 @@ async def list_details(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
     return ConversationState.SHOW_DETAILS
 
 
-def _generate_description(type: str, name: str, date: str) -> str:
+def _generate_description(type: str, name: str, date: list[int]) -> str:
     details = [
         f"Subscription type: <b>{type}</b>",
         f"Subscription name: <b>{name}</b>",
     ]
     if date:
-        parsed_date = datetime.fromisoformat(date).strftime("%Y.%m.%d %H:%M:%S")
-        details.append(f"Last updated (UCT): <b>{parsed_date}</b>")
+        parsed_date = datetime(*date[:6]).replace(tzinfo=tzutc()).astimezone(tzlocal())
+        details.append(f"Last updated: <b>{parsed_date.strftime('%Y.%m.%d %H:%M:%S')}</b>")
     return "\n".join(details)
 
 

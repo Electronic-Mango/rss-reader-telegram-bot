@@ -10,6 +10,7 @@ since this module won't have to be modified.
 
 from collections import defaultdict
 from logging import getLogger
+from time import struct_time
 
 from pymongo.results import DeleteResult
 
@@ -36,7 +37,7 @@ def get_stored_feed_type_to_names(chat_id: int) -> dict[str, list[str]]:
     return feed_type_to_names
 
 
-def get_latest_entry_data(chat_id: int, feed_type: str, feed_name: str) -> tuple[str, str]:
+def get_latest_entry_data(chat_id: int, feed_type: str, feed_name: str) -> tuple[str, list[int]]:
     """Return latest stored entry ID for given feed"""
     _logger.info(f"[{chat_id}] Getting latest entry ID for [{feed_type}] [{feed_name}]")
     document = find_one({"chat_id": chat_id, "feed_type": feed_type, "feed_name": feed_name})
@@ -56,7 +57,12 @@ def chat_has_stored_feeds(chat_id: int) -> bool:
 
 
 def store_feed_data(
-    chat_id: int, feed_name: str, feed_type: str, latest_id: str, latest_link: str, latest_date: str
+    chat_id: int,
+    feed_name: str,
+    feed_type: str,
+    latest_id: str,
+    latest_link: str,
+    latest_date: struct_time,
 ) -> None:
     """Store a given feed data in the DB."""
     _logger.info(f"[{chat_id}] Insert name=[{feed_name}] type=[{feed_type}] latest=[{latest_id}]")
@@ -73,7 +79,12 @@ def store_feed_data(
 
 
 def update_stored_latest_data(
-    chat_id: int, feed_type: str, feed_name: str, latest_id: str, latest_link: str, latest_date: str
+    chat_id: int,
+    feed_type: str,
+    feed_name: str,
+    latest_id: str,
+    latest_link: str,
+    latest_date: struct_time,
 ) -> None:
     """Update "latest_id" for a given feed in the DB."""
     _logger.info(f"[{chat_id}] Updating latest item ID [{feed_type}] [{feed_name}] [{latest_id}]")

@@ -23,7 +23,6 @@ LATEST_ENTRY = FeedParserDict(
     {
         "id": EXPECTED_LATEST_ID,
         "link": EXPECTED_LATEST_LINK,
-        "published": EXPECTED_LATEST_DATE,
         "published_parsed": EXPECTED_LATEST_DATE,
     }
 )

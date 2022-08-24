@@ -45,7 +45,7 @@ def get_latest_data(feed: FeedParserDict) -> tuple[str, str, str]:
     latest_entry = entries[0]
     id = latest_entry.get("id")
     link = latest_entry.get("link")
-    date = latest_entry.get("published") or latest_entry.get("updated")
+    date = latest_entry.get("published_parsed") or latest_entry.get("published_parsed")
     return id, link, date
 
 
