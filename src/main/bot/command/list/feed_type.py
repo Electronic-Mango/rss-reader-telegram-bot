@@ -35,8 +35,8 @@ async def followup_list_feed_types(update: Update, _: ContextTypes.DEFAULT_TYPE)
 
 async def _send_types_list(response_callback: Callable, chat_data: dict[str, list[str]]) -> None:
     keyboard = [
-        [InlineKeyboardButton(type, callback_data=ListNamesData(type, names, chat_data))]
-        for type, names in chat_data.items()
+        [InlineKeyboardButton(type, callback_data=ListNamesData(type, chat_data))]
+        for type in chat_data.keys()
     ]
     await response_callback(
         "Select subscription type",
