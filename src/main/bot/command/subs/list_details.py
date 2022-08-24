@@ -33,12 +33,12 @@ async def list_details(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
 
 def _generate_description(type: str, name: str, date: list[int]) -> str:
     details = [
-        f"Subscription type: <b>{type}</b>",
-        f"Subscription name: <b>{name}</b>",
+        f"Source: <b>{type}</b>",
+        f"Name: <b>{name}</b>",
     ]
     if date:
         parsed_date = datetime(*date[:6]).replace(tzinfo=tzutc()).astimezone(tzlocal())
-        details.append(f"Last updated: <b>{parsed_date.strftime('%Y.%m.%d %H:%M:%S')}</b>")
+        details.append(f"Updated: <b>{parsed_date.strftime('%Y.%m.%d %H:%M:%S')}</b>")
     return "\n".join(details)
 
 

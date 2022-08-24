@@ -21,7 +21,7 @@ async def list_names(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
     _logger.info(f"[{update.effective_chat.id}] Requesting feed name for [{type}]")
     # TODO Should names be loaded from the DB instead?
     await query.edit_message_text(
-        "Select specific subscription:",
+        "Select subscription:",
         reply_markup=_prepare_keyboard(type, chat_data),
     )
     return ConversationState.LIST_NAMES

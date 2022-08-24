@@ -40,6 +40,6 @@ async def _send_types_list(response_callback: Callable, chat_data: dict[str, lis
         for type in chat_data.keys()
     ]
     await response_callback(
-        "Select subscription type:",
+        "Select source:",
         reply_markup=InlineKeyboardMarkup(keyboard),
     )

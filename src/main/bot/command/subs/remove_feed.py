@@ -29,7 +29,7 @@ async def request_confirmation(update: Update, _: ContextTypes.DEFAULT_TYPE) -> 
         [InlineKeyboardButton("« Back to types", callback_data=TypesData(chat_data))],
     ]
     await query.edit_message_text(
-        f"Confirm removal of <b>{name}</b> ({type})",
+        f"Do you want to unsubscribe from <b>{name}</b>?",
         reply_markup=InlineKeyboardMarkup(keyboard),
     )
     return ConversationState.CONFIRM_REMOVAL

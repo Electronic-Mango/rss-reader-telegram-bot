@@ -64,7 +64,7 @@ async def _request_feed_type(update: Update, _: ContextTypes.DEFAULT_TYPE) -> No
         [InlineKeyboardButton(name, callback_data=_AddFeedData(name))] for name in RSS_FEEDS.keys()
     ]
     await update.message.reply_text(
-        "Select source for new subscription",
+        "Select source:",
         reply_markup=InlineKeyboardMarkup(keyboard),
     )
 
@@ -76,7 +76,7 @@ async def _request_feed_names(update: Update, context: ContextTypes.DEFAULT_TYPE
     context.user_data[_ConversationState.FEED_NAME] = feed_type
     _logger.info(f"[{update.effective_chat.id}] User selected type [{feed_type}], requesting name")
     await update.effective_chat.send_message(
-        f"Send <b>{feed_type}</b> source, you can send multiple separated by a space, or /cancel",
+        f"Send <b>{feed_type}</b> name, multiple names separated by a space, or /cancel",
     )
     return _ConversationState.FEED_NAME
 
