@@ -10,6 +10,7 @@ from telegram.ext import ContextTypes
 
 from bot.command.subs.conversation_state import ConversationState
 from bot.command.subs.query_data import NamesData, TypesData, RemoveFeedData
+from db.wrapper import get_latest_entry_id
 
 _logger = getLogger(__name__)
 
@@ -17,17 +18,22 @@ _logger = getLogger(__name__)
 async def list_details(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
     await query.answer()
+    chat_id = update.effective_chat.id
     type, name, chat_data = query.data
-    _logger.info(f"[{update.effective_chat.id}] Showing details for [{type}] [{name}]")
+    _logger.info(f"[{chat_id}] Showing details for [{type}] [{name}]")
     await query.edit_message_text(
-        _generate_description(type, name),
+        _generate_description(chat_id, type, name),
         reply_markup=_prepare_keyboard(type, name, chat_data),
     )
     return ConversationState.SHOW_DETAILS
 
 
-def _generate_description(type: str, name: str) -> str:
-    details = [f"Subscription type:<b>{type}</b>", f"Subscription name:<b>{name}</b>"]
+def _generate_description(chat_id: int, type: str, name: str) -> str:
+    details = [
+        f"Subscription type: <b>{type}</b>",
+        f"Subscription name: <b>{name}</b>",
+        f"Latest ID: <b>{get_latest_entry_id(chat_id, type, name)}</b>"
+    ]
     return "\n".join(details)
 
 
