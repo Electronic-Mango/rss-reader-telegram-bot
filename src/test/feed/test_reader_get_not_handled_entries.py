@@ -9,11 +9,11 @@ FEED_TYPE = "FEED_TYPE"
 FEED_NAME = "FEED_NAME"
 FEED_LINK = "FEED_LINK"
 ENTRIES = [
-    FeedParserDict({"published": "01.01.2001", "id": "ID-1"}),
-    FeedParserDict({"published": "02.02.2002", "id": "ID-2"}),
-    FeedParserDict({"published": "03.03.2003", "id": "ID-3"}),
-    FeedParserDict({"published": "04.04.2004", "id": "ID-4"}),
-    FeedParserDict({"published": "05.05.2005", "id": "ID-5"}),
+    FeedParserDict({"published_parsed": "01.01.2001", "id": "ID-1"}),
+    FeedParserDict({"updated_parsed": "02.02.2002", "id": "ID-2"}),
+    FeedParserDict({"published_parsed": "03.03.2003", "id": "ID-3"}),
+    FeedParserDict({"updated_parsed": "04.04.2004", "id": "ID-4"}),
+    FeedParserDict({"published_parsed": "05.05.2005", "id": "ID-5"}),
 ]
 
 

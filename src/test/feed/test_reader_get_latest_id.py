@@ -10,13 +10,13 @@ FEED_NAME = "FEED_NAME"
 FEED_LINK = "FEED_LINK"
 
 ENTRIES = [
-    FeedParserDict({"published": "02.02.2002"}),
-    FeedParserDict({"published": "01.01.2001"}),
-    FeedParserDict({"published": "04.04.2004"}),
-    FeedParserDict({"published": "03.03.2003"}),
+    FeedParserDict({"updated_parsed": "02.02.2002"}),
+    FeedParserDict({"published_parsed": "01.01.2001"}),
+    FeedParserDict({"updated_parsed": "04.04.2004"}),
+    FeedParserDict({"published_parsed": "03.03.2003"}),
 ]
 EXPECTED_LATEST_ID = "LATEST_ID"
-LATEST_ENTRY = FeedParserDict({"published": "05.05.2005", "id": EXPECTED_LATEST_ID})
+LATEST_ENTRY = FeedParserDict({"published_parsed": "05.05.2005", "id": EXPECTED_LATEST_ID})
 
 
 @patch("feed.reader.RSS_FEEDS", {FEED_TYPE: FEED_LINK})
