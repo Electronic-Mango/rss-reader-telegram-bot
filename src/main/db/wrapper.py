@@ -13,7 +13,7 @@ from logging import getLogger
 
 from pymongo.results import DeleteResult
 
-from db.client import delete_many, exists, find_many, insert_one, update_one
+from db.client import delete_many, exists, find_many, find_one, insert_one, update_one
 
 _logger = getLogger(__name__)
 
@@ -34,6 +34,13 @@ def get_stored_feed_type_to_names(chat_id: int) -> dict[str, list[str]]:
     for document in find_many({"chat_id": chat_id}):
         feed_type_to_names[document["feed_type"]].append(document["feed_name"])
     return feed_type_to_names
+
+
+def get_latest_entry_id(chat_id: int, feed_type: str, feed_name: str) -> str:
+    """Return latest stored entry ID for given feed"""
+    _logger.info(f"[{chat_id}] Getting latest entry ID for [{feed_type}] [{feed_name}]")
+    document = find_one({"chat_id": chat_id, "feed_type": feed_type, "feed_name": feed_name})
+    return document["latest_id"]
 
 
 def feed_is_already_stored(chat_id: int, feed_type: str, feed_name: str) -> bool:
