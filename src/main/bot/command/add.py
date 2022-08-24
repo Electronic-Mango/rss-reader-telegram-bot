@@ -2,8 +2,9 @@
 Module handling the "add" command, allowing users to add new RSS subscriptions.
 """
 
-from collections import namedtuple
+from enum import Enum, auto
 from logging import getLogger
+from typing import NamedTuple
 
 from feedparser import FeedParserDict
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Message, Update
@@ -23,10 +24,15 @@ from settings import RSS_FEEDS
 
 ADD_HELP_MESSAGE = "/add - adds subscription for a given feed"
 
-_FEED_NAME_STATE = range(1)
-_FEED_TYPE_DATA_KEY = "FEED_TYPE_CONTEXT_DATA_KEY"
 
-_AddFeedData = namedtuple("_AddFeedData", ["feed_type"])
+class _ConversationState(Enum):
+    FEED_NAME = auto()
+
+
+class _AddFeedData(NamedTuple):
+    feed_type: str
+
+
 _logger = getLogger(__name__)
 
 
@@ -37,10 +43,10 @@ def add_initial_handler() -> CommandHandler:
 def add_followup_handler() -> ConversationHandler:
     return ConversationHandler(
         entry_points=[
-            CallbackQueryHandler(_handle_feed_type, lambda data: isinstance(data, _AddFeedData))
+            CallbackQueryHandler(_request_feed_names, lambda data: isinstance(data, _AddFeedData))
         ],
         states={
-            _FEED_NAME_STATE: [
+            _ConversationState.FEED_NAME: [
                 MessageHandler(USER_FILTER & TEXT & ~COMMAND, _handle_feed_names),
                 CommandHandler("cancel", _cancel, USER_FILTER),
             ],
@@ -63,22 +69,22 @@ async def _request_feed_type(update: Update, _: ContextTypes.DEFAULT_TYPE) -> No
     )
 
 
-async def _handle_feed_type(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def _request_feed_names(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
     await query.answer()
     feed_type = query.data.feed_type
-    context.user_data[_FEED_TYPE_DATA_KEY] = feed_type
+    context.user_data[_ConversationState.FEED_NAME] = feed_type
     _logger.info(f"[{update.effective_chat.id}] User selected type [{feed_type}], requesting name")
     await update.effective_chat.send_message(
         f"Send <b>{feed_type}</b> source, you can send multiple separated by a space, or /cancel",
     )
-    return _FEED_NAME_STATE
+    return _ConversationState.FEED_NAME
 
 
 async def _handle_feed_names(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     chat_id = update.effective_chat.id
     feed_names = update.message.text.split()
-    feed_type = context.user_data[_FEED_TYPE_DATA_KEY]
+    feed_type = context.user_data[_ConversationState.FEED_NAME]
     _logger.info(f"{chat_id} User send feed name {feed_names} for [{feed_type}]")
     for feed_name in feed_names:
         await _handle_feed_name(update.message, chat_id, feed_type, feed_name)
@@ -88,9 +94,7 @@ async def _handle_feed_names(update: Update, context: ContextTypes.DEFAULT_TYPE)
 async def _handle_feed_name(message: Message, chat_id: int, feed_type: str, feed_name: str) -> None:
     if feed_is_already_stored(chat_id, feed_type, feed_name):
         await _feed_with_given_name_already_exists(message, chat_id, feed_name, feed_type)
-        return
-    parsed_feed = get_parsed_feed(feed_type, feed_name)
-    if feed_is_valid(parsed_feed):
+    elif feed_is_valid(parsed_feed := get_parsed_feed(feed_type, feed_name)):
         await _store_subscription(message, chat_id, parsed_feed, feed_type, feed_name)
     else:
         await _feed_does_not_exist(message, chat_id, feed_type, feed_name)
