@@ -19,16 +19,17 @@ async def initial_list_feed_types(update: Update, _: ContextTypes.DEFAULT_TYPE) 
     """Initial list of types directly after "subscriptions" command is run"""
     chat_id = update.effective_chat.id
     _logger.info(f"[{chat_id}] Initial request of feed type")
-    chat_data = get_stored_feed_type_to_names(chat_id)
-    await _send_types_list(update.message.reply_text, chat_data)
+    if chat_data := get_stored_feed_type_to_names(chat_id):
+        await _send_types_list(update.message.reply_text, chat_data)
+    else:
+        await update.message.reply_text("No subscriptions")
 
 
 async def followup_list_feed_types(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
     """List of types after going back from list of names"""
     query = update.callback_query
     await query.answer()
-    chat_id = update.effective_chat.id
-    _logger.info(f"[{chat_id}] Followup request of feed type")
+    _logger.info(f"[{update.effective_chat.id}] Followup request of feed type")
     await _send_types_list(query.edit_message_text, query.data.chat_data)
     return ConversationState.LIST_TYPES
 
