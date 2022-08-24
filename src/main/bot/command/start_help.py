@@ -13,16 +13,14 @@ from telegram.ext import CommandHandler, ContextTypes
 from bot.command.add import ADD_HELP_MESSAGE
 from bot.command.cancel import CANCEL_HELP_MESSAGE
 from bot.command.hello import HELLO_HELP_MESSAGE
-from bot.command.list.help import LIST_HELP_MESSAGE
-from bot.command.remove import REMOVE_HELP_MESSAGE
 from bot.command.remove_all import REMOVE_ALL_HELP_MESSAGE
+from bot.command.subs.help import SUBSCRIPTIONS_HELP_MESSAGE
 from bot.user_filter import USER_FILTER
 
 HELP_MESSAGES = [
     HELLO_HELP_MESSAGE,
-    LIST_HELP_MESSAGE,
     ADD_HELP_MESSAGE,
-    REMOVE_HELP_MESSAGE,
+    SUBSCRIPTIONS_HELP_MESSAGE,
     REMOVE_ALL_HELP_MESSAGE,
     CANCEL_HELP_MESSAGE,
 ]

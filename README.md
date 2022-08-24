@@ -181,7 +181,7 @@ Running the bot is quite simple:
  * `/hello` - say hello to the bot
  * `/list` - list all subscriptions
  * `/add` - adds subscription for a given feed
- * `/remove` - remove subscription for a given feed
+ * `/subscriptions` - list and manage your subscriptions
  * `/removeall` - remove all subscriptions
  * `/cancel` - cancel the current operation, currently used only when adding new subscriptions
 
