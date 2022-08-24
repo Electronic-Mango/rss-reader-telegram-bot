@@ -36,11 +36,17 @@ def feed_is_valid(feed: FeedParserDict) -> bool:
     return feed.status in [200, 301] and "entries" in feed and feed.entries
 
 
-def get_latest_id(feed: FeedParserDict) -> str:
-    """Get latest ID for a given feed."""
-    _logger.info(f"Getting latest ID for [{feed.href}]")
+def get_latest_data(feed: FeedParserDict) -> tuple[str, str, str]:
+    """Get data (entry ID, link, date) of latest entry for a given feed"""
+    _logger.info(f"Getting data from latest entry for [{feed.href}]")
     entries = _get_sorted_entries(feed)
-    return entries[0].id if entries else None
+    if not entries:
+        return None
+    latest_entry = entries[0]
+    id = latest_entry.get("id")
+    link = latest_entry.get("link")
+    date = latest_entry.get("published") or latest_entry.get("updated")
+    return id, link, date
 
 
 def get_not_handled_entries(feed: FeedParserDict, target_id: str) -> list[FeedParserDict]:

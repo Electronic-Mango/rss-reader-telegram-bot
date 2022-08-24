@@ -20,7 +20,7 @@ from telegram import Bot
 from telegram.ext import ContextTypes
 
 from bot.sender import send_update
-from db.wrapper import get_all_stored_data, update_stored_latest_id
+from db.wrapper import get_all_stored_data, update_stored_latest_data
 from feed.parser import parse_description, parse_media_links, parse_link
 from feed.reader import feed_is_valid, get_not_handled_entries, get_parsed_feed
 from settings import (
@@ -85,4 +85,4 @@ async def _handle_update(
         media_links = parse_media_links(entry)
         await send_update(bot, chat_id, feed_type, feed_name, link, description, media_links)
     latest_id = not_handled_feed_entries[-1].id
-    update_stored_latest_id(chat_id, feed_type, feed_name, latest_id)
+    update_stored_latest_data(chat_id, feed_type, feed_name, latest_id)

@@ -19,7 +19,7 @@ from telegram.ext.filters import COMMAND, TEXT
 
 from bot.user_filter import USER_FILTER
 from db.wrapper import feed_is_already_stored, store_feed_data
-from feed.reader import feed_is_valid, get_latest_id, get_parsed_feed
+from feed.reader import feed_is_valid, get_latest_data, get_parsed_feed
 from settings import RSS_FEEDS
 
 ADD_HELP_MESSAGE = "/add - adds subscription for a given feed"
@@ -117,8 +117,8 @@ async def _store_subscription(
     feed_type: str,
     feed_name: str,
 ) -> None:
-    latest_id = get_latest_id(parsed_feed)
-    store_feed_data(chat_id, feed_name, feed_type, latest_id)
+    id, link, date = get_latest_data(parsed_feed)
+    store_feed_data(chat_id, feed_name, feed_type, id, link, date)
     await message.reply_text(f"Added subscription for <b>{feed_name}</b>!")
 
 

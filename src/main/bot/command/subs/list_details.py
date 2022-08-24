@@ -3,6 +3,7 @@ Module showing details of a single subscription.
 Allows going back to list of specific subscriptions and list of all types.
 """
 
+from datetime import datetime
 from logging import getLogger
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
@@ -10,7 +11,7 @@ from telegram.ext import ContextTypes
 
 from bot.command.subs.conversation_state import ConversationState
 from bot.command.subs.query_data import NamesData, TypesData, RemoveFeedData
-from db.wrapper import get_latest_entry_id
+from db.wrapper import get_latest_entry_data
 
 _logger = getLogger(__name__)
 
@@ -21,26 +22,33 @@ async def list_details(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
     chat_id = update.effective_chat.id
     type, name, chat_data = query.data
     _logger.info(f"[{chat_id}] Showing details for [{type}] [{name}]")
+    link, date = get_latest_entry_data(chat_id, type, name)
     await query.edit_message_text(
-        _generate_description(chat_id, type, name),
-        reply_markup=_prepare_keyboard(type, name, chat_data),
+        _generate_description(type, name, date),
+        reply_markup=_prepare_keyboard(type, name, chat_data, link),
     )
     return ConversationState.SHOW_DETAILS
 
 
-def _generate_description(chat_id: int, type: str, name: str) -> str:
+def _generate_description(type: str, name: str, date: str) -> str:
     details = [
         f"Subscription type: <b>{type}</b>",
         f"Subscription name: <b>{name}</b>",
-        f"Latest ID: <b>{get_latest_entry_id(chat_id, type, name)}</b>"
     ]
+    if date:
+        parsed_date = datetime.fromisoformat(date).strftime("%Y.%m.%d %H:%M:%S UCT")
+        details.append(f"Last updated: <b>{parsed_date}</b>")
     return "\n".join(details)
 
 
-def _prepare_keyboard(type: str, name: str, data: dict[str, list[str]]) -> InlineKeyboardMarkup:
+def _prepare_keyboard(
+    type: str, name: str, data: dict[str, list[str]], link: str
+) -> InlineKeyboardMarkup:
     keyboard = [
         [InlineKeyboardButton("Remove", callback_data=RemoveFeedData(type, name, data))],
         [InlineKeyboardButton("« Back to subscriptions", callback_data=NamesData(type, data))],
         [InlineKeyboardButton("« Back to types", callback_data=TypesData(data))],
     ]
+    if link:
+        keyboard.insert(0, [InlineKeyboardButton("Latest RSS link", url=link)])
     return InlineKeyboardMarkup(keyboard)

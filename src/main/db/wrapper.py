@@ -36,11 +36,11 @@ def get_stored_feed_type_to_names(chat_id: int) -> dict[str, list[str]]:
     return feed_type_to_names
 
 
-def get_latest_entry_id(chat_id: int, feed_type: str, feed_name: str) -> str:
+def get_latest_entry_data(chat_id: int, feed_type: str, feed_name: str) -> tuple[str, str]:
     """Return latest stored entry ID for given feed"""
     _logger.info(f"[{chat_id}] Getting latest entry ID for [{feed_type}] [{feed_name}]")
     document = find_one({"chat_id": chat_id, "feed_type": feed_type, "feed_name": feed_name})
-    return document["latest_id"]
+    return document.get("latest_link"), document.get("latest_date")
 
 
 def feed_is_already_stored(chat_id: int, feed_type: str, feed_name: str) -> bool:
@@ -55,7 +55,9 @@ def chat_has_stored_feeds(chat_id: int) -> bool:
     return exists({"chat_id": chat_id})
 
 
-def store_feed_data(chat_id: int, feed_name: str, feed_type: str, latest_id: str) -> None:
+def store_feed_data(
+    chat_id: int, feed_name: str, feed_type: str, latest_id: str, latest_link: str, latest_date: str
+) -> None:
     """Store a given feed data in the DB."""
     _logger.info(f"[{chat_id}] Insert name=[{feed_name}] type=[{feed_type}] latest=[{latest_id}]")
     document = {
@@ -63,17 +65,21 @@ def store_feed_data(chat_id: int, feed_name: str, feed_type: str, latest_id: str
         "feed_name": feed_name,
         "feed_type": feed_type,
         "latest_id": latest_id,
+        "latest_link": latest_link,
+        "latest_date": latest_date,
     }
     insert_result = insert_one(document)
     _logger.info(f"[{chat_id}] Insert acknowledged=[{insert_result.acknowledged}]")
 
 
-def update_stored_latest_id(chat_id: int, feed_type: str, feed_name: str, latest_id: str) -> None:
+def update_stored_latest_data(
+    chat_id: int, feed_type: str, feed_name: str, latest_id: str, latest_link: str, latest_date: str
+) -> None:
     """Update "latest_id" for a given feed in the DB."""
     _logger.info(f"[{chat_id}] Updating latest item ID [{feed_type}] [{feed_name}] [{latest_id}]")
     update_one(
         {"chat_id": chat_id, "feed_type": feed_type, "feed_name": feed_name},
-        {"$set": {"latest_id": latest_id}},
+        {"$set": {"latest_id": latest_id, "latest_link": latest_link, "latest_date": latest_date}},
     )
 
 

@@ -3,7 +3,7 @@ from unittest.mock import patch
 from feedparser import FeedParserDict
 from pytest import mark
 
-from feed.reader import get_latest_id
+from feed.reader import get_latest_data
 
 FEED_TYPE = "FEED_TYPE"
 FEED_NAME = "FEED_NAME"
@@ -16,7 +16,17 @@ ENTRIES = [
     FeedParserDict({"published_parsed": "03.03.2003"}),
 ]
 EXPECTED_LATEST_ID = "LATEST_ID"
-LATEST_ENTRY = FeedParserDict({"published_parsed": "05.05.2005", "id": EXPECTED_LATEST_ID})
+EXPECTED_LATEST_LINK = "LATEST_LINK"
+EXPECTED_LATEST_DATE = "05.05.2005"
+EXPECTED_LATEST_ENTRY_DATA = (EXPECTED_LATEST_ID, EXPECTED_LATEST_LINK, EXPECTED_LATEST_DATE)
+LATEST_ENTRY = FeedParserDict(
+    {
+        "id": EXPECTED_LATEST_ID,
+        "link": EXPECTED_LATEST_LINK,
+        "published": EXPECTED_LATEST_DATE,
+        "published_parsed": EXPECTED_LATEST_DATE,
+    }
+)
 
 
 @patch("feed.reader.RSS_FEEDS", {FEED_TYPE: FEED_LINK})
@@ -28,6 +38,6 @@ LATEST_ENTRY = FeedParserDict({"published_parsed": "05.05.2005", "id": EXPECTED_
         ENTRIES[:2] + [LATEST_ENTRY] + ENTRIES[2:],
     ],
 )
-def test_get_latest_id(entries: list[FeedParserDict]) -> None:
+def test_get_latest_data(entries: list[FeedParserDict]) -> None:
     feed = FeedParserDict({"href": FEED_LINK, "entries": entries})
-    assert EXPECTED_LATEST_ID == get_latest_id(feed)
+    assert EXPECTED_LATEST_ENTRY_DATA == get_latest_data(feed)
