@@ -27,16 +27,6 @@ def get_all_stored_data() -> list[tuple[int, str, str, str]]:
     ]
 
 
-# TODO Eventually this should be merged with get_stored_feed_type_to_names
-def get_stored_feed_type_and_name(chat_id: int) -> list[tuple[str, str]]:
-    """Get all data for a given chat_id stored in the DB."""
-    _logger.info(f"[{chat_id}] Getting data")
-    return [
-        (document["feed_type"], document["feed_name"])
-        for document in find_many({"chat_id": chat_id})
-    ]
-
-
 def get_stored_feed_type_to_names(chat_id: int) -> dict[str, list[str]]:
     """Get all data for a given chat_id stored in the DB."""
     _logger.info(f"[{chat_id}] Getting data")
