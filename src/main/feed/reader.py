@@ -4,6 +4,7 @@ Module handling all RSS requests.
 
 from itertools import takewhile
 from logging import getLogger
+from time import struct_time
 
 from feedparser import parse
 from feedparser.util import FeedParserDict
@@ -36,16 +37,19 @@ def feed_is_valid(feed: FeedParserDict) -> bool:
     return feed.status in [200, 301] and "entries" in feed and feed.entries
 
 
-def get_latest_data(feed: FeedParserDict) -> tuple[str, str, str]:
+def get_latest_data(feed: FeedParserDict) -> tuple[str, str, struct_time]:
     """Get data (entry ID, link, date) of latest entry for a given feed"""
     _logger.info(f"Getting data from latest entry for [{feed.href}]")
     entries = _get_sorted_entries(feed)
-    if not entries:
-        return None
     latest_entry = entries[0]
-    id = latest_entry.get("id")
-    link = latest_entry.get("link")
-    date = latest_entry.get("published_parsed") or latest_entry.get("published_parsed")
+    return get_data(latest_entry)
+
+
+def get_data(entry: FeedParserDict) -> tuple[str, str, struct_time]:
+    """Return data (entry ID, link, data) for a given entry"""
+    id = entry.get("id")
+    link = entry.get("link")
+    date = entry.get("published_parsed") or entry.get("published_parsed")
     return id, link, date
 
 
