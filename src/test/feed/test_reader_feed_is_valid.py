@@ -10,7 +10,7 @@ FEED_NAME = "FEED_NAME"
 FEED_LINK = "FEED_LINK"
 
 
-@patch("feed.reader.RSS_FEEDS", {FEED_TYPE: FEED_LINK})
+@patch("feed.reader.RSS_FEEDS", {FEED_TYPE: {"url": FEED_LINK}})
 @mark.parametrize(
     argnames=["parsed_rss", "expected_validity"],
     argvalues=[

@@ -18,7 +18,7 @@ def mocked_parse(url_file_stream_or_string: str) -> FeedParserDict:
         return None
 
 
-@patch("feed.reader.RSS_FEEDS", {FEED_TYPE: FEED_LINK})
+@patch("feed.reader.RSS_FEEDS", {FEED_TYPE: {"url": FEED_LINK}})
 @patch("feed.reader.parse", side_effect=mocked_parse)
 def test_feed_is_valid(_) -> None:
     parsed_feed = get_parsed_feed(FEED_TYPE, FEED_NAME)

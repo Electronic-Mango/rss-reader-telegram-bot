@@ -64,4 +64,4 @@ DB_COLLECTION_NAME = _load_config("database", "collection_name")
 
 # rss
 with open(_load_config("rss", "feeds_yaml_filename"), "r") as feeds_yml:
-    RSS_FEEDS = safe_load(feeds_yml)
+    RSS_FEEDS = {name: data for name, data in safe_load(feeds_yml).items() if "url" in data}

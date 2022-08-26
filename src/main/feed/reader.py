@@ -16,7 +16,7 @@ _logger = getLogger(__name__)
 
 def get_parsed_feed(feed_type: str, feed_name: str) -> FeedParserDict:
     """Parse given feed type and feed name into FeedParserDict, based on URL from RSS links YAML."""
-    feed_link = RSS_FEEDS[feed_type].format(source_pattern=feed_name)
+    feed_link = RSS_FEEDS[feed_type]["url"].format(source_pattern=feed_name)
     _logger.info(f"Parsed [{feed_name}][{feed_type}] to link [{feed_link}]")
     return parse(feed_link)
 
