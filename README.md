@@ -91,6 +91,28 @@ Only feed names (or types) will be displayed to users, links themselves are not.
 Additionally, since RSS links are not stored together with subscription data, you can change the RSS links without the need of re-adding all your subscriptions.
 Just make sure, that feed type stays the same.
 
+Here's a basic set of configuration parameters for a RSS feed in YAML:
+
+```yaml
+# RSS type name displayed to the user
+Feed name 1:
+  # RSS feed link. Notice {source_pattern} substring, it will be replaced with whatever source you input when adding a subscription.
+  url: http://feedlink1.com/{source_pattern}/rss
+  # Configure whether updates will contain RSS entry title.
+  # Case sensitive, optional, defaults to "false".
+  show_title: true
+  # Configure whether updates will contain RSS entry description.
+  # Case sensitive, optional, ddefaults to "false".
+  show_description: true
+  # List of strings which will be trimmed out of both title and description.
+  # Filters are case sensitive. Whole field is optional and defaults to an empty string.
+  filters:
+    - some string
+    - some other string
+```
+
+Out of all parameters only `url` is required, others are optional.
+
 
 ### Storing chat data
 Bot uses a separate MongoDB to store chat data.
@@ -236,14 +258,10 @@ This, however, doesn't take into account neither `lookup_feed_delay` nor `lookup
 Each RSS feed entry will be sent in a separate message.
 If an entry contains more than 10 images/videos the update will be split into more messages, since Telegram only allows up to 10 images/videos per message. Only the final message will contain the caption.
 
-Each message will contain the RSS feed source and type, text of an RSS entry summary and link.
-It won't contain the title, since in my use case it was just duplicating the summary anyways.
+Each message will contain the RSS feed source and type, RSS entry title, summary and link.
 
-To add a title to the messages two files need to be changed:
-- `parser.py` - title will need to be extracted from the RSS entry
-- `sender.py` - title from the last entry needs to be added to the message
-
-Both files are quite simple, so it shouldn't be a problem.
+Bot assumes that RSS entry summary (or description) will be in HTML format.
+Bot will send only raw text from summary, without any tags.
 
 
 ### Detecting when user blocks the bot and clearing chat data
