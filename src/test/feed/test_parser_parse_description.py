@@ -16,4 +16,4 @@ def test_parse_description_description_enabled() -> None:
 
 @patch("feed.parser.RSS_FEEDS", {FEED_TYPE: {}})
 def test_parse_description_description_disabled() -> None:
-    assert None == parse_description(ENTRY, FEED_TYPE)
+    assert parse_description(ENTRY, FEED_TYPE) is None
