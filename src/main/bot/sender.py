@@ -28,11 +28,12 @@ async def send_update(
     feed_type: str,
     feed_name: str,
     link: str,
+    title: str,
     description: str,
     media_links: list[str],
 ) -> None:
     _logger.info(f"[{chat_id}] Sending update [{feed_name}] [{feed_type}]")
-    message = _format_message(chat_id, feed_type, feed_name, link, description)
+    message = _format_message(chat_id, feed_type, feed_name, link, title, description)
     if not media_links:
         await bot.send_message(chat_id, message)
     else:
@@ -44,18 +45,24 @@ def _format_message(
     feed_type: str,
     feed_name: str,
     link: str,
-    content: str,
+    title: str,
+    description: str,
 ) -> str:
     message_text = f"{feed_name} on {feed_type}"
-    if content:
-        message_text += f":\n{content}"
-    effective_max_message_size = MAX_MESSAGE_SIZE - len("\n\n") - len(link)
-    if len(message_text) > effective_max_message_size:
-        _logger.info(f"[{chat_id}] Trimming message")
-        effective_max_number_of_characters = effective_max_message_size - len("...")
-        message_text = f"{message_text[:effective_max_number_of_characters]}..."
+    message_text += f": {title}" if title else ""
+    message_text += f"\n\n{description}" if description else ""
+    message_text = _trim_message(chat_id, message_text, len("\n\n") + len(link))
     message_text += f"\n\n{link}"
     return message_text
+
+
+def _trim_message(chat_id: int, message: str, appended_size: int) -> str:
+    effective_max_message_size = MAX_MESSAGE_SIZE - appended_size
+    if len(message) > effective_max_message_size:
+        _logger.info(f"[{chat_id}] Trimming message")
+        effective_max_number_of_characters = effective_max_message_size - len("...")
+        message = f"{message[:effective_max_number_of_characters]}..."
+    return message
 
 
 async def _send_media_update(bot: Bot, chat_id: int, message: str, media_links: list[str]) -> None:

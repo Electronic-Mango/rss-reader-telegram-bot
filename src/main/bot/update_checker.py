@@ -21,7 +21,7 @@ from telegram.ext import ContextTypes
 
 from bot.sender import send_update
 from db.wrapper import get_all_stored_data, update_stored_latest_data
-from feed.parser import parse_description, parse_link, parse_media_links
+from feed.parser import parse_description, parse_link, parse_media_links, parse_title
 from feed.reader import feed_is_valid, get_data, get_not_handled_entries, get_parsed_feed
 from settings import (
     LOOKUP_FEED_DELAY,
@@ -81,8 +81,9 @@ async def _handle_update(
     _logger.info(f"[{chat_id}] Handling update [{feed_name}] [{feed_type}]")
     for entry in not_handled_feed_entries:
         link = parse_link(entry)
-        description = parse_description(entry)
+        title = parse_title(entry, feed_type)
+        description = parse_description(entry, feed_type)
         media_links = parse_media_links(entry)
-        await send_update(bot, chat_id, feed_type, feed_name, link, description, media_links)
+        await send_update(bot, chat_id, feed_type, feed_name, link, title, description, media_links)
     id, link, date = get_data(not_handled_feed_entries[-1])
     update_stored_latest_data(chat_id, feed_type, feed_name, id, link, date)

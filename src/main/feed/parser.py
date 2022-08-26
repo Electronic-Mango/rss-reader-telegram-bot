@@ -10,14 +10,21 @@ Extracted information contains:
 from bs4 import BeautifulSoup
 from feedparser.util import FeedParserDict
 
+from settings import RSS_FEEDS
+
 
 def parse_link(entry: FeedParserDict) -> str:
     return entry.link
 
 
-def parse_description(entry: FeedParserDict) -> str:
-    summary = BeautifulSoup(entry.summary, "html.parser").find_all(string=True)
-    return "".join(text for text in summary).strip()
+def parse_description(entry: FeedParserDict, feed_type: str) -> str:
+    if RSS_FEEDS[feed_type].get("show_description") and (summary := entry.summary):
+        return BeautifulSoup(summary, "html.parser").get_text().strip()
+
+
+def parse_title(entry: FeedParserDict, feed_type: str) -> str:
+    if RSS_FEEDS[feed_type].get("show_title") and (title := entry.title):
+        return f"<b>{title.strip()}</b>"
 
 
 def parse_media_links(entry: FeedParserDict) -> list[str]:
