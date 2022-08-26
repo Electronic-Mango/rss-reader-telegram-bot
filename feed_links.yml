@@ -1,5 +1,27 @@
-# Template YAML file, containing all possible RSS feed types and their links.
-# Notice {source_pattern} substring, it will be replaced with whatever source you input when
-# adding a subscription.
-Feed name 1: http://feedlink1.com/{source_pattern}/rss
-Feed name 2: https://{source_pattern}.feedlink2.com/rss
+# Template YAML file, containing all possible RSS feed types and their parameters.
+# Main keys are used as RSS feed names.
+Feed name 1:
+  # RSS feed link. Notice {source_pattern} substring, it will be replaced with whatever source you
+  # input when adding a subscription.
+  url: http://feedlink1.com/{source_pattern}/rss
+  # Configure whether updates will contain RSS entry title.
+  # Case sensitive, defaults to "false".
+  show_title: true
+  # Configure whether updates will contain RSS entry description.
+  # Case sensitive, defaults to "false".
+  show_description: true
+  # List of strings which will be trimmed out of both title and description.
+  # Filters are case sensitive. Whole field defaults to an empty string.
+  filters:
+    - some string
+    - some other string
+Feed name 2:
+  url: https://{source_pattern}.feedlink2.com/rss
+  show_title: true
+  # Updates for this feed won't contain RSS entry description.
+  filters:
+    - text
+  # "text" will be filtered out of update title.
+Feed name 3:
+  url: https://{source_pattern}.feedlink2.com/rss
+  # Updates for this feed won't contain RSS entry titles or descriptions, just images and link.
