@@ -28,7 +28,7 @@ LATEST_ENTRY = FeedParserDict(
 )
 
 
-@patch("feed.reader.RSS_FEEDS", {FEED_TYPE: FEED_LINK})
+@patch("feed.reader.RSS_FEEDS", {FEED_TYPE: {"url": FEED_LINK}})
 @mark.parametrize(
     argnames="entries",
     argvalues=[
