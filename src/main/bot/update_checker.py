@@ -17,6 +17,7 @@ from random import randrange
 
 from feedparser.util import FeedParserDict
 from telegram import Bot
+from telegram.error import TelegramError
 from telegram.ext import ContextTypes
 
 from bot.sender import send_update
@@ -80,10 +81,25 @@ async def _handle_update(
 ) -> None:
     _logger.info(f"[{chat_id}] Handling update [{feed_name}] [{feed_type}]")
     for entry in not_handled_feed_entries:
-        link = parse_link(entry)
-        title = parse_title(entry, feed_type)
-        description = parse_description(entry, feed_type)
-        media_links = parse_media_links(entry)
-        await send_update(bot, chat_id, feed_type, feed_name, link, title, description, media_links)
+        await _send_update(bot, chat_id, feed_type, feed_name, entry)
     id, link, date = get_data(not_handled_feed_entries[-1])
     update_stored_latest_data(chat_id, feed_type, feed_name, id, link, date)
+
+
+async def _send_update(
+    bot: Bot,
+    chat_id: int,
+    feed_type: str,
+    feed_name: str,
+    entry: FeedParserDict,
+) -> None:
+    link = parse_link(entry)
+    title = parse_title(entry, feed_type)
+    description = parse_description(entry, feed_type)
+    media_links = parse_media_links(entry)
+    try:
+        await send_update(bot, chat_id, feed_type, feed_name, link, title, description, media_links)
+    except TelegramError as exception:
+        _logger.warn(f"[{chat_id}] Error when sending update: {exception}")
+        description = f"Error when sending update: {exception}.\n\n{description}"
+        await send_update(bot, chat_id, feed_type, feed_name, link, title, description)

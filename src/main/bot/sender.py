@@ -30,13 +30,14 @@ async def send_update(
     link: str,
     title: str,
     description: str,
-    media_links: list[str],
+    media_links: list[str] = None,
 ) -> None:
-    _logger.info(f"[{chat_id}] Sending update [{feed_name}] [{feed_type}]")
     message = _format_message(chat_id, feed_type, feed_name, link, title, description)
     if not media_links:
+        _logger.info(f"[{chat_id}] Sending text only update [{feed_name}] [{feed_type}]")
         await bot.send_message(chat_id, message)
     else:
+        _logger.info(f"[{chat_id}] Sending update [{feed_name}] [{feed_type}]")
         await _send_media_update(bot, chat_id, message, media_links)
 
 
