@@ -96,9 +96,4 @@ async def _send_update(
     title = parse_title(entry, feed_type)
     description = parse_description(entry, feed_type)
     media_links = parse_media_links(entry)
-    try:
-        await send_update(bot, chat_id, feed_type, feed_name, link, title, description, media_links)
-    except Exception as exception:
-        _logger.warn(f"[{chat_id}] Error when sending update: {exception}")
-        description = f"Error when sending update: {exception}.\n\n{description}"
-        await send_update(bot, chat_id, feed_type, feed_name, link, title, description)
+    await send_update(bot, chat_id, feed_type, feed_name, link, title, description, media_links)

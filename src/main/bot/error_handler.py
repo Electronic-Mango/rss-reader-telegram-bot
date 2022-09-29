@@ -17,14 +17,35 @@ _logger = getLogger(__name__)
 
 
 async def handle_errors(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    error = context.error
     if update is None and context.job is None:
-        _logger.error("Unexpected error occured:", exc_info=error)
-        return
-    chat_id = update.effective_chat.id if update is not None else context.job.chat_id
+        _logger.error("Unexpected error occured:", exc_info=context.error)
+    elif update:
+        await _handle_update_error(update, context)
+    else:
+        await _handle_job_error(context)
+
+
+async def _handle_update_error(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    chat_id = update.effective_chat.id
+    error = context.error
     _logger.warn(f"[{chat_id}] Error when handling update:", exc_info=error)
     if type(error) is Forbidden and chat_id:
-        _logger.warn(f"[{chat_id}] Cannot send updates to chat, removing chat data")
-        remove_stored_chat_data(chat_id)
+        await _handle_forbidden_error(chat_id)
     elif chat_id:
         await context.bot.send_message(chat_id, f"Error when handling an update:\n{error}")
+
+
+async def _handle_job_error(context: ContextTypes.DEFAULT_TYPE) -> None:
+    error = context.error
+    chat_id, feed_type, feed_name, _ = context.job.data
+    _logger.warn(f"[{chat_id}] Error in job:", exc_info=error)
+    if type(error) is Forbidden:
+        await _handle_forbidden_error(chat_id)
+    else:
+        message = f"Error when looking for updates of <b>{feed_type} {feed_name}</b>:\n{error}"
+        await context.bot.send_message(chat_id, message)
+
+
+async def _handle_forbidden_error(chat_id: int) -> None:
+    _logger.warn(f"[{chat_id}] Cannot send updates to chat, removing chat data")
+    remove_stored_chat_data(chat_id)
