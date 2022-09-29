@@ -16,7 +16,6 @@ from logging import getLogger
 from random import randrange
 
 from feedparser.util import FeedParserDict
-from telegram import Bot
 from telegram.ext import ContextTypes
 
 from bot.sender import send_update
@@ -56,23 +55,28 @@ async def _check_for_updates(context: ContextTypes.DEFAULT_TYPE) -> None:
     _logger.info(f"[{chat_id}] Checking for updates for [{feed_name}] [{feed_type}]")
     feed = get_parsed_feed(feed_type, feed_name)
     if feed_is_valid(feed):
-        await _check_for_new_entries(context.bot, chat_id, feed, feed_type, feed_name, latest_id)
+        await _check_for_new_entries(context, chat_id, feed, feed_type, feed_name, latest_id)
     else:
         _logger.error(f"Feed for [{feed_name}] [{feed_type}] is not valid anymore")
 
 
 async def _check_for_new_entries(
-    bot: Bot, chat_id: int, feed: FeedParserDict, feed_type: str, feed_name: str, latest_id: str
+    context: ContextTypes.DEFAULT_TYPE,
+    chat_id: int,
+    feed: FeedParserDict,
+    feed_type: str,
+    feed_name: str,
+    latest_id: str,
 ) -> None:
     not_handled_feed_entries = get_not_handled_entries(feed, latest_id)
     if not_handled_feed_entries:
-        await _handle_update(bot, chat_id, feed_type, feed_name, not_handled_feed_entries)
+        await _handle_update(context, chat_id, feed_type, feed_name, not_handled_feed_entries)
     else:
         _logger.info(f"[{chat_id}] No new data for [{feed_name}] [{feed_type}]")
 
 
 async def _handle_update(
-    bot: Bot,
+    context: ContextTypes.DEFAULT_TYPE,
     chat_id: int,
     feed_type: str,
     feed_name: str,
@@ -82,11 +86,11 @@ async def _handle_update(
     for entry in not_handled_feed_entries:
         id, link, date = get_data(entry)
         update_stored_latest_data(chat_id, feed_type, feed_name, id, link, date)
-        await _send_update(bot, chat_id, feed_type, feed_name, entry)
+        await _send_update(context, chat_id, feed_type, feed_name, entry)
 
 
 async def _send_update(
-    bot: Bot,
+    context: ContextTypes.DEFAULT_TYPE,
     chat_id: int,
     feed_type: str,
     feed_name: str,
@@ -95,5 +99,6 @@ async def _send_update(
     link = parse_link(entry)
     title = parse_title(entry, feed_type)
     description = parse_description(entry, feed_type)
-    media_links = parse_media_links(entry)
-    await send_update(bot, chat_id, feed_type, feed_name, link, title, description, media_links)
+    media = parse_media_links(entry)
+    context.job.data = chat_id, feed_type, feed_name, link, title, description
+    await send_update(context.bot, chat_id, feed_type, feed_name, link, title, description, media)
