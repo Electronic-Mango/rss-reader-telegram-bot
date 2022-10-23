@@ -25,7 +25,7 @@ ENTRIES = [
         ("ID-5", strptime("05.05.2005", "%d.%m.%Y"), []),
         ("ID-0", strptime("01.01.2000", "%d.%m.%Y"), ENTRIES),
         ("ID-3", strptime("03.03.2003", "%d.%m.%Y"), ENTRIES[3:]),
-        ("ID-2.5", strptime("04.03.2003", "%d.%m.%Y"), ENTRIES[2:]),
+        ("ID-2.5", strptime("03.02.2003", "%d.%m.%Y"), ENTRIES[2:]),
     ],
 )
 def test_get_not_handled_entries(
