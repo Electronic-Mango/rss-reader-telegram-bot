@@ -11,9 +11,9 @@ FEED_NAME = "FEED_NAME"
 FEED_LINK = "FEED_LINK"
 
 ENTRIES = [
-    FeedParserDict({"updated_parsed": strptime("02.02.2002", "%d.%m.%Y")}),
+    FeedParserDict({"published_parsed": strptime("02.02.2002", "%d.%m.%Y")}),
     FeedParserDict({"published_parsed": strptime("01.01.2001", "%d.%m.%Y")}),
-    FeedParserDict({"updated_parsed": strptime("04.04.2004", "%d.%m.%Y")}),
+    FeedParserDict({"published_parsed": strptime("04.04.2004", "%d.%m.%Y")}),
     FeedParserDict({"published_parsed": strptime("03.03.2003", "%d.%m.%Y")}),
 ]
 EXPECTED_LATEST_ID = "LATEST_ID"

@@ -69,14 +69,11 @@ def get_not_handled_entries(
 
 
 def _get_sorted_entries(feed: FeedParserDict) -> list[FeedParserDict]:
-    return sorted(feed.entries, key=_get_date, reverse=True)
+    return sorted(feed.entries, key=lambda entry: entry.get("published_parsed"), reverse=True)
 
 
 def _not_latest_entry(latest_id: str, latest_date: struct_time, entry: FeedParserDict) -> bool:
-    entry_id = entry.id
-    date = _get_date(entry)
-    return (entry_id not in latest_id and latest_id not in entry_id) and date > latest_date
-
-
-def _get_date(entry: FeedParserDict) -> struct_time:
-    return entry.get("updated_parsed") or entry.get("published_parsed")
+    entry_id_is_not_latest = entry.id not in latest_id and latest_id not in entry.id
+    entry_date = entry.get("published_parsed")
+    entry_date_is_newer = entry_date > latest_date if entry_date else True
+    return entry_id_is_not_latest and entry_date_is_newer
