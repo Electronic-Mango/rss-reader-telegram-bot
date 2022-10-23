@@ -14,6 +14,7 @@ is handled in separate modules.
 from datetime import datetime
 from logging import getLogger
 from random import randrange
+from time import struct_time
 
 from feedparser.util import FeedParserDict
 from telegram.ext import ContextTypes
@@ -51,11 +52,11 @@ async def _delayed_check_for_all_updates(context: ContextTypes.DEFAULT_TYPE) -> 
 
 
 async def _check_for_updates(context: ContextTypes.DEFAULT_TYPE) -> None:
-    chat_id, feed_type, feed_name, latest_id = context.job.data
+    chat_id, feed_type, feed_name, id, date = context.job.data
     _logger.info(f"[{chat_id}] Checking for updates for [{feed_name}] [{feed_type}]")
     feed = get_parsed_feed(feed_type, feed_name)
     if feed_is_valid(feed):
-        await _check_for_new_entries(context, chat_id, feed, feed_type, feed_name, latest_id)
+        await _check_for_new_entries(context, chat_id, feed, feed_type, feed_name, id, date)
     else:
         _logger.error(f"Feed for [{feed_name}] [{feed_type}] is not valid anymore")
 
@@ -67,8 +68,10 @@ async def _check_for_new_entries(
     feed_type: str,
     feed_name: str,
     latest_id: str,
+    raw_date: list[int],
 ) -> None:
-    not_handled_feed_entries = get_not_handled_entries(feed, latest_id)
+    struct_time_date = struct_time(raw_date)
+    not_handled_feed_entries = get_not_handled_entries(feed, latest_id, struct_time_date)
     if not_handled_feed_entries:
         await _handle_update(context, chat_id, feed_type, feed_name, not_handled_feed_entries)
     else:

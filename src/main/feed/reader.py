@@ -53,26 +53,28 @@ def get_data(entry: FeedParserDict) -> tuple[str, str, struct_time]:
     return id, link, date
 
 
-def get_not_handled_entries(feed: FeedParserDict, target_id: str) -> list[FeedParserDict]:
+def get_not_handled_entries(feed: FeedParserDict, id: str, date: struct_time) -> list[FeedParserDict]:
     """
     Get not yet handled entries for a given feed.
     Return all elements from the feed list, until element with ID matching the target ID.
     """
-    _logger.info(f"Getting not handled entries for [{feed.href}] target ID [{target_id}]")
+    _logger.info(f"Getting not handled entries for [{feed.href}] target ID [{id}]")
     entries = _get_sorted_entries(feed)
-    not_handled_entries = takewhile(lambda entry: _not_latest_entry(target_id, entry.id), entries)
+    not_handled_entries = takewhile(lambda entry: _not_latest_entry(id, date, entry), entries)
     not_handled_entries = list(not_handled_entries)
     not_handled_entries.reverse()
     return not_handled_entries
 
 
 def _get_sorted_entries(feed: FeedParserDict) -> list[FeedParserDict]:
-    return sorted(
-        feed.entries,
-        key=lambda entry: entry.get("published_parsed") or entry.get("updated_parsed"),
-        reverse=True,
-    )
+    return sorted(feed.entries, key=_get_date, reverse=True)
 
 
-def _not_latest_entry(target_id: str, entry_id: str) -> bool:
-    return entry_id not in target_id and target_id not in entry_id
+def _not_latest_entry(latest_id: str, latest_date: struct_time, entry: FeedParserDict) -> bool:
+    entry_id = entry.id
+    date = _get_date(entry)
+    return (entry_id not in latest_id and latest_id not in entry_id) or date > latest_date
+
+
+def _get_date(entry: FeedParserDict) -> struct_time:
+    return entry.get("updated_parsed") or entry.get("published_parsed")

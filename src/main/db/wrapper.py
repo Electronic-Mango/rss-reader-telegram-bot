@@ -19,11 +19,17 @@ from db.client import delete_many, exists, find_many, find_one, insert_one, upda
 _logger = getLogger(__name__)
 
 
-def get_all_stored_data() -> list[tuple[int, str, str, str]]:
+def get_all_stored_data() -> list[tuple[int, str, str, str, list[int]]]:
     """Returns all data stored in the DB."""
     _logger.info("Getting all data for all chats")
     return [
-        (document["chat_id"], document["feed_type"], document["feed_name"], document["latest_id"])
+        (
+            document["chat_id"],
+            document["feed_type"],
+            document["feed_name"],
+            document["latest_id"],
+            document.get("latest_date"),
+        )
         for document in find_many()
     ]
 
