@@ -68,10 +68,9 @@ async def _check_for_new_entries(
     feed_type: str,
     feed_name: str,
     latest_id: str,
-    raw_date: list[int],
+    date: struct_time,
 ) -> None:
-    struct_time_date = struct_time(raw_date)
-    not_handled_feed_entries = get_not_handled_entries(feed, latest_id, struct_time_date)
+    not_handled_feed_entries = get_not_handled_entries(feed, latest_id, date)
     if not_handled_feed_entries:
         await _handle_update(context, chat_id, feed_type, feed_name, not_handled_feed_entries)
     else:

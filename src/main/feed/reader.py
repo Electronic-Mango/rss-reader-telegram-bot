@@ -53,7 +53,9 @@ def get_data(entry: FeedParserDict) -> tuple[str, str, struct_time]:
     return id, link, date
 
 
-def get_not_handled_entries(feed: FeedParserDict, id: str, date: struct_time) -> list[FeedParserDict]:
+def get_not_handled_entries(
+    feed: FeedParserDict, id: str, date: struct_time
+) -> list[FeedParserDict]:
     """
     Get not yet handled entries for a given feed.
     Return all elements from the feed list, until element with ID matching the target ID.

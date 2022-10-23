@@ -5,6 +5,7 @@ Allows going back to list of specific subscriptions and list of all types.
 
 from datetime import datetime
 from logging import getLogger
+from time import struct_time
 
 from dateutil.tz import tzlocal, tzutc
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
@@ -31,7 +32,7 @@ async def list_details(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
     return ConversationState.SHOW_DETAILS
 
 
-def _generate_description(type: str, name: str, date: list[int]) -> str:
+def _generate_description(type: str, name: str, date: struct_time) -> str:
     details = [
         f"Source: <b>{type}</b>",
         f"Name: <b>{name}</b>",

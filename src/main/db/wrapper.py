@@ -19,7 +19,7 @@ from db.client import delete_many, exists, find_many, find_one, insert_one, upda
 _logger = getLogger(__name__)
 
 
-def get_all_stored_data() -> list[tuple[int, str, str, str, list[int]]]:
+def get_all_stored_data() -> list[tuple[int, str, str, str, struct_time]]:
     """Returns all data stored in the DB."""
     _logger.info("Getting all data for all chats")
     return [
@@ -28,7 +28,7 @@ def get_all_stored_data() -> list[tuple[int, str, str, str, list[int]]]:
             document["feed_type"],
             document["feed_name"],
             document["latest_id"],
-            document.get("latest_date"),
+            _parse_date(document.get("latest_date")),
         )
         for document in find_many()
     ]
@@ -43,11 +43,11 @@ def get_stored_feed_type_to_names(chat_id: int) -> dict[str, list[str]]:
     return feed_type_to_names
 
 
-def get_latest_entry_data(chat_id: int, feed_type: str, feed_name: str) -> tuple[str, list[int]]:
+def get_latest_entry_data(chat_id: int, feed_type: str, feed_name: str) -> tuple[str, struct_time]:
     """Return latest stored entry ID for given feed"""
     _logger.info(f"[{chat_id}] Getting latest entry ID for [{feed_type}] [{feed_name}]")
     document = find_one({"chat_id": chat_id, "feed_type": feed_type, "feed_name": feed_name})
-    return document.get("latest_link"), document.get("latest_date")
+    return document.get("latest_link"), _parse_date(document.get("latest_date"))
 
 
 def feed_is_already_stored(chat_id: int, feed_type: str, feed_name: str) -> bool:
@@ -112,6 +112,10 @@ def remove_stored_chat_data(chat_id: int) -> None:
     _logger.info(f"[{chat_id}] Deleting all data for chat")
     result = delete_many({"chat_id": chat_id})
     _log_delete_result(chat_id, result)
+
+
+def _parse_date(raw_date: list[int]) -> struct_time:
+    return struct_time(raw_date) if raw_date else None
 
 
 def _log_delete_result(chat_id: int, delete_result: DeleteResult) -> None:
