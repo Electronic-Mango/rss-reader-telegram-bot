@@ -36,8 +36,8 @@ async def followup_list_feed_types(update: Update, _: ContextTypes.DEFAULT_TYPE)
 
 async def _send_types_list(response_callback: Callable, chat_data: dict[str, list[str]]) -> None:
     keyboard = [
-        [InlineKeyboardButton(type, callback_data=NamesData(type, chat_data))]
-        for type in chat_data.keys()
+        [InlineKeyboardButton(feed_type, callback_data=NamesData(feed_type, chat_data))]
+        for feed_type in sorted(chat_data.keys())
     ]
     await response_callback(
         "Select source:",
