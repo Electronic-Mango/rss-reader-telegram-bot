@@ -11,8 +11,8 @@ from telegram import Update
 from telegram.error import Forbidden
 from telegram.ext import ContextTypes
 
-from db.wrapper import remove_stored_chat_data
 from bot.sender import send_update
+from db.wrapper import remove_stored_chat_data
 
 _logger = getLogger(__name__)
 

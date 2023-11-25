@@ -7,14 +7,15 @@ This way whole conversation handler can be handle single message.
 """
 
 from typing import Any
+
 from telegram.ext import CallbackQueryHandler, CommandHandler, ConversationHandler
 
 from bot.command.subs.conversation_state import ConversationState
 from bot.command.subs.list_details import list_details
 from bot.command.subs.list_names import list_names
 from bot.command.subs.list_types import followup_list_feed_types, initial_list_feed_types
-from bot.command.subs.query_data import DetailsData, NamesData, TypesData, RemoveFeedData
-from bot.command.subs.remove_feed import request_confirmation, remove_subscription
+from bot.command.subs.query_data import DetailsData, NamesData, RemoveFeedData, TypesData
+from bot.command.subs.remove_feed import remove_subscription, request_confirmation
 from bot.user_filter import USER_FILTER
 
 

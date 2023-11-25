@@ -6,7 +6,7 @@ from logging import INFO, StreamHandler, basicConfig
 from logging.handlers import RotatingFileHandler
 from sys import stdout
 
-from bot.bot import run_bot
+from bot.telegram_bot import run_bot
 from db.client import initialize_db
 from settings import BACKUP_COUNT, LOG_PATH, MAX_BYTES
 

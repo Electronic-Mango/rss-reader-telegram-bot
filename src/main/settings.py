@@ -6,10 +6,10 @@ This overwritting file doesn't have to contain everything, only values to overwr
 """
 
 from functools import reduce
-from dotenv import load_dotenv
 from os import getenv
 from typing import Any
 
+from dotenv import load_dotenv
 from mergedeep import merge
 from yaml import safe_load
 

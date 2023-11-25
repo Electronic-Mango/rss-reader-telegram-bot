@@ -1,5 +1,4 @@
 from feedparser import FeedParserDict
-
 from pytest import mark
 
 from feed.parser import parse_media_links

@@ -5,3 +5,6 @@ pythonpath = [
 norecursedirs = [
   "lib", "lib64"
 ]
+
+[tool.isort]
+src_paths = ["src/main"]

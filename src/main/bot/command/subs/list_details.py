@@ -12,7 +12,7 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import ContextTypes
 
 from bot.command.subs.conversation_state import ConversationState
-from bot.command.subs.query_data import NamesData, TypesData, RemoveFeedData
+from bot.command.subs.query_data import NamesData, RemoveFeedData, TypesData
 from db.wrapper import get_latest_entry_data
 
 _logger = getLogger(__name__)
