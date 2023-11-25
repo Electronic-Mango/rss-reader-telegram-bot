@@ -164,7 +164,7 @@ Setting parameters to `0` will disable their respective randomness.
 
 ### Docker
 
-There's a Dockerfile in the repo, which will build a Docker image with for the bot using `python:3.10-slim` as base.
+There's a Dockerfile in the repo, which will build a Docker image with for the bot using `python:3.10-alpine` as base.
 You can set all configuration parameters using environment variables for Docker container, rather than modifying project files before building.
 
 Keep in mind, that running the bot in a Docker container might require changing DB IP address (as the default one is `localhost`) and possibly RSS feed links if you're using a self-hosted RSS feed, like [`RSS-Bridge`](https://github.com/RSS-Bridge/rss-bridge) or [`RSSHub`](https://github.com/DIYgod/RSSHub).
