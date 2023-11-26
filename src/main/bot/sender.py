@@ -15,7 +15,7 @@ from logging import getLogger
 
 from more_itertools import sliced
 from requests import get
-from telegram import Bot, InputMedia, InputMediaPhoto, InputMediaVideo
+from telegram import Bot, InputMediaPhoto, InputMediaVideo
 
 from settings import MAX_MEDIA_ITEMS_PER_MESSSAGE, MAX_MESSAGE_SIZE
 
@@ -88,13 +88,16 @@ async def _handle_attachment_group(
     message: str = None,
 ) -> None:
     if len(media_group) == 1:
-        await _send_single_media(bot, chat_id, *media_group[0], message)
+        media, media_type = media_group[0]
+        await _send_single_media(bot, chat_id, media, media_type, message)
     else:
         await _send_media_group(bot, chat_id, media_group, message)
 
 
-async def _send_single_media(bot: Bot, chat_id: int, media: bytes, type: str, message: str) -> None:
-    if _is_video(type):
+async def _send_single_media(
+    bot: Bot, chat_id: int, media: bytes, media_type: str, message: str | None
+) -> None:
+    if _is_video(media_type):
         await bot.send_video(chat_id, media, caption=message, supports_streaming=True)
     else:
         await bot.send_photo(chat_id, media, caption=message)
@@ -106,19 +109,16 @@ async def _send_media_group(
     media_group: list[tuple[bytes, str]],
     message: str = None,
 ) -> None:
-    input_media_list = [_media_object(media, type) for media, type in media_group]
-    # Only the first media should have a caption,
-    # otherwise actual caption body won't be displayed directly in the message.
-    input_media_list[0].caption = message
-    await bot.send_media_group(chat_id, input_media_list)
+    input_media_list = [_media_object(media, media_type) for media, media_type in media_group]
+    await bot.send_media_group(chat_id, input_media_list, caption=message)
 
 
-def _media_object(media: bytes, type: str) -> InputMedia:
-    if _is_video(type):
+def _media_object(media: bytes, media_type: str) -> InputMediaPhoto | InputMediaVideo:
+    if _is_video(media_type):
         return InputMediaVideo(media, supports_streaming=True)
     else:
         return InputMediaPhoto(media)
 
 
-def _is_video(type: str) -> bool:
-    return "video" in type.lower()
+def _is_video(media_type: str) -> bool:
+    return "video" in media_type.lower()
