@@ -69,11 +69,10 @@ def _prepare_url_keyboard(link: str) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(keyboard)
 
 
-def _trim_message(chat_id: int, message: str, appended_size: int) -> str:
-    effective_max_message_size = MAX_MESSAGE_SIZE - appended_size
-    if len(message) > effective_max_message_size:
+def _trim_message(chat_id: int, message: str) -> str:
+    if len(message) > MAX_MESSAGE_SIZE:
         _logger.info(f"[{chat_id}] Trimming message")
-        effective_max_number_of_characters = effective_max_message_size - len("...")
+        effective_max_number_of_characters = MAX_MESSAGE_SIZE - len("...")
         message = f"{message[:effective_max_number_of_characters]}..."
     return message
 
