@@ -87,28 +87,8 @@ async def _handle_attachment_group(
     media_group: list[tuple[bytes, str]],
     message: str = None,
 ) -> None:
-    if len(media_group) == 1:
-        media, media_type = media_group[0]
-        await _send_single_media(bot, chat_id, media, media_type, message)
-    else:
-        await _send_media_group(bot, chat_id, media_group, message)
-
-
-async def _send_single_media(
-    bot: Bot, chat_id: int, media: bytes, media_type: str, message: str | None
-) -> None:
-    if _is_video(media_type):
-        await bot.send_video(chat_id, media, caption=message, supports_streaming=True)
-    else:
-        await bot.send_photo(chat_id, media, caption=message)
-
-
-async def _send_media_group(
-    bot: Bot,
-    chat_id: int,
-    media_group: list[tuple[bytes, str]],
-    message: str = None,
-) -> None:
+    # Technically single media elements don't have to be handled as media group,
+    # but they can, so the same implementation can be used for both.
     input_media_list = [_media_object(media, media_type) for media, media_type in media_group]
     await bot.send_media_group(chat_id, input_media_list, caption=message)
 
