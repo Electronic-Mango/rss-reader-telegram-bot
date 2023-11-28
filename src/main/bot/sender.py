@@ -12,10 +12,17 @@ Only one media item will have a caption, so it's correctly displayed in chat.
 """
 
 from logging import getLogger
+from urllib.parse import urlparse
 
 from more_itertools import sliced
 from requests import get
-from telegram import Bot, InputMediaPhoto, InputMediaVideo
+from telegram import (
+    Bot,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    InputMediaPhoto,
+    InputMediaVideo,
+)
 
 from settings import MAX_MEDIA_ITEMS_PER_MESSSAGE, MAX_MESSAGE_SIZE
 
@@ -32,20 +39,20 @@ async def send_update(
     description: str,
     media_links: list[str] = None,
 ) -> None:
-    message = _format_message(chat_id, feed_type, feed_name, link, title, description)
+    message = _format_message(chat_id, feed_type, feed_name, title, description)
+    keyboard = _prepare_url_keyboard(link) if link else None
     if not media_links:
         _logger.info(f"[{chat_id}] Sending text only update [{feed_name}] [{feed_type}]")
-        await bot.send_message(chat_id, message)
+        await bot.send_message(chat_id, message, reply_markup=keyboard)
     else:
         _logger.info(f"[{chat_id}] Sending update [{feed_name}] [{feed_type}]")
-        await _send_media_update(bot, chat_id, message, media_links)
+        await _send_media_update(bot, chat_id, message, media_links, keyboard)
 
 
 def _format_message(
     chat_id: int,
     feed_type: str,
     feed_name: str,
-    link: str,
     title: str,
     description: str,
 ) -> str:
@@ -53,9 +60,13 @@ def _format_message(
     message_text += ":" if title or description else ""
     message_text += f" {title}" if title else ""
     message_text += f"\n\n{description}" if description else ""
-    message_text = _trim_message(chat_id, message_text, len("\n\n") + len(link))
-    message_text += f"\n\n{link}"
+    message_text = _trim_message(chat_id, message_text)
     return message_text
+
+
+def _prepare_url_keyboard(link: str) -> InlineKeyboardMarkup:
+    keyboard = [[InlineKeyboardButton(urlparse(link).netloc, url=link)]]
+    return InlineKeyboardMarkup(keyboard)
 
 
 def _trim_message(chat_id: int, message: str, appended_size: int) -> str:
@@ -67,13 +78,15 @@ def _trim_message(chat_id: int, message: str, appended_size: int) -> str:
     return message
 
 
-async def _send_media_update(bot: Bot, chat_id: int, message: str, media_links: list[str]) -> None:
+async def _send_media_update(
+    bot: Bot, chat_id: int, message: str, media_links: list[str], keyboard: InlineKeyboardMarkup
+) -> None:
     media = [_get_media_content_and_type(link) for link in media_links]
     media_groups = list(sliced(media, MAX_MEDIA_ITEMS_PER_MESSSAGE))
     # Only the last group should have a message
     for media_group in media_groups[:-1]:
-        await _handle_attachment_group(bot, chat_id, media_group)
-    await _handle_attachment_group(bot, chat_id, media_groups[-1], message)
+        await _handle_attachment_group(bot, chat_id, media_group, keyboard)
+    await _handle_attachment_group(bot, chat_id, media_groups[-1], keyboard, message)
 
 
 def _get_media_content_and_type(link: str) -> tuple[bytes, str]:
@@ -85,12 +98,13 @@ async def _handle_attachment_group(
     bot: Bot,
     chat_id: int,
     media_group: list[tuple[bytes, str]],
+    keyboard: InlineKeyboardMarkup,
     message: str = None,
 ) -> None:
     # Technically single media elements don't have to be handled as media group,
     # but they can, so the same implementation can be used for both.
     input_media_list = [_media_object(media, media_type) for media, media_type in media_group]
-    await bot.send_media_group(chat_id, input_media_list, caption=message)
+    await bot.send_media_group(chat_id, input_media_list, caption=message, reply_markup=keyboard)
 
 
 def _media_object(media: bytes, media_type: str) -> InputMediaPhoto | InputMediaVideo:
