@@ -90,7 +90,7 @@ async def _handle_attachment_group(
     # Technically single media elements don't have to be handled as media group,
     # but they can, so the same implementation can be used for both.
     input_media_list = [_media_object(media, media_type) for media, media_type in media_group]
-    await bot.send_media_group(chat_id, input_media_list, caption=message)
+    await bot.send_media_group(chat_id, input_media_list, caption=message, write_timeout=180)
 
 
 def _media_object(media: bytes, media_type: str) -> InputMediaPhoto | InputMediaVideo:
