@@ -3,22 +3,19 @@ Module handling printing feed names from selected type.
 Also allows going back to the list of all types.
 """
 
-from logging import getLogger
-
+from loguru import logger
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import ContextTypes
 
 from bot.command.subs.conversation_state import ConversationState
 from bot.command.subs.query_data import DetailsData, TypesData
 
-_logger = getLogger(__name__)
-
 
 async def list_names(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
     await query.answer()
     type, chat_data = query.data
-    _logger.info(f"[{update.effective_chat.id}] Requesting feed name for [{type}]")
+    logger.info(f"[{update.effective_chat.id}] Requesting feed name for [{type}]")
     await query.edit_message_text(
         "Select subscription:",
         reply_markup=_prepare_keyboard(type, chat_data),

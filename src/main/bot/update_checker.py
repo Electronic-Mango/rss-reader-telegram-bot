@@ -12,11 +12,11 @@ is handled in separate modules.
 """
 
 from datetime import datetime
-from logging import getLogger
 from random import randrange
 from time import struct_time
 
 from feedparser.util import FeedParserDict
+from loguru import logger
 from telegram.ext import ContextTypes
 
 from bot.sender import send_update
@@ -30,20 +30,18 @@ from settings import (
     QUIET_HOURS,
 )
 
-_logger = getLogger(__name__)
-
 
 async def check_for_all_updates(context: ContextTypes.DEFAULT_TYPE) -> None:
     lookup_interval = randrange(max(LOOKUP_INTERVAL_RANDOMNESS, 1))  # randrange(1) always returns 0
-    _logger.info(f"Delaying checking for updates for [{lookup_interval}] seconds")
+    logger.info(f"Delaying checking for updates for [{lookup_interval}] seconds")
     context.job_queue.run_once(callback=_delayed_check_for_all_updates, when=lookup_interval)
 
 
 async def _delayed_check_for_all_updates(context: ContextTypes.DEFAULT_TYPE) -> None:
     if datetime.now().hour in QUIET_HOURS:
-        _logger.info("Quiet hour, skipping checking for updates")
+        logger.info("Quiet hour, skipping checking for updates")
         return
-    _logger.info("Starting checking for all updates")
+    logger.info("Starting checking for all updates")
     delay = 0
     for feed_data in get_all_stored_data():
         context.job_queue.run_once(callback=_check_for_updates, when=delay, data=feed_data)
@@ -53,12 +51,12 @@ async def _delayed_check_for_all_updates(context: ContextTypes.DEFAULT_TYPE) -> 
 
 async def _check_for_updates(context: ContextTypes.DEFAULT_TYPE) -> None:
     chat_id, feed_type, feed_name, id, date = context.job.data
-    _logger.info(f"[{chat_id}] Checking for updates for [{feed_name}] [{feed_type}]")
+    logger.info(f"[{chat_id}] Checking for updates for [{feed_name}] [{feed_type}]")
     feed = get_parsed_feed(feed_type, feed_name)
     if feed_is_valid(feed):
         await _check_for_new_entries(context, chat_id, feed, feed_type, feed_name, id, date)
     else:
-        _logger.error(f"Feed for [{feed_name}] [{feed_type}] is not valid anymore")
+        logger.error(f"Feed for [{feed_name}] [{feed_type}] is not valid anymore")
 
 
 async def _check_for_new_entries(
@@ -74,7 +72,7 @@ async def _check_for_new_entries(
     if not_handled_feed_entries:
         await _handle_update(context, chat_id, feed_type, feed_name, not_handled_feed_entries)
     else:
-        _logger.info(f"[{chat_id}] No new data for [{feed_name}] [{feed_type}]")
+        logger.info(f"[{chat_id}] No new data for [{feed_name}] [{feed_type}]")
 
 
 async def _handle_update(
@@ -84,7 +82,7 @@ async def _handle_update(
     feed_name: str,
     not_handled_feed_entries: list[FeedParserDict],
 ) -> None:
-    _logger.info(f"[{chat_id}] Handling update [{feed_name}] [{feed_type}]")
+    logger.info(f"[{chat_id}] Handling update [{feed_name}] [{feed_type}]")
     for entry in not_handled_feed_entries:
         id, link, date = get_data(entry)
         update_stored_latest_data(chat_id, feed_type, feed_name, id, link, date)

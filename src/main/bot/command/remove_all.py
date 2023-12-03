@@ -3,9 +3,9 @@ Module handling the "removeall" command, allowing users delete all subscriptions
 """
 
 from enum import Enum, auto
-from logging import getLogger
 from typing import Any, NamedTuple
 
+from loguru import logger
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import CallbackQueryHandler, CommandHandler, ContextTypes, ConversationHandler
 
@@ -21,9 +21,6 @@ class _ConversationState(Enum):
 
 class _RemoveAllData(NamedTuple):
     cnf: bool
-
-
-_logger = getLogger(__name__)
 
 
 def remove_all_initial_handler() -> CommandHandler:
@@ -59,9 +56,9 @@ def _data_rejected(data: Any) -> bool:
 
 async def _request_confirmation_1(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
     chat_id = update.effective_chat.id
-    _logger.info(f"[{chat_id}] User requested removal of all subscriptions")
+    logger.info(f"[{chat_id}] User requested removal of all subscriptions")
     if not chat_has_stored_feeds(chat_id):
-        _logger.info(f"[{chat_id}] No subscriptions to remove")
+        logger.info(f"[{chat_id}] No subscriptions to remove")
         await update.message.reply_text("No subscriptions to remove")
     else:
         await update.message.reply_text(
@@ -84,14 +81,14 @@ async def _remove_all_subscriptions(update: Update, _: ContextTypes.DEFAULT_TYPE
     query = update.callback_query
     await query.answer()
     chat_id = update.effective_chat.id
-    _logger.info(f"[{chat_id}] Removing all subscriptions")
+    logger.info(f"[{chat_id}] Removing all subscriptions")
     remove_stored_chat_data(chat_id)
     await query.edit_message_text("Removed all subscriptions")
     return ConversationHandler.END
 
 
 async def _cancel(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
-    _logger.info(f"[{update.effective_chat.id}] User cancelled removing subscriptions")
+    logger.info(f"[{update.effective_chat.id}] User cancelled removing subscriptions")
     query = update.callback_query
     await query.answer()
     await query.edit_message_text("No subscriptions have beed removed")

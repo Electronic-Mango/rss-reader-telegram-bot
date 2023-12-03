@@ -3,10 +3,10 @@ Module handling the "add" command, allowing users to add new RSS subscriptions.
 """
 
 from enum import Enum, auto
-from logging import getLogger
 from typing import NamedTuple
 
 from feedparser import FeedParserDict
+from loguru import logger
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Message, Update
 from telegram.ext import (
     CallbackQueryHandler,
@@ -33,9 +33,6 @@ class _AddFeedData(NamedTuple):
     feed_type: str
 
 
-_logger = getLogger(__name__)
-
-
 def add_initial_handler() -> CommandHandler:
     return CommandHandler("add", _request_feed_type, USER_FILTER)
 
@@ -59,7 +56,7 @@ def add_followup_handler() -> ConversationHandler:
 
 
 async def _request_feed_type(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
-    _logger.info(f"[{update.effective_chat.id}] User requested new subscription")
+    logger.info(f"[{update.effective_chat.id}] User requested new subscription")
     keyboard = [
         [InlineKeyboardButton(name, callback_data=_AddFeedData(name))] for name in RSS_FEEDS.keys()
     ]
@@ -74,7 +71,7 @@ async def _request_feed_names(update: Update, context: ContextTypes.DEFAULT_TYPE
     await query.answer()
     feed_type = query.data.feed_type
     context.user_data[_ConversationState.FEED_NAME] = feed_type
-    _logger.info(f"[{update.effective_chat.id}] User selected type [{feed_type}], requesting name")
+    logger.info(f"[{update.effective_chat.id}] User selected type [{feed_type}], requesting name")
     await update.effective_chat.send_message(
         f"Send <b>{feed_type}</b> name, multiple names separated by a space, or /cancel",
     )
@@ -85,7 +82,7 @@ async def _handle_feed_names(update: Update, context: ContextTypes.DEFAULT_TYPE)
     chat_id = update.effective_chat.id
     feed_names = update.message.text.split()
     feed_type = context.user_data[_ConversationState.FEED_NAME]
-    _logger.info(f"{chat_id} User send feed name {feed_names} for [{feed_type}]")
+    logger.info(f"{chat_id} User send feed name {feed_names} for [{feed_type}]")
     for feed_name in feed_names:
         await _handle_feed_name(update.message, chat_id, feed_type, feed_name)
     return ConversationHandler.END
@@ -106,7 +103,7 @@ async def _feed_with_given_name_already_exists(
     feed_name: str,
     feed_type: str,
 ) -> None:
-    _logger.info(f"{chat_id} Feed [{feed_name}][{feed_type}] is subscribed")
+    logger.info(f"{chat_id} Feed [{feed_name}][{feed_type}] is subscribed")
     await message.reply_text(f"Subscription for <b>{feed_name}</b> ({feed_type}) already exists!")
 
 
@@ -128,11 +125,11 @@ async def _feed_does_not_exist(
     feed_type: str,
     feed_name: str,
 ) -> None:
-    _logger.info(f"{chat_id} Feed [{feed_name}][{feed_type}] doesn't exist")
+    logger.info(f"{chat_id} Feed [{feed_name}][{feed_type}] doesn't exist")
     await message.reply_text(f"Feed for source <b>{feed_name}</b> doesn't exist!")
 
 
 async def _cancel(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
-    _logger.info(f"[{update.effective_chat.id}] User cancelled adding subscription")
+    logger.info(f"[{update.effective_chat.id}] User cancelled adding subscription")
     await update.message.reply_text("Cancelled adding subscription")
     return ConversationHandler.END

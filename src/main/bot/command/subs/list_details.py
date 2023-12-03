@@ -4,10 +4,10 @@ Allows going back to list of specific subscriptions and list of all types.
 """
 
 from datetime import datetime
-from logging import getLogger
 from time import struct_time
 
 from dateutil.tz import tzlocal, tzutc
+from loguru import logger
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import ContextTypes
 
@@ -15,15 +15,13 @@ from bot.command.subs.conversation_state import ConversationState
 from bot.command.subs.query_data import NamesData, RemoveFeedData, TypesData
 from db.wrapper import get_latest_entry_data
 
-_logger = getLogger(__name__)
-
 
 async def list_details(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
     await query.answer()
     chat_id = update.effective_chat.id
     type, name, chat_data = query.data
-    _logger.info(f"[{chat_id}] Showing details for [{type}] [{name}]")
+    logger.info(f"[{chat_id}] Showing details for [{type}] [{name}]")
     link, date = get_latest_entry_data(chat_id, type, name)
     await query.edit_message_text(
         _generate_description(type, name, date),

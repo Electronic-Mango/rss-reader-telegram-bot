@@ -12,8 +12,8 @@ Only one media item will have a caption, so it's correctly displayed in chat.
 """
 
 from io import BytesIO
-from logging import getLogger
 
+from loguru import logger
 from more_itertools import sliced
 from PIL import Image
 from requests import get
@@ -24,8 +24,6 @@ from settings import MAX_MEDIA_ITEMS_PER_MESSSAGE, MAX_MESSAGE_SIZE
 MAX_IMAGE_SIZE = 10_000_000
 MAX_IMAGE_DIMENSIONS = 10_000
 MAX_IMAGE_THUMBNAIL = (MAX_IMAGE_DIMENSIONS // 2, MAX_IMAGE_DIMENSIONS // 2)
-
-_logger = getLogger(__name__)
 
 
 async def send_update(
@@ -40,10 +38,10 @@ async def send_update(
 ) -> None:
     message = _format_message(chat_id, feed_type, feed_name, link, title, description)
     if not media_links:
-        _logger.info(f"[{chat_id}] Sending text only update [{feed_name}] [{feed_type}]")
+        logger.info(f"[{chat_id}] Sending text only update [{feed_name}] [{feed_type}]")
         await bot.send_message(chat_id, message)
     else:
-        _logger.info(f"[{chat_id}] Sending update [{feed_name}] [{feed_type}]")
+        logger.info(f"[{chat_id}] Sending update [{feed_name}] [{feed_type}]")
         await _send_media_update(bot, chat_id, message, media_links)
 
 
@@ -67,7 +65,7 @@ def _format_message(
 def _trim_message(chat_id: int, message: str, appended_size: int) -> str:
     effective_max_message_size = MAX_MESSAGE_SIZE - appended_size
     if len(message) > effective_max_message_size:
-        _logger.info(f"[{chat_id}] Trimming message")
+        logger.info(f"[{chat_id}] Trimming message")
         effective_max_number_of_characters = effective_max_message_size - len("...")
         message = f"{message[:effective_max_number_of_characters]}..."
     return message
@@ -114,9 +112,9 @@ def _trim_image(media: bytes) -> bytes:
     image = Image.open(BytesIO(media))
     if (total_size := sum(image.size)) <= MAX_IMAGE_DIMENSIONS and len(media) <= MAX_IMAGE_SIZE:
         return media
-    _logger.info("Reducing image size...")
+    logger.info("Reducing image size...")
     if total_size > MAX_IMAGE_DIMENSIONS:
-        _logger.info(f"Total dimensions too large, reducing to {MAX_IMAGE_THUMBNAIL}...")
+        logger.info(f"Total dimensions too large, reducing to {MAX_IMAGE_THUMBNAIL}...")
         # Technically image can have size larger than 5000 pixels,
         # as long as sum of both dimensions is lower than 10000 pixels.
         # However, this is the simplest solution and images up to 5000x5000 should be big enough.
@@ -127,7 +125,7 @@ def _trim_image(media: bytes) -> bytes:
     while (bytes_size := len(image_raw)) > MAX_IMAGE_SIZE:
         max_dimension = max(image.size)
         new_dimensions = (max_dimension // 2, max_dimension // 2)
-        _logger.info(f"Total size ({bytes_size}) too large, reducing to {new_dimensions}...")
+        logger.info(f"Total size ({bytes_size}) too large, reducing to {new_dimensions}...")
         image.thumbnail(new_dimensions)
         image_bytes.truncate(0)
         image.save(image_bytes, format=image.format)

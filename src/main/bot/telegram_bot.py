@@ -7,8 +7,7 @@ Main bot module, which is responsible for:
 All these actions are triggered by a single function.
 """
 
-from logging import getLogger
-
+from loguru import logger
 from telegram.ext import Application, ApplicationBuilder, Defaults, JobQueue, PicklePersistence
 
 from bot.command.add import add_followup_handler, add_initial_handler
@@ -33,8 +32,6 @@ _UPDATE_HANDLERS = [
     subscriptions_followup_handler(),
 ]
 
-_logger = getLogger(__name__)
-
 
 def run_bot() -> None:
     application = _prepare_application()
@@ -55,13 +52,13 @@ def _prepare_application() -> Application:
 
 
 def _configure_handlers(application: Application) -> None:
-    _logger.info("Configuring handlers...")
+    logger.info("Configuring handlers...")
     application.add_handlers(_UPDATE_HANDLERS)
     application.add_error_handler(handle_errors)
 
 
 def _start_checking_for_updates(job_queue: JobQueue) -> None:
-    _logger.info("Starting checking for updates...")
+    logger.info("Starting checking for updates...")
     job_queue.run_repeating(
         callback=check_for_all_updates,
         interval=LOOKUP_INTERVAL,

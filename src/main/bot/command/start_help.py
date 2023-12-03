@@ -5,8 +5,7 @@ Responses for both "start" and "help" are the same.
 Description of each command is stored in the module handling this specific command.
 """
 
-from logging import getLogger
-
+from loguru import logger
 from telegram import Update
 from telegram.ext import CommandHandler, ContextTypes
 
@@ -24,8 +23,6 @@ HELP_MESSAGES = [
     REMOVE_ALL_HELP_MESSAGE,
     CANCEL_HELP_MESSAGE,
 ]
-
-logger = getLogger(__name__)
 
 
 def start_help_command_handler() -> CommandHandler:
