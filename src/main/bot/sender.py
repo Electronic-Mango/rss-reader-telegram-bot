@@ -11,13 +11,19 @@ This module will recognize and handle situations where:
 Only one media item will have a caption, so it's correctly displayed in chat.
 """
 
+from io import BytesIO
 from logging import getLogger
 
 from more_itertools import sliced
+from PIL import Image
 from requests import get
 from telegram import Bot, InputMediaPhoto, InputMediaVideo
 
 from settings import MAX_MEDIA_ITEMS_PER_MESSSAGE, MAX_MESSAGE_SIZE
+
+MAX_IMAGE_SIZE = 10_000_000
+MAX_IMAGE_DIMENSIONS = 10_000
+MAX_IMAGE_THUMBNAIL = (MAX_IMAGE_DIMENSIONS // 2, MAX_IMAGE_DIMENSIONS // 2)
 
 _logger = getLogger(__name__)
 
@@ -97,8 +103,33 @@ def _media_object(media: bytes, media_type: str) -> InputMediaPhoto | InputMedia
     if _is_video(media_type):
         return InputMediaVideo(media, supports_streaming=True)
     else:
-        return InputMediaPhoto(media)
+        return InputMediaPhoto(_trim_image(media))
 
 
 def _is_video(media_type: str) -> bool:
     return "video" in media_type.lower()
+
+
+def _trim_image(media: bytes) -> bytes:
+    image = Image.open(BytesIO(media))
+    if (total_size := sum(image.size)) <= MAX_IMAGE_DIMENSIONS and len(media) <= MAX_IMAGE_SIZE:
+        return media
+    _logger.info("Reducing image size...")
+    if total_size > MAX_IMAGE_DIMENSIONS:
+        _logger.info(f"Total dimensions too large, reducing to {MAX_IMAGE_THUMBNAIL}...")
+        # Technically image can have size larger than 5000 pixels,
+        # as long as sum of both dimensions is lower than 10000 pixels.
+        # However, this is the simplest solution and images up to 5000x5000 should be big enough.
+        image.thumbnail(MAX_IMAGE_THUMBNAIL)
+    image_bytes = BytesIO()
+    image.save(image_bytes, format=image.format)
+    image_raw = image_bytes.getvalue()
+    while (bytes_size := len(image_raw)) > MAX_IMAGE_SIZE:
+        max_dimension = max(image.size)
+        new_dimensions = (max_dimension // 2, max_dimension // 2)
+        _logger.info(f"Total size ({bytes_size}) too large, reducing to {new_dimensions}...")
+        image.thumbnail(new_dimensions)
+        image_bytes.truncate(0)
+        image.save(image_bytes, format=image.format)
+        image_raw = image_bytes.getvalue()
+    return image_raw
