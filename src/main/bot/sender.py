@@ -53,12 +53,12 @@ def _format_message(
     title: str,
     description: str,
 ) -> str:
-    message_text = f"{feed_name} on {feed_type}"
-    message_text += ":" if title or description else ""
-    message_text += f"\n\n{title}" if title else ""
+    message_text = f"{title}" if title else ""
     message_text += f"\n\n{description}" if description else ""
-    message_text = _trim_message(chat_id, message_text, len("\n\n") + len(link))
-    message_text += f"\n\n{link}"
+    sender_text = "\n\n" if len(message_text) else ""
+    sender_text += f"By <b>{feed_name}</b> on {feed_type}:\n{link}"
+    message_text = _trim_message(chat_id, message_text, len(sender_text))
+    message_text += sender_text
     return message_text
 
 
