@@ -6,8 +6,6 @@ Conversation handler handles all inline keyboard queries.
 This way whole conversation handler can be handle single message.
 """
 
-from typing import Any
-
 from telegram.ext import CallbackQueryHandler, CommandHandler, ConversationHandler
 
 from bot.command.subs.conversation_state import ConversationState
@@ -27,43 +25,27 @@ def subscriptions_initial_handler() -> CommandHandler:
 def subscriptions_followup_handler() -> ConversationHandler:
     """Followup conversation handler for inline keyboard queries"""
     return ConversationHandler(
-        entry_points=[CallbackQueryHandler(list_names, _is_list_names_data)],
+        entry_points=[CallbackQueryHandler(list_names, NamesData)],
         states={
             ConversationState.LIST_NAMES: [
-                CallbackQueryHandler(list_details, _is_list_details_data),
-                CallbackQueryHandler(followup_list_feed_types, _is_list_types_data),
+                CallbackQueryHandler(list_details, DetailsData),
+                CallbackQueryHandler(followup_list_feed_types, TypesData),
             ],
             ConversationState.SHOW_DETAILS: [
-                CallbackQueryHandler(request_confirmation, _is_remove_data),
-                CallbackQueryHandler(list_names, _is_list_names_data),
-                CallbackQueryHandler(followup_list_feed_types, _is_list_types_data),
+                CallbackQueryHandler(request_confirmation, RemoveFeedData),
+                CallbackQueryHandler(list_names, NamesData),
+                CallbackQueryHandler(followup_list_feed_types, TypesData),
             ],
             ConversationState.CONFIRM_REMOVAL: [
-                CallbackQueryHandler(remove_subscription, _is_remove_data),
-                CallbackQueryHandler(list_details, _is_list_details_data),
-                CallbackQueryHandler(list_names, _is_list_names_data),
-                CallbackQueryHandler(followup_list_feed_types, _is_list_types_data),
+                CallbackQueryHandler(remove_subscription, RemoveFeedData),
+                CallbackQueryHandler(list_details, DetailsData),
+                CallbackQueryHandler(list_names, NamesData),
+                CallbackQueryHandler(followup_list_feed_types, TypesData),
             ],
-            ConversationState.LIST_TYPES: [CallbackQueryHandler(list_names, _is_list_names_data)],
+            ConversationState.LIST_TYPES: [CallbackQueryHandler(list_names, NamesData)],
         },
         fallbacks=[CallbackQueryHandler(followup_list_feed_types)],
         per_message=True,
         name="subscriptions_followup_handler",
         persistent=True,
     )
-
-
-def _is_list_names_data(data: Any) -> bool:
-    return isinstance(data, NamesData)
-
-
-def _is_list_types_data(data: Any) -> bool:
-    return isinstance(data, TypesData)
-
-
-def _is_list_details_data(data: Any) -> bool:
-    return isinstance(data, DetailsData)
-
-
-def _is_remove_data(data: Any) -> bool:
-    return isinstance(data, RemoveFeedData)

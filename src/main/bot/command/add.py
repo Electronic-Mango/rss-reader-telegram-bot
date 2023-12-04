@@ -40,7 +40,7 @@ def add_initial_handler() -> CommandHandler:
 def add_followup_handler() -> ConversationHandler:
     return ConversationHandler(
         entry_points=[
-            CallbackQueryHandler(_request_feed_names, lambda data: isinstance(data, _AddFeedData))
+            CallbackQueryHandler(_request_feed_names, _AddFeedData)
         ],
         states={
             _ConversationState.FEED_NAME: [
