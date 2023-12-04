@@ -39,9 +39,7 @@ def add_initial_handler() -> CommandHandler:
 
 def add_followup_handler() -> ConversationHandler:
     return ConversationHandler(
-        entry_points=[
-            CallbackQueryHandler(_request_feed_names, _AddFeedData)
-        ],
+        entry_points=[CallbackQueryHandler(_request_feed_names, _AddFeedData)],
         states={
             _ConversationState.FEED_NAME: [
                 MessageHandler(USER_FILTER & TEXT & ~COMMAND, _handle_feed_names),
