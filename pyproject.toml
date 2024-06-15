@@ -1,10 +1,6 @@
 [tool.pytest.ini_options]
-pythonpath = [
-  "src/main", "src/test"
-]
-norecursedirs = [
-  "lib", "lib64"
-]
+pythonpath = ["src/main", "src/test"]
+norecursedirs = [".venv"]
 
 [tool.isort]
 src_paths = ["src/main"]
