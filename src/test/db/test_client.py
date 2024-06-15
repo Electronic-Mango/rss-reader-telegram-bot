@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock, patch
 
 from pymongo import ASCENDING
-from pytest import mark
+from pytest import fixture, mark, raises
 
 from db.client import (
     delete_many,
@@ -26,8 +26,17 @@ def mocked_mongo_client(host: str, port: str):
     return {DB_NAME: {DB_COLLECTION_NAME: collection_mock}}
 
 
+@fixture(autouse=True)
+def clear_initialized_collection() -> None:
+    import db.client as dbc
+
+    dbc._feed_collection = None
+    yield
+
+
 @patch("db.client.MongoClient", side_effect=mocked_mongo_client)
 def test_initialize_db(mongo_client_mock: MagicMock) -> None:
+    collection_mock.reset_mock()
     collection_mock.create_index.return_value = operation_result_mock
     initialize_db()
     assert mongo_client_mock.call_count
@@ -37,6 +46,16 @@ def test_initialize_db(mongo_client_mock: MagicMock) -> None:
     expected_keys = [("chat_id", ASCENDING), ("feed_name", ASCENDING), ("feed_type", ASCENDING)]
     assert expected_keys == create_index_kwargs.get("keys")
     assert create_index_kwargs.get("unique")
+
+
+@patch("db.client.MongoClient", side_effect=mocked_mongo_client)
+def test_db_is_not_initialized_again(mongo_client_mock: MagicMock) -> None:
+    collection_mock.reset_mock()
+    collection_mock.create_index.return_value = operation_result_mock
+    initialize_db()
+    initialize_db()
+    assert mongo_client_mock.call_count == 1
+    assert collection_mock.create_index.call_count == 1
 
 
 @patch("db.client.MongoClient", side_effect=mocked_mongo_client)
@@ -69,3 +88,22 @@ def test_element_exists(_, document_count: int) -> None:
     assert collection_mock.count_documents.call_count
     assert bool(document_count) == result
     assert (db_filter,) == collection_mock.count_documents.call_args.args
+
+
+@patch("db.client.MongoClient", side_effect=mocked_mongo_client)
+@mark.parametrize(
+    argnames=["client_function", "args"],
+    argvalues=[
+        (insert_one, (document,)),
+        (delete_many, (db_filter,)),
+        (update_one, (db_filter, document)),
+        (find_many, (db_filter,)),
+        (find_one, (db_filter,)),
+        (find_one, (db_filter,)),
+        (exists, (db_filter,)),
+    ],
+)
+def test_db_operations_fail_on_uninitialized_db(_, client_function, args) -> None:
+    with raises(AssertionError) as exception_info:
+        client_function(*args)
+    assert str(exception_info.value) == "DB is not initialized!"

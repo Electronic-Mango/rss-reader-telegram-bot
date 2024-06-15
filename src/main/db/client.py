@@ -20,11 +20,14 @@ from pymongo.results import DeleteResult, InsertOneResult
 
 from settings import DB_COLLECTION_NAME, DB_HOST, DB_NAME, DB_PORT
 
-_feed_collection: Collection = None
+_feed_collection: Collection | None = None
 
 
 def initialize_db() -> None:
     """Initialize MongoDB client, create relevant DB, collection and index."""
+    if _feed_collection is not None:
+        logger.warning("DB already initialized!")
+        return
     logger.info("Initializing DB...")
     _initialize_collection()
     _create_index()
@@ -46,29 +49,35 @@ def _create_index() -> None:
 
 def insert_one(document: Mapping[str, Any]) -> InsertOneResult:
     """Wrapper for "insert_one" DB function."""
+    assert _feed_collection is not None, "DB is not initialized!"
     return _feed_collection.insert_one(document)
 
 
 def delete_many(db_filter: Mapping[str, Any]) -> DeleteResult:
     """Wrapper for "delete_many" DB function."""
+    assert _feed_collection is not None, "DB is not initialized!"
     return _feed_collection.delete_many(db_filter)
 
 
 def update_one(db_filter: Mapping[str, Any], update: Mapping[str, Any]) -> Any:
     """Wrapper for "find_one_and_update" DB function."""
+    assert _feed_collection is not None, "DB is not initialized!"
     return _feed_collection.find_one_and_update(db_filter, update)
 
 
 def find_many(db_filter: Mapping[str, Any] = None) -> Cursor:
     """Wrapper for "find" DB function."""
+    assert _feed_collection is not None, "DB is not initialized!"
     return _feed_collection.find(db_filter)
 
 
 def find_one(db_filter: Mapping[str, Any] = None) -> Cursor:
     """Wrapper for "find_one" DB function."""
+    assert _feed_collection is not None, "DB is not initialized!"
     return _feed_collection.find_one(db_filter)
 
 
 def exists(db_filter: Mapping[str, Any]) -> bool:
     """Check if there are any documents from a given filter, using count_documents DB function."""
+    assert _feed_collection is not None, "DB is not initialized!"
     return bool(_feed_collection.count_documents(db_filter, limit=1))
