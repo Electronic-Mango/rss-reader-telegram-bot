@@ -13,10 +13,10 @@ Only one media item will have a caption, so it's correctly displayed in chat.
 
 from io import BytesIO
 
+from httpx import get
 from loguru import logger
 from more_itertools import sliced
 from PIL import Image
-from requests import get
 from telegram import Bot, InputMediaPhoto, InputMediaVideo
 
 from settings import MAX_MEDIA_ITEMS_PER_MESSSAGE, MAX_MESSAGE_SIZE
