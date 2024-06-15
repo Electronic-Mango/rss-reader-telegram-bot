@@ -25,7 +25,7 @@ _feed_collection: Collection = None
 
 def initialize_db() -> None:
     """Initialize MongoDB client, create relevant DB, collection and index."""
-    logger.info("Initalizing DB...")
+    logger.info("Initializing DB...")
     _initialize_collection()
     _create_index()
 

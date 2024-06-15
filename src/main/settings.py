@@ -1,8 +1,8 @@
 """
 Module holding all configuration parameters for the project based on "settings.yml" file.
-Additional parameters, overwritting the default ones can be loaded from a file defined in
+Additional parameters, overwriting the default ones can be loaded from a file defined in
 "CUSTOM_SETTINGS_PATH" environment variable.
-This overwritting file doesn't have to contain everything, only values to overwrite.
+This overwriting file doesn't have to contain everything, only values to overwrite.
 """
 
 from functools import reduce
@@ -49,7 +49,7 @@ QUIET_HOURS = _load_config("telegram", "updates", "quiet_hours")
 
 # telegram messages
 MAX_MESSAGE_SIZE = _load_config("telegram", "messages", "max_message_size")
-MAX_MEDIA_ITEMS_PER_MESSSAGE = _load_config("telegram", "messages", "max_media_items_per_message")
+MAX_MEDIA_ITEMS_PER_MESSAGE = _load_config("telegram", "messages", "max_media_items_per_message")
 
 # logging
 LOG_PATH = _load_config("logging", "log_path")

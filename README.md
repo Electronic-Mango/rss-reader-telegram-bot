@@ -49,7 +49,7 @@ All parameters missing from custom YAML will be taken from default YAML instead.
 This way you can provide your own Telegram bot token without modifying project files.
 This can be especially useful when running the bot in a Docker container.
 
-Most basic custom YAML can contains only Telegram bot token:
+Most basic custom YAML can contain only Telegram bot token:
 
 ```yaml
 telegram:
@@ -71,15 +71,15 @@ By default `persistence` file in the project root is used.
 Its path can be tweaked via configuration YAML.
 
 All conversation-style commands are persistent.
-This means, that their state should be preserved after bot has been restarted, you can just continue the conversation afterwards.
+This means, that their state should be preserved after bot has been restarted, you can just continue the conversation afterward.
 
 When deploying the bot via Docker I'd recommend changing the path to persistence pickled file into a mounted volume.
-Otherwise it will be stored directly in the container and it will be removed with it.
+Otherwise, it will be stored directly in the container, and it will be removed with it.
 
 
 ### Supplying RSS feed links
 
-Bot doesn't allow users to directly specify a RSS link to follow, instead it stores all available links in a YAML configuration file and allows users to pick one of types defined there.
+Bot doesn't allow users to directly specify an RSS link to follow, instead it stores all available links in a YAML configuration file and allows users to pick one of types defined there.
 
 This might not be the best approach, however it was most suitable for my use case, as it simplified the process of subscribing to RSS feeds.
 
@@ -91,7 +91,7 @@ Only feed names (or types) will be displayed to users, links themselves are not.
 Additionally, since RSS links are not stored together with subscription data, you can change the RSS links without the need of re-adding all your subscriptions.
 Just make sure, that feed type stays the same.
 
-Here's a basic set of configuration parameters for a RSS feed in YAML:
+Here's a basic set of configuration parameters for an RSS feed in YAML:
 
 ```yaml
 # RSS type name displayed to the user
@@ -99,13 +99,13 @@ Feed name 1:
   # RSS feed link. Notice {source_pattern} substring, it will be replaced with whatever source you input when adding a subscription.
   url: http://feedlink1.com/{source_pattern}/rss
   # Configure whether updates will contain RSS entry title.
-  # Case sensitive, optional, defaults to "false".
+  # Case-sensitive, optional, defaults to "false".
   show_title: true
   # Configure whether updates will contain RSS entry description.
-  # Case sensitive, optional, ddefaults to "false".
+  # Case-sensitive, optional, defaults to "false".
   show_description: true
   # List of strings which will be trimmed out of both title and description.
-  # Filters are case sensitive. Whole field is optional and defaults to an empty string.
+  # Filters are case-sensitive. Whole field is optional and defaults to an empty string.
   filters:
     - some string
     - some other string
@@ -134,7 +134,7 @@ Just make sure, that feed type stays the same.
 
 
 ### Quiet hours
-You can configure hours where bot won't check for RSS updates via `quiet_hours` parameter in configuration YAML in `telegram` - `updates` section.
+You can configure hours when bot won't check for RSS updates via `quiet_hours` parameter in configuration YAML in `telegram` - `updates` section.
 Add whatever hours you don't want updates in 24h format.
 For example these values will stop the bot from checking for updates from 11PM to 8AM:
 
@@ -176,7 +176,7 @@ Also, you can provide custom configuration without modifying project files.
 You can in a similar way supply feed links.
 
 When deploying the bot via Docker I'd also recommend changing the path to persistence pickled file into a mounted volume.
-Otherwise it will be stored directly in the container and it will be removed with it.
+Otherwise, it will be stored directly in the container, and it will be removed with it.
 You can do that either by modifying `telegram` - `persistence_file` value in configuration YAML.
 
 You can also check out my repository
@@ -189,11 +189,11 @@ for an example of how you can deploy this bot via Docker Compose.
 Running the bot is quite simple:
 
 1. Create a Telegram bot via [BotFather](https://core.telegram.org/bots#6-botfather)
-1. Set up `MongoDB`, I use a [MongoDB Docker container](https://hub.docker.com/_/mongo)
-1. Configure DB-related parameters in the bot, default ones assume the DB is running locally
-1. Configure Telegram bot token parameters
-1. Supply RSS feed links
-1. Run the `main.py` file, or use a Docker container
+2. Set up `MongoDB`, I use a [MongoDB Docker container](https://hub.docker.com/_/mongo)
+3. Configure DB-related parameters in the bot, default ones assume the DB is running locally
+4. Configure Telegram bot token parameters
+5. Supply RSS feed links
+6. Run the `main.py` file, or use a Docker container
 
 
 ## Commands
@@ -214,7 +214,7 @@ Running the bot is quite simple:
 Bot will assume that a given feed link (for a specific source, not a general one) is valid if it passes two conditions:
 
 1. HTTP response code is either 200 or 301
-1. feed has any entries already
+2. feed has any entries already
 
 The second one means, that you can't subscribe to feeds which do exist, but don't have any entries yet.
 It does, however, allow for a much better validation of links, since some RSS feeds will always respond with code 200, even if the feed is not valid.
@@ -225,12 +225,12 @@ It's not a perfect solution, but it works for my use case.
 
 Bot check for updates for all subscriptions in a regular intervals, configured by the configuration YAML parameter `telegram` - `updates` - `lookup_interval`.
 
-By default it will check for updates every hour.
+By default, it will check for updates every hour.
 
 A different parameter `lookup_feed_delay` configures the delay between checking each feed.
 This should prevent the bot from stopping responding to commands when it's checking for updates, since it might take a while.
 
-You should check how long checking for each update takes in your case and modify the `lookup_feed_delay` accordingly, so the bot has the time to respond to commands in the mean time.
+You should check how long checking for each update takes in your case and modify the `lookup_feed_delay` accordingly, so the bot has the time to respond to commands in the meantime.
 At the same time it shouldn't be so big, that last checks are done when next iteration of checking for updates starts.
 
 
@@ -238,10 +238,10 @@ At the same time it shouldn't be so big, that last checks are done when next ite
 
 Randomness can be added to checking for updates on two levels:
 1. Main job triggering check for each feed via `lookup_interval_randomness`
-1. Between individual feeds via `lookup_feed_delay_randomness`
+2. Between individual feeds via `lookup_feed_delay_randomness`
 
 Main job still triggers every exactly `lookup_interval` seconds.
-However only responsibility of this job is triggering delayed checks.
+However, only responsibility of this job is triggering delayed checks.
 These delayed checks will happen after between `0` and `lookup_interval_randomness` seconds.
 
 Delay between checking each feed is `lookup_feed_delay` plus a random value between `0` and `lookup_feed_delay_randomness`.
@@ -249,7 +249,7 @@ So minimum amount of seconds between checking for each feed is `lookup_feed_dela
 
 However, the main job isn't taking into account any of the additional delays and randomness, it still triggers every `lookup_interval`, triggering delayed job every `0` to `lookup_interval_randomness` seconds, etc.
 
-So minimum amout of secods between triggering checking for updates is `lookup_interval - lookup_interval_randomness` and maximum is `lookup_interval + lookup_interval_randomness`.
+So minimum amount of seconds between triggering checking for updates is `lookup_interval - lookup_interval_randomness` and maximum is `lookup_interval + lookup_interval_randomness`.
 This, however, doesn't take into account neither `lookup_feed_delay` nor `lookup_feed_delay_randomness`.
 
 

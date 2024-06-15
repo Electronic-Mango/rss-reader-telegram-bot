@@ -91,7 +91,7 @@ async def _cancel(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
     logger.info(f"[{update.effective_chat.id}] User cancelled removing subscriptions")
     query = update.callback_query
     await query.answer()
-    await query.edit_message_text("No subscriptions have beed removed")
+    await query.edit_message_text("No subscriptions have been removed")
     return ConversationHandler.END
 
 

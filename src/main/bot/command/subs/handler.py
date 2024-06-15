@@ -3,7 +3,7 @@ Command and conversation handlers used by "subscriptions" command.
 Handling of "subscriptions" command is split into two handlers.
 Regular command handler only creates initial inline keyboard.
 Conversation handler handles all inline keyboard queries.
-This way whole conversation handler can be handle single message.
+This way whole conversation handler can handle single message.
 """
 
 from telegram.ext import CallbackQueryHandler, CommandHandler, ConversationHandler

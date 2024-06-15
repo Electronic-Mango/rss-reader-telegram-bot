@@ -19,7 +19,7 @@ from more_itertools import sliced
 from PIL import Image
 from telegram import Bot, InputMediaPhoto, InputMediaVideo
 
-from settings import MAX_MEDIA_ITEMS_PER_MESSSAGE, MAX_MESSAGE_SIZE
+from settings import MAX_MEDIA_ITEMS_PER_MESSAGE, MAX_MESSAGE_SIZE
 
 MAX_IMAGE_SIZE = 10_000_000
 MAX_IMAGE_DIMENSIONS = 10_000
@@ -73,7 +73,7 @@ def _trim_message(chat_id: int, message: str, appended_size: int) -> str:
 
 async def _send_media_update(bot: Bot, chat_id: int, message: str, media_links: list[str]) -> None:
     media = [_get_media_content_and_type(link) for link in media_links]
-    media_groups = list(sliced(media, MAX_MEDIA_ITEMS_PER_MESSSAGE))
+    media_groups = list(sliced(media, MAX_MEDIA_ITEMS_PER_MESSAGE))
     # Only the last group should have a message
     for media_group in media_groups[:-1]:
         await _handle_attachment_group(bot, chat_id, media_group)

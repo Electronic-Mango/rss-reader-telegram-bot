@@ -16,7 +16,7 @@ from db.wrapper import remove_stored_chat_data
 
 async def handle_errors(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update is None and context.job is None:
-        logger.error("Unexpected error occured:", exc_info=context.error)
+        logger.error("Unexpected error occurred:", exc_info=context.error)
     elif update:
         await _handle_update_error(update, context)
     else:

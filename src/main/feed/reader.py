@@ -27,7 +27,7 @@ def feed_is_valid(feed: FeedParserDict) -> bool:
      - HTTP status code is either 200 or 301 (301 is a workaround for Tumblr blogs)
      - there are any feed items in the response
     Technically a feed can be valid, but without any items, when it was just created.
-    Checking for those items is an workaround for feeds which always responde with code 200.
+    Checking for those items is a workaround for feeds which always respond with code 200.
     """
     logger.info(f"Checking if [{feed.href}] feed exists")
     # 301 is a workaround for Tumblr blogs with dedicated URLs.
