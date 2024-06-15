@@ -16,7 +16,7 @@ from bot.command.subs.query_data import NamesData, RemoveFeedData, TypesData
 from db.wrapper import get_latest_entry_data
 
 
-async def list_details(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
+async def list_details(update: Update, _: ContextTypes.DEFAULT_TYPE) -> ConversationState:
     query = update.callback_query
     await query.answer()
     chat_id = update.effective_chat.id

@@ -64,7 +64,9 @@ async def _request_feed_type(update: Update, _: ContextTypes.DEFAULT_TYPE) -> No
     )
 
 
-async def _request_feed_names(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def _request_feed_names(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+) -> _ConversationState:
     query = update.callback_query
     await query.answer()
     feed_type = query.data.feed_type

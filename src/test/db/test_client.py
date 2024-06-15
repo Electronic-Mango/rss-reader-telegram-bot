@@ -17,7 +17,7 @@ from settings import DB_COLLECTION_NAME, DB_HOST, DB_NAME, DB_PORT
 collection_mock = MagicMock()
 operation_result_mock = MagicMock()
 document = MagicMock()
-filter = MagicMock()
+db_filter = MagicMock()
 
 
 def mocked_mongo_client(host: str, port: str):
@@ -44,18 +44,28 @@ def test_initialize_db(mongo_client_mock: MagicMock) -> None:
     argnames=["client_function", "db_function", "args"],
     argvalues=[
         (insert_one, "insert_one", (document,)),
-        (delete_many, "delete_many", (filter,)),
-        (update_one, "find_one_and_update", (filter, document)),
-        (find_many, "find", (filter,)),
-        (find_one, "find_one", (filter,)),
-        (exists, "count_documents", (filter,)),
+        (delete_many, "delete_many", (db_filter,)),
+        (update_one, "find_one_and_update", (db_filter, document)),
+        (find_many, "find", (db_filter,)),
+        (find_one, "find_one", (db_filter,)),
     ],
 )
 def test_db_operations(_, client_function, db_function, args) -> None:
     initialize_db()
     db_function = getattr(collection_mock, db_function)
     db_function.return_value = operation_result_mock
-    insertion_result = client_function(*args)
+    operation_result = client_function(*args)
     assert db_function.call_count
-    assert operation_result_mock == insertion_result
+    assert operation_result_mock == operation_result
     assert args == db_function.call_args.args
+
+
+@patch("db.client.MongoClient", side_effect=mocked_mongo_client)
+@mark.parametrize(argnames="document_count", argvalues=[0, 1, 2])
+def test_element_exists(_, document_count: int) -> None:
+    initialize_db()
+    collection_mock.count_documents.return_value = document_count
+    result = exists(db_filter)
+    assert collection_mock.count_documents.call_count
+    assert bool(document_count) == result
+    assert (db_filter,) == collection_mock.count_documents.call_args.args

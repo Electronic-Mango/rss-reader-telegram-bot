@@ -11,7 +11,7 @@ from bot.command.subs.conversation_state import ConversationState
 from bot.command.subs.query_data import DetailsData, TypesData
 
 
-async def list_names(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
+async def list_names(update: Update, _: ContextTypes.DEFAULT_TYPE) -> ConversationState:
     query = update.callback_query
     await query.answer()
     type, chat_data = query.data

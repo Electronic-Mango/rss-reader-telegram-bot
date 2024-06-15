@@ -14,10 +14,10 @@ from bot.sender import send_update
 from db.wrapper import remove_stored_chat_data
 
 
-async def handle_errors(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def handle_errors(update: object | None, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update is None and context.job is None:
         logger.error("Unexpected error occurred:", exc_info=context.error)
-    elif update:
+    elif update and isinstance(update, Update):
         await _handle_update_error(update, context)
     else:
         await _handle_job_error(context)

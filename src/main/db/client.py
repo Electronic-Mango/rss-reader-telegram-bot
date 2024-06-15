@@ -49,26 +49,26 @@ def insert_one(document: Mapping[str, Any]) -> InsertOneResult:
     return _feed_collection.insert_one(document)
 
 
-def delete_many(filter: Mapping[str, Any]) -> DeleteResult:
+def delete_many(db_filter: Mapping[str, Any]) -> DeleteResult:
     """Wrapper for "delete_many" DB function."""
-    return _feed_collection.delete_many(filter)
+    return _feed_collection.delete_many(db_filter)
 
 
-def update_one(filter: Mapping[str, Any], update: Mapping[str, Any]) -> Any:
+def update_one(db_filter: Mapping[str, Any], update: Mapping[str, Any]) -> Any:
     """Wrapper for "find_one_and_update" DB function."""
-    return _feed_collection.find_one_and_update(filter, update)
+    return _feed_collection.find_one_and_update(db_filter, update)
 
 
-def find_many(filter: Mapping[str, Any] = None) -> Cursor:
+def find_many(db_filter: Mapping[str, Any] = None) -> Cursor:
     """Wrapper for "find" DB function."""
-    return _feed_collection.find(filter)
+    return _feed_collection.find(db_filter)
 
 
-def find_one(filter: Mapping[str, Any] = None) -> Cursor:
+def find_one(db_filter: Mapping[str, Any] = None) -> Cursor:
     """Wrapper for "find_one" DB function."""
-    return _feed_collection.find_one(filter)
+    return _feed_collection.find_one(db_filter)
 
 
-def exists(filter: Mapping[str, Any]) -> bool:
+def exists(db_filter: Mapping[str, Any]) -> bool:
     """Check if there are any documents from a given filter, using count_documents DB function."""
-    return _feed_collection.count_documents(filter, limit=1)
+    return bool(_feed_collection.count_documents(db_filter, limit=1))

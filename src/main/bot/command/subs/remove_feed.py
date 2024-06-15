@@ -11,7 +11,7 @@ from bot.command.subs.query_data import DetailsData, NamesData, TypesData
 from db.wrapper import remove_stored_feed
 
 
-async def request_confirmation(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
+async def request_confirmation(update: Update, _: ContextTypes.DEFAULT_TYPE) -> ConversationState:
     """Request confirmation for removal of selected subscription"""
     query = update.callback_query
     await query.answer()

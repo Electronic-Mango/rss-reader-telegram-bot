@@ -23,7 +23,9 @@ async def initial_list_feed_types(update: Update, _: ContextTypes.DEFAULT_TYPE) 
         await update.message.reply_text("No subscriptions")
 
 
-async def followup_list_feed_types(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
+async def followup_list_feed_types(
+    update: Update, _: ContextTypes.DEFAULT_TYPE
+) -> ConversationState:
     """List of types after going back from list of names"""
     query = update.callback_query
     await query.answer()

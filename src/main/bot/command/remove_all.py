@@ -67,7 +67,9 @@ async def _request_confirmation_1(update: Update, _: ContextTypes.DEFAULT_TYPE) 
         )
 
 
-async def _request_confirmation_2(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
+async def _request_confirmation_2(
+    update: Update, _: ContextTypes.DEFAULT_TYPE
+) -> _ConversationState:
     query = update.callback_query
     await query.answer()
     await query.edit_message_text(

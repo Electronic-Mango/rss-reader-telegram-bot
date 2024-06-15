@@ -11,7 +11,7 @@ EXPECTED_FEED_LINK = FEED_LINK.format(source_pattern=FEED_NAME)
 MOCKED_FEED_PARSER_DICT = FeedParserDict({"id": "FEED-ID"})
 
 
-def mocked_parse(url_file_stream_or_string: str) -> FeedParserDict:
+def mocked_parse(url_file_stream_or_string: str) -> FeedParserDict | None:
     if url_file_stream_or_string == EXPECTED_FEED_LINK:
         return MOCKED_FEED_PARSER_DICT
     else:

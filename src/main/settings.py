@@ -30,7 +30,7 @@ _SETTINGS = merge(
 )
 
 
-def _load_config(*keys: tuple[str]) -> Any:
+def _load_config(*keys: str) -> Any:
     return reduce(lambda table, key: table[key], keys, _SETTINGS)
 
 
