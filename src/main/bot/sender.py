@@ -81,7 +81,7 @@ async def _send_media_update(bot: Bot, chat_id: int, message: str, media_links: 
 
 
 def _get_media_content_and_type(link: str) -> tuple[bytes, str]:
-    response = get(link)
+    response = get(link, timeout=600)
     return response.content, response.headers["Content-Type"]
 
 
