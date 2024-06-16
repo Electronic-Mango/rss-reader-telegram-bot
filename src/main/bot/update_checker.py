@@ -11,6 +11,7 @@ Accessing DB, reading and parsing the RSS feed and sending updates to chats
 is handled in separate modules.
 """
 
+from asyncio import sleep
 from datetime import datetime
 from random import randrange
 from time import struct_time
@@ -42,15 +43,19 @@ async def _delayed_check_for_all_updates(context: ContextTypes.DEFAULT_TYPE) -> 
         logger.info("Quiet hour, skipping checking for updates")
         return
     logger.info("Starting checking for all updates")
-    delay = 0
     for feed_data in get_all_stored_data():
-        context.job_queue.run_once(callback=_check_for_updates, when=delay, data=feed_data)
-        delay += LOOKUP_FEED_DELAY
-        delay += randrange(max(LOOKUP_FEED_DELAY_RANDOMNESS, 1))  # randrange(1) always returns 0
+        await _check_for_updates(context, *feed_data)
+        await sleep(LOOKUP_FEED_DELAY + randrange(max(LOOKUP_FEED_DELAY_RANDOMNESS, 1)))
 
 
-async def _check_for_updates(context: ContextTypes.DEFAULT_TYPE) -> None:
-    chat_id, feed_type, feed_name, id, date = context.job.data
+async def _check_for_updates(
+    context: ContextTypes.DEFAULT_TYPE,
+    chat_id: int,
+    feed_type: str,
+    feed_name: str,
+    id: str,
+    date: struct_time,
+) -> None:
     logger.info(f"[{chat_id}] Checking for updates for [{feed_name}] [{feed_type}]")
     feed = get_parsed_feed(feed_type, feed_name)
     if feed_is_valid(feed):
