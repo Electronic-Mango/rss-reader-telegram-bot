@@ -44,6 +44,8 @@ async def _delayed_check_for_all_updates(context: ContextTypes.DEFAULT_TYPE) -> 
     logger.info("Starting checking for all updates")
     delay = 0
     for feed_data in get_all_stored_data():
+        # Checking for updates for feeds is done through a job queue so that async exceptions
+        # won't stop entire procedure.
         context.job_queue.run_once(callback=_check_for_updates, when=delay, data=feed_data)
         delay += LOOKUP_FEED_DELAY
         delay += randrange(max(LOOKUP_FEED_DELAY_RANDOMNESS, 1))  # randrange(1) always returns 0
