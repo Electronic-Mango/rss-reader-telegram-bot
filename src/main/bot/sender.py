@@ -11,6 +11,7 @@ This module will recognize and handle situations where:
 Only one media item will have a caption, so it's correctly displayed in chat.
 """
 
+from http import HTTPStatus
 from io import BytesIO
 
 from httpx import get
@@ -72,7 +73,11 @@ def _trim_message(chat_id: int, message: str, appended_size: int) -> str:
 
 
 async def _send_media_update(bot: Bot, chat_id: int, message: str, media_links: list[str]) -> None:
-    media = [_get_media_content_and_type(link) for link in media_links]
+    media = [data for link in media_links if (data := _get_media_content_and_type(link))]
+    if not media:
+        logger.info(f"[{chat_id}] No media downloaded from [{media_links}]")
+        await bot.send_message(chat_id, message)
+        return
     media_groups = list(sliced(media, MAX_MEDIA_ITEMS_PER_MESSAGE))
     # Only the last group should have a message
     for media_group in media_groups[:-1]:
@@ -80,9 +85,12 @@ async def _send_media_update(bot: Bot, chat_id: int, message: str, media_links: 
     await _handle_attachment_group(bot, chat_id, media_groups[-1], message)
 
 
-def _get_media_content_and_type(link: str) -> tuple[bytes, str]:
+def _get_media_content_and_type(link: str) -> tuple[bytes, str] | None:
     headers = {"user-agent": "rss-reader/1.0", "accept": "*/*"}
     response = get(link, headers=headers, timeout=600)
+    if response.status_code != HTTPStatus.OK:
+        logger.warning(f"Could download media at [{link}], status code [{response.status_code}]")
+        return None
     return response.content, response.headers["Content-Type"]
 
 
