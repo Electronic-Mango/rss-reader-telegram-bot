@@ -2,6 +2,8 @@
 
 FROM python:3.12-alpine
 
+RUN apk add py3-opencv
+
 WORKDIR /app
 
 COPY requirements.txt .
