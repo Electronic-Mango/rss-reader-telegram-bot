@@ -105,6 +105,8 @@ async def _handle_attachment_group(
     # Technically single media elements don't have to be handled as media group,
     # but they can, so the same implementation can be used for both.
     input_media_list = [_media_object(media, media_type) for media, media_type in media_group]
+    is_video_list = [isinstance(m, InputMediaVideo) for m in input_media_list]
+    logger.info(f"{chat_id} Sending media group is_video={is_video_list}")
     if len(input_media_list) == 1 and isinstance(video := input_media_list[0], InputMediaVideo):
         # Workaround for videos with skewed aspect ratio.
         await _handle_single_video(bot, chat_id, video, message)
