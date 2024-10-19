@@ -50,6 +50,7 @@ QUIET_HOURS = _load_config("telegram", "updates", "quiet_hours")
 # telegram messages
 MAX_MESSAGE_SIZE = _load_config("telegram", "messages", "max_message_size")
 MAX_MEDIA_ITEMS_PER_MESSAGE = _load_config("telegram", "messages", "max_media_items_per_message")
+VIDEO_FILE_EXTENSION = _load_config("telegram", "messages", "video_file_extension")
 
 # logging
 LOG_PATH = _load_config("logging", "log_path")

@@ -22,7 +22,7 @@ from more_itertools import sliced
 from PIL import Image
 from telegram import Bot, InputMediaPhoto, InputMediaVideo
 
-from settings import MAX_MEDIA_ITEMS_PER_MESSAGE, MAX_MESSAGE_SIZE
+from settings import MAX_MEDIA_ITEMS_PER_MESSAGE, MAX_MESSAGE_SIZE, VIDEO_FILE_EXTENSION
 
 MAX_IMAGE_SIZE = 10_000_000
 MAX_IMAGE_DIMENSIONS = 10_000
@@ -107,38 +107,20 @@ async def _handle_attachment_group(
     input_media_list = [_media_object(media, media_type) for media, media_type in media_group]
     if len(input_media_list) == 1 and isinstance(video := input_media_list[0], InputMediaVideo):
         # Workaround for videos with skewed aspect ratio.
-        await bot.send_video(
-            chat_id,
-            video.media,
-            width=video.width,
-            height=video.height,
-            caption=message,
-            write_timeout=180,
-        )
+        await _handle_single_video(bot, chat_id, video, message)
     else:
         await bot.send_media_group(chat_id, input_media_list, caption=message, write_timeout=180)
 
 
 def _media_object(media: bytes, media_type: str) -> InputMediaPhoto | InputMediaVideo:
     if _is_video(media_type):
-        width, height = _get_video_resolution(media)
-        return InputMediaVideo(media, width=width, height=height, supports_streaming=True)
+        return InputMediaVideo(media, supports_streaming=True)
     else:
         return InputMediaPhoto(_trim_image(media))
 
 
 def _is_video(media_type: str) -> bool:
     return "video" in media_type.lower()
-
-
-def _get_video_resolution(media: bytes) -> tuple[int, int]:
-    # Temporary hack, should be rewritten to ffmpeg to avoid writing to disk.
-    with NamedTemporaryFile() as tmp_file:
-        tmp_file.write(media)
-        video = VideoCapture(tmp_file.name)
-        width = video.get(CAP_PROP_FRAME_WIDTH)
-        height = video.get(CAP_PROP_FRAME_HEIGHT)
-    return int(width), int(height)
 
 
 def _trim_image(media: bytes) -> bytes:
@@ -164,3 +146,26 @@ def _trim_image(media: bytes) -> bytes:
         image.save(image_bytes, format=image.format)
         image_raw = image_bytes.getvalue()
     return image_raw
+
+
+async def _handle_single_video(
+    bot: Bot,
+    chat_id: int,
+    video: InputMediaVideo,
+    message: str = None,
+) -> None:
+    with NamedTemporaryFile(suffix=VIDEO_FILE_EXTENSION) as tmp_file:
+        tmp_file.write(video.media)
+        file_name = tmp_file.name
+        video_capture = VideoCapture(file_name)
+        width = int(video_capture.get(CAP_PROP_FRAME_WIDTH))
+        height = int(video_capture.get(CAP_PROP_FRAME_HEIGHT))
+        logger.info(f"{chat_id} Sending video [{file_name}] [{width}x{height}]")
+        await bot.send_video(
+            chat_id,
+            file_name,
+            width=width,
+            height=height,
+            caption=message,
+            write_timeout=180,
+        )

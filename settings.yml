@@ -28,6 +28,9 @@ telegram:
     max_message_size: 1024
     # Max number of media items per single message.
     max_media_items_per_message: 10
+    # Append this suffix to filenames when sending single video updates.
+    # Leave empty for no extension suffix.
+    video_file_extension: .mp4
 
 logging:
   # Path for bot internal logs.
