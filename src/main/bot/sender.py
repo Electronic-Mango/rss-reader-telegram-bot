@@ -167,5 +167,6 @@ async def _handle_single_video(
         width=width,
         height=height,
         caption=message,
+        supports_streaming=True,
         write_timeout=180,
     )
