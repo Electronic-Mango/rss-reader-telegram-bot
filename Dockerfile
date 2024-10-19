@@ -1,8 +1,6 @@
 # Dockerfile which can be used for deploying the bot as a Docker container.
 
-FROM python:3.12-alpine
-
-RUN apk add py3-opencv
+FROM python:3.12-slim
 
 WORKDIR /app
 
