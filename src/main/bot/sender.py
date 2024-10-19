@@ -13,7 +13,9 @@ Only one media item will have a caption, so it's correctly displayed in chat.
 
 from http import HTTPStatus
 from io import BytesIO
+from tempfile import NamedTemporaryFile
 
+from cv2 import CAP_PROP_FRAME_HEIGHT, CAP_PROP_FRAME_WIDTH, VideoCapture
 from httpx import get
 from loguru import logger
 from more_itertools import sliced
@@ -108,13 +110,24 @@ async def _handle_attachment_group(
 
 def _media_object(media: bytes, media_type: str) -> InputMediaPhoto | InputMediaVideo:
     if _is_video(media_type):
-        return InputMediaVideo(media, supports_streaming=True)
+        width, height = _get_video_resolution(media)
+        return InputMediaVideo(media, width=width, height=height, supports_streaming=True)
     else:
         return InputMediaPhoto(_trim_image(media))
 
 
 def _is_video(media_type: str) -> bool:
     return "video" in media_type.lower()
+
+
+def _get_video_resolution(media: bytes) -> tuple[int, int]:
+    # Temporary hack, should be rewritten to ffmpeg to avoid writing to disk.
+    with NamedTemporaryFile() as tmp_file:
+        tmp_file.write(media)
+        video = VideoCapture(tmp_file.name)
+        width = video.get(CAP_PROP_FRAME_WIDTH)
+        height = video.get(CAP_PROP_FRAME_HEIGHT)
+    return int(width), int(height)
 
 
 def _trim_image(media: bytes) -> bytes:
