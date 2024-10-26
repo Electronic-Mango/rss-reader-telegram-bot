@@ -73,14 +73,14 @@ async def _request_feed_names(
     context.user_data[_ConversationState.FEED_NAME] = feed_type
     logger.info(f"[{update.effective_chat.id}] User selected type [{feed_type}], requesting name")
     await update.effective_chat.send_message(
-        f"Send <b>{feed_type}</b> name, multiple names separated by a space, or /cancel",
+        f"Send <b>{feed_type}</b> name, multiple names separated by a new line, or /cancel",
     )
     return _ConversationState.FEED_NAME
 
 
 async def _handle_feed_names(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     chat_id = update.effective_chat.id
-    feed_names = update.message.text.split()
+    feed_names = update.message.text.splitlines()
     feed_type = context.user_data[_ConversationState.FEED_NAME]
     logger.info(f"{chat_id} User send feed name {feed_names} for [{feed_type}]")
     for feed_name in feed_names:
