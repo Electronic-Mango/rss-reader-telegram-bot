@@ -28,6 +28,8 @@ telegram:
     max_message_size: 1024
     # Max number of media items per single message.
     max_media_items_per_message: 10
+    # Pin new single video messages automatically.
+    pin_videos: true
 
 logging:
   # Path for bot internal logs.

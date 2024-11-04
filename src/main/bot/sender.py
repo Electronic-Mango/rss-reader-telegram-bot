@@ -22,7 +22,7 @@ from more_itertools import sliced
 from PIL import Image
 from telegram import Bot, InputMediaPhoto, InputMediaVideo
 
-from settings import MAX_MEDIA_ITEMS_PER_MESSAGE, MAX_MESSAGE_SIZE
+from settings import MAX_MEDIA_ITEMS_PER_MESSAGE, MAX_MESSAGE_SIZE, PIN_VIDEOS
 
 MAX_IMAGE_SIZE = 10_000_000
 MAX_IMAGE_DIMENSIONS = 10_000
@@ -161,7 +161,7 @@ async def _handle_single_video(
         video_capture = VideoCapture(tmp_file.name)
         width = int(video_capture.get(CAP_PROP_FRAME_WIDTH))
         height = int(video_capture.get(CAP_PROP_FRAME_HEIGHT))
-    await bot.send_video(
+    sent_message = await bot.send_video(
         chat_id,
         video.media,
         width=width,
@@ -170,3 +170,5 @@ async def _handle_single_video(
         supports_streaming=True,
         write_timeout=180,
     )
+    if PIN_VIDEOS:
+        await sent_message.pin()
