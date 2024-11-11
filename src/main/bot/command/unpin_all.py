@@ -33,7 +33,7 @@ def unpin_all_followup_handlers() -> list[CallbackQueryHandler]:
 
 
 def pin_message(chat_id: int, message: Message) -> None:
-    _PINNED_MESSAGES.get(chat_id).append(message)
+    _PINNED_MESSAGES[chat_id].append(message)
 
 
 def _data_confirmed(data: Any) -> bool:
