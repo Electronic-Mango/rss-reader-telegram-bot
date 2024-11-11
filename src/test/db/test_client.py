@@ -66,7 +66,7 @@ def test_initialize_db(mongo_client_mock: MagicMock) -> None:
     create_pinned_index = pinned_collection_mock.create_index
     create_pinned_index.assert_called()
     create_pinned_index_kwargs = create_pinned_index.call_args.kwargs
-    expected_pinned_keys = [("chat_id", ASCENDING)]
+    expected_pinned_keys = [("chat_id", ASCENDING), ("message_id", ASCENDING)]
     assert expected_pinned_keys == create_pinned_index_kwargs.get("keys")
     assert create_pinned_index_kwargs.get("unique")
 

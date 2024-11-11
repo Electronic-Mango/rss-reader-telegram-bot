@@ -48,7 +48,9 @@ def _create_indexes() -> None:
         keys=[("chat_id", ASCENDING), ("feed_name", ASCENDING), ("feed_type", ASCENDING)],
         unique=True,
     )
-    pinned_index = _pinned_collection.create_index(keys=[("chat_id", ASCENDING)], unique=True)
+    pinned_index = _pinned_collection.create_index(
+        keys=[("chat_id", ASCENDING), ("message_id", ASCENDING)], unique=True
+    )
     logger.info(f"Created indexes [{feed_index}] [{pinned_index}]")
 
 

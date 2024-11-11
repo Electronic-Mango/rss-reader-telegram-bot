@@ -129,7 +129,10 @@ def store_pinned_message(chat_id: int, message: Message) -> None:
     logger.info(f"[{chat_id}] Pinning message [{message.id}]")
     message_pickled = dumps(message)
     message_b64 = b64encode(message_pickled).decode("ascii")
-    insert_one({"chat_id": chat_id, "message": message_b64}, collection=DB_PINNED_NAME)
+    insert_one(
+        {"chat_id": chat_id, "message_id": message.id, "message": message_b64},
+        collection=DB_PINNED_NAME,
+    )
 
 
 def pop_pinned_messages(chat_id: int, bot: Bot) -> list[Message]:
