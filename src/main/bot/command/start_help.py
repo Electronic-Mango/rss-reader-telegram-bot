@@ -14,7 +14,6 @@ from bot.command.cancel import CANCEL_HELP_MESSAGE
 from bot.command.hello import HELLO_HELP_MESSAGE
 from bot.command.remove_all import REMOVE_ALL_HELP_MESSAGE
 from bot.command.subs.help import SUBSCRIPTIONS_HELP_MESSAGE
-from bot.command.unpin_all import UNPIN_ALL_HELP_MESSAGE
 from bot.user_filter import USER_FILTER
 
 HELP_MESSAGES = [
@@ -22,7 +21,6 @@ HELP_MESSAGES = [
     ADD_HELP_MESSAGE,
     SUBSCRIPTIONS_HELP_MESSAGE,
     REMOVE_ALL_HELP_MESSAGE,
-    UNPIN_ALL_HELP_MESSAGE,
     CANCEL_HELP_MESSAGE,
 ]
 
