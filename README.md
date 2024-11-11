@@ -204,6 +204,7 @@ Running the bot is quite simple:
  * `/add` - adds subscription for a given feed
  * `/subscriptions` - list and manage your subscriptions
  * `/removeall` - remove all subscriptions
+ * `/unpinall` - unpin all messages, useful if bot is configured to pin all sent video messages
  * `/cancel` - cancel the current operation, currently used only when adding new subscriptions
 
 
