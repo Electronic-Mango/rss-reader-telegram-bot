@@ -48,7 +48,9 @@ database:
   # DB name with feed collection.
   name: rss_reader
   # DB feed collection with feed data, stored in DB named above.
-  collection_name: feed_data
+  feeds_name: feed_data
+  # DB collection storing pinned messages, stored in DB named above.
+  pinned_name: pinned_data
 
 rss:
   # Path to YAML file with definitions of all possible feeds.

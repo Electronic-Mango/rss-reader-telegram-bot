@@ -61,7 +61,8 @@ BACKUP_COUNT = _load_config("logging", "backup_count")
 DB_HOST = _load_config("database", "host")
 DB_PORT = _load_config("database", "port")
 DB_NAME = _load_config("database", "name")
-DB_COLLECTION_NAME = _load_config("database", "collection_name")
+DB_FEEDS_NAME = _load_config("database", "feeds_name")
+DB_PINNED_NAME = _load_config("database", "pinned_name")
 
 # rss
 with open(_load_config("rss", "feeds_yaml_filename"), "r") as feeds_yml:

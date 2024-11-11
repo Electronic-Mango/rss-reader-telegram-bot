@@ -18,66 +18,83 @@ from pymongo.collection import Collection
 from pymongo.cursor import Cursor
 from pymongo.results import DeleteResult, InsertOneResult
 
-from settings import DB_COLLECTION_NAME, DB_HOST, DB_NAME, DB_PORT
+from settings import DB_FEEDS_NAME, DB_HOST, DB_NAME, DB_PINNED_NAME, DB_PORT
 
-_feed_collection: Collection | None = None
+_feeds_collection: Collection | None = None
+_pinned_collection: Collection | None = None
 
 
 def initialize_db() -> None:
     """Initialize MongoDB client, create relevant DB, collection and index."""
-    if _feed_collection is not None:
+    if _feeds_collection is not None and _pinned_collection is not None:
         logger.warning("DB already initialized!")
         return
     logger.info("Initializing DB...")
-    _initialize_collection()
-    _create_index()
+    _initialize_collections()
+    _create_indexes()
 
 
-def _initialize_collection() -> None:
-    global _feed_collection
-    _feed_collection = MongoClient(DB_HOST, DB_PORT)[DB_NAME][DB_COLLECTION_NAME]
+def _initialize_collections() -> None:
+    database = MongoClient(DB_HOST, DB_PORT)[DB_NAME]
+    global _feeds_collection
+    _feeds_collection = database[DB_FEEDS_NAME]
+    global _pinned_collection
+    _pinned_collection = database[DB_PINNED_NAME]
 
 
-def _create_index() -> None:
-    logger.info("Creating DB index...")
-    index = _feed_collection.create_index(
+def _create_indexes() -> None:
+    logger.info("Creating DB indexes...")
+    feed_index = _feeds_collection.create_index(
         keys=[("chat_id", ASCENDING), ("feed_name", ASCENDING), ("feed_type", ASCENDING)],
         unique=True,
     )
-    logger.info(f"Created index [{index}]")
+    pinned_index = _pinned_collection.create_index(keys=[("chat_id", ASCENDING)], unique=True)
+    logger.info(f"Created indexes [{feed_index}] [{pinned_index}]")
 
 
-def insert_one(document: Mapping[str, Any]) -> InsertOneResult:
+def insert_one(document: Mapping[str, Any], collection: str = DB_FEEDS_NAME) -> InsertOneResult:
     """Wrapper for "insert_one" DB function."""
-    assert _feed_collection is not None, "DB is not initialized!"
-    return _feed_collection.insert_one(document)
+    collection = _get_collection(collection)
+    assert collection is not None, "DB is not initialized!"
+    return collection.insert_one(document)
 
 
-def delete_many(db_filter: Mapping[str, Any]) -> DeleteResult:
+def delete_many(db_filter: Mapping[str, Any], collection: str = DB_FEEDS_NAME) -> DeleteResult:
     """Wrapper for "delete_many" DB function."""
-    assert _feed_collection is not None, "DB is not initialized!"
-    return _feed_collection.delete_many(db_filter)
+    collection = _get_collection(collection)
+    assert collection is not None, "DB is not initialized!"
+    return collection.delete_many(db_filter)
 
 
-def update_one(db_filter: Mapping[str, Any], update: Mapping[str, Any]) -> Any:
+def update_one(
+    db_filter: Mapping[str, Any], update: Mapping[str, Any], collection: str = DB_FEEDS_NAME
+) -> Any:
     """Wrapper for "find_one_and_update" DB function."""
-    assert _feed_collection is not None, "DB is not initialized!"
-    return _feed_collection.find_one_and_update(db_filter, update)
+    collection = _get_collection(collection)
+    assert collection is not None, "DB is not initialized!"
+    return collection.find_one_and_update(db_filter, update)
 
 
-def find_many(db_filter: Mapping[str, Any] = None) -> Cursor:
+def find_many(db_filter: Mapping[str, Any] = None, collection: str = DB_FEEDS_NAME) -> Cursor:
     """Wrapper for "find" DB function."""
-    assert _feed_collection is not None, "DB is not initialized!"
-    return _feed_collection.find(db_filter)
+    collection = _get_collection(collection)
+    assert collection is not None, "DB is not initialized!"
+    return collection.find(db_filter)
 
 
-def find_one(db_filter: Mapping[str, Any] = None) -> Cursor:
+def find_one(db_filter: Mapping[str, Any] = None, collection: str = DB_FEEDS_NAME) -> Cursor:
     """Wrapper for "find_one" DB function."""
-    assert _feed_collection is not None, "DB is not initialized!"
-    return _feed_collection.find_one(db_filter)
+    collection = _get_collection(collection)
+    assert collection is not None, "DB is not initialized!"
+    return collection.find_one(db_filter)
 
 
-def exists(db_filter: Mapping[str, Any]) -> bool:
+def exists(db_filter: Mapping[str, Any], collection: str = DB_FEEDS_NAME) -> bool:
     """Check if there are any documents from a given filter, using count_documents DB function."""
-    assert _feed_collection is not None, "DB is not initialized!"
-    return bool(_feed_collection.count_documents(db_filter, limit=1))
+    collection = _get_collection(collection)
+    assert collection is not None, "DB is not initialized!"
+    return bool(collection.count_documents(db_filter, limit=1))
+
+
+def _get_collection(name: str) -> Collection:
+    return _pinned_collection if name == DB_PINNED_NAME else _feeds_collection

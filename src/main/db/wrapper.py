@@ -8,13 +8,17 @@ This way it should be simple to switch to a different DB altogether,
 since this module won't have to be modified.
 """
 
+from base64 import b64decode, b64encode
 from collections import defaultdict
+from pickle import dumps, loads
 from time import struct_time
 
 from loguru import logger
 from pymongo.results import DeleteResult
+from telegram import Bot, Message
 
 from db.client import delete_many, exists, find_many, find_one, insert_one, update_one
+from settings import DB_PINNED_NAME
 
 
 def get_all_stored_data() -> list[tuple[int, str, str, str, struct_time]]:
@@ -108,8 +112,39 @@ def remove_stored_feed(chat_id: int, feed_type: str, feed_name: str) -> None:
 def remove_stored_chat_data(chat_id: int) -> None:
     """Remove all data for a given chat from the DB."""
     logger.info(f"[{chat_id}] Deleting all data for chat")
-    result = delete_many({"chat_id": chat_id})
+    result_feeds = delete_many({"chat_id": chat_id})
+    _log_delete_result(chat_id, result_feeds)
+    result_pinned = delete_many({"chat_id": chat_id}, collection=DB_PINNED_NAME)
+    _log_delete_result(chat_id, result_pinned)
+
+
+def chat_has_pinned_messages(chat_id: int) -> bool:
+    """Check if DB has pinned messages for the given chat ID."""
+    logger.info(f"[{chat_id}] Checking for pinned messages")
+    return exists({"chat_id": chat_id}, collection=DB_PINNED_NAME)
+
+
+def store_pinned_message(chat_id: int, message: Message) -> None:
+    """Store message for given chat ID in the DB. Message is pickled and converted to base64."""
+    logger.info(f"[{chat_id}] Pinning message [{message.id}]")
+    message_pickled = dumps(message)
+    message_b64 = b64encode(message_pickled).decode("ascii")
+    insert_one({"chat_id": chat_id, "message": message_b64}, collection=DB_PINNED_NAME)
+
+
+def pop_pinned_messages(chat_id: int, bot: Bot) -> list[Message]:
+    """Get all messages for given chat ID and remove them from DB."""
+    logger.info(f"[{chat_id}] Popping all pinned messages")
+    messages = []
+    for document in find_many({"chat_id": chat_id}, collection=DB_PINNED_NAME):
+        message_b64 = document["message"]
+        message_pickled = b64decode(message_b64)
+        message = loads(message_pickled)
+        message.set_bot(bot)
+        messages.append(message)
+    result = delete_many({"chat_id": chat_id}, collection=DB_PINNED_NAME)
     _log_delete_result(chat_id, result)
+    return messages
 
 
 def _parse_date(raw_date: list[int]) -> struct_time:

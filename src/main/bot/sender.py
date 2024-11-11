@@ -22,7 +22,7 @@ from more_itertools import sliced
 from PIL import Image
 from telegram import Bot, InputMediaPhoto, InputMediaVideo
 
-from bot.command.unpin_all import pin_message
+from db.wrapper import store_pinned_message
 from settings import MAX_MEDIA_ITEMS_PER_MESSAGE, MAX_MESSAGE_SIZE, PIN_VIDEOS
 
 MAX_IMAGE_SIZE = 10_000_000
@@ -172,5 +172,6 @@ async def _handle_single_video(
         write_timeout=180,
     )
     if PIN_VIDEOS:
-        await sent_message.pin()
-        pin_message(chat_id, sent_message)
+        pin_successful = await sent_message.pin()
+        if pin_successful:
+            store_pinned_message(chat_id, sent_message)
