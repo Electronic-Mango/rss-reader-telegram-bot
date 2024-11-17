@@ -60,7 +60,7 @@ def _format_message(
     message_text = f"{title}" if title else ""
     message_text += f"\n\n{description}" if description else ""
     sender_text = "\n\n" if len(message_text) else ""
-    sender_text += f"By <b>{feed_name}</b> on {feed_type}:\n{link}"
+    sender_text += f"<a href='{link}'>By <b>{feed_name}</b> on {feed_type}</a>"
     message_text = _trim_message(chat_id, message_text, len(sender_text))
     message_text += sender_text
     return message_text
