@@ -23,8 +23,9 @@ from PIL import Image
 from telegram import Bot, InputMediaPhoto, InputMediaVideo
 
 from db.wrapper import store_pinned_message
-from settings import MAX_MEDIA_ITEMS_PER_MESSAGE, MAX_MESSAGE_SIZE, PIN_VIDEOS
+from settings import MAX_MEDIA_ITEMS_PER_MESSAGE, MAX_MESSAGE_SIZE, PIN_VIDEOS, RSS_FEEDS
 
+DEFAULT_SENDER_TEXT_FORMAT = "By <b>{name}</b> on <b>{type}</b>"
 MAX_IMAGE_SIZE = 10_000_000
 MAX_IMAGE_DIMENSIONS = 10_000
 MAX_IMAGE_THUMBNAIL = (MAX_IMAGE_DIMENSIONS // 2, MAX_IMAGE_DIMENSIONS // 2)
@@ -60,10 +61,15 @@ def _format_message(
     message_text = f"{title}" if title else ""
     message_text += f"\n\n{description}" if description else ""
     sender_text = "\n\n" if len(message_text) else ""
-    sender_text += f"<a href='{link}'>By <b>{feed_name}</b> on {feed_type}</a>"
+    sender_text += f"<a href='{link}'>{_prepare_sender_text(feed_type, feed_name)}</a>"
     message_text = _trim_message(chat_id, message_text, len(sender_text))
     message_text += sender_text
     return message_text
+
+
+def _prepare_sender_text(feed_type: str, feed_name: str) -> str:
+    text_format = RSS_FEEDS[feed_type].get("sender_text_format", None) or DEFAULT_SENDER_TEXT_FORMAT
+    return str(text_format).format(name=feed_name, type=feed_type)
 
 
 def _trim_message(chat_id: int, message: str, appended_size: int) -> str:
