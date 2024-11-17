@@ -117,7 +117,7 @@ Feed name 1:
   # This string can contain basic HTML format tags. List of supported tags by Telegram bots:
   # https://core.telegram.org/bots/api#html-style
   # The field is optional, if absent a default text format is used:
-  # "By <b>{name}</b> on <b>{type}</b>"
+  # "By <b>{name}</b> on {type}"
   sender_text_format: Posted by <b>{name}</b> in <i>{type}</i>!
 ```
 

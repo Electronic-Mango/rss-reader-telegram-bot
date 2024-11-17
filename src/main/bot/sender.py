@@ -25,7 +25,7 @@ from telegram import Bot, InputMediaPhoto, InputMediaVideo
 from db.wrapper import store_pinned_message
 from settings import MAX_MEDIA_ITEMS_PER_MESSAGE, MAX_MESSAGE_SIZE, PIN_VIDEOS, RSS_FEEDS
 
-DEFAULT_SENDER_TEXT_FORMAT = "By <b>{name}</b> on <b>{type}</b>"
+DEFAULT_SENDER_TEXT_FORMAT = "By <b>{name}</b> on {type}"
 MAX_IMAGE_SIZE = 10_000_000
 MAX_IMAGE_DIMENSIONS = 10_000
 MAX_IMAGE_THUMBNAIL = (MAX_IMAGE_DIMENSIONS // 2, MAX_IMAGE_DIMENSIONS // 2)
