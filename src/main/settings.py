@@ -31,7 +31,7 @@ _SETTINGS = merge(
 
 
 def _load_config(*keys: str) -> Any:
-    return reduce(lambda table, key: table[key], keys, _SETTINGS)
+    return reduce(lambda table, key: table.get(key) if table is not None else None, keys, _SETTINGS)
 
 
 # telegram
@@ -51,6 +51,7 @@ QUIET_HOURS = _load_config("telegram", "updates", "quiet_hours")
 MAX_MESSAGE_SIZE = _load_config("telegram", "messages", "max_message_size")
 MAX_MEDIA_ITEMS_PER_MESSAGE = _load_config("telegram", "messages", "max_media_items_per_message")
 PIN_VIDEOS = _load_config("telegram", "messages", "pin_videos")
+DEFAULT_IMAGE_PATH = _load_config("telegram", "messages", "default_image_path")
 
 # logging
 LOG_PATH = _load_config("logging", "log_path")

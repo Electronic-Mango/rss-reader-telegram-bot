@@ -30,6 +30,8 @@ telegram:
     max_media_items_per_message: 10
     # Pin new single video messages automatically.
     pin_videos: true
+    # Optional, default image to send if update doesn't have its own.
+    default_image_path: /resources/default_image.png
 
 logging:
   # Path for bot internal logs.

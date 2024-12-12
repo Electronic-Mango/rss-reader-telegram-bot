@@ -19,11 +19,17 @@ from cv2 import CAP_PROP_FRAME_HEIGHT, CAP_PROP_FRAME_WIDTH, VideoCapture
 from httpx import get
 from loguru import logger
 from more_itertools import sliced
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 from telegram import Bot, InputMediaPhoto, InputMediaVideo
 
 from db.wrapper import store_pinned_message
-from settings import MAX_MEDIA_ITEMS_PER_MESSAGE, MAX_MESSAGE_SIZE, PIN_VIDEOS, RSS_FEEDS
+from settings import (
+    DEFAULT_IMAGE_PATH,
+    MAX_MEDIA_ITEMS_PER_MESSAGE,
+    MAX_MESSAGE_SIZE,
+    PIN_VIDEOS,
+    RSS_FEEDS,
+)
 
 DEFAULT_SENDER_TEXT_FORMAT = "By <b>{name}</b> on {type}"
 MAX_IMAGE_SIZE = 10_000_000
@@ -44,7 +50,7 @@ async def send_update(
     message = _format_message(chat_id, feed_type, feed_name, link, title, description)
     if not media_links:
         logger.info(f"[{chat_id}] Sending text only update [{feed_name}] [{feed_type}]")
-        await bot.send_message(chat_id, message)
+        await _send_text_message(bot, chat_id, message)
     else:
         logger.info(f"[{chat_id}] Sending update [{feed_name}] [{feed_type}]")
         await _send_media_update(bot, chat_id, message, media_links)
@@ -81,11 +87,28 @@ def _trim_message(chat_id: int, message: str, appended_size: int) -> str:
     return message
 
 
+async def _send_text_message(bot: Bot, chat_id: int, message: str) -> None:
+    if (default_image := _load_image(DEFAULT_IMAGE_PATH)) is None:
+        logger.info(f"[{chat_id}] No default media, sending only text")
+        await bot.send_message(chat_id, message)
+        return
+    logger.info(f"[{chat_id}] Sending default image [{DEFAULT_IMAGE_PATH}]")
+    media_group = [(default_image.tobytes(), default_image.format)]
+    await _handle_attachment_group(bot, chat_id, media_group, message)
+
+
+def _load_image(image_path: str) -> Image | None:
+    try:
+        return Image.open(image_path)
+    except (FileNotFoundError, UnidentifiedImageError):
+        return None
+
+
 async def _send_media_update(bot: Bot, chat_id: int, message: str, media_links: list[str]) -> None:
     media = [data for link in media_links if (data := _get_media_content_and_type(link))]
     if not media:
         logger.info(f"[{chat_id}] No media downloaded from [{media_links}]")
-        await bot.send_message(chat_id, message)
+        await _send_text_message(bot, chat_id, message)
         return
     media_groups = list(sliced(media, MAX_MEDIA_ITEMS_PER_MESSAGE))
     # Only the last group should have a message
