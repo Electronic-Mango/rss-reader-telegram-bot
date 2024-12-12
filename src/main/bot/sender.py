@@ -97,7 +97,7 @@ async def _send_text_message(bot: Bot, chat_id: int, message: str) -> None:
     await _handle_attachment_group(bot, chat_id, media_group, message)
 
 
-def _load_image(image_path: str) -> Image | None:
+def _load_image(image_path: str) -> Image.Image | None:
     try:
         return Image.open(image_path)
     except (FileNotFoundError, UnidentifiedImageError):
