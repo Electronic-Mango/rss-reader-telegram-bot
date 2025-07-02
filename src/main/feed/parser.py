@@ -37,7 +37,11 @@ def parse_title(entry: FeedParserDict, feed_type: str) -> str:
 def _get_description_from_summary(summary: str) -> str | None:
     bs = BeautifulSoup(summary, "html.parser")
     return bs.get_text().strip() or next(
-        (tag.get(attr).strip() for attr in ATTRS_FOR_DESCRIPTION if (tag := bs.find(lambda tag: tag.has_attr(attr)))),
+        (
+            matching_tag.get(attribute).strip()
+            for attribute in ATTRS_FOR_DESCRIPTION
+            if (matching_tag := bs.find(lambda tag: tag.has_attr(attribute)))
+        ),
         None,
     )
 
