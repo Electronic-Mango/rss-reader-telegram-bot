@@ -15,19 +15,31 @@ from feedparser.util import FeedParserDict
 
 from settings import RSS_FEEDS
 
+ATTRS_FOR_DESCRIPTION = ["title", "alt"]
+
 
 def parse_link(entry: FeedParserDict) -> str:
     return entry.link
 
 
-def parse_description(entry: FeedParserDict, feed_type: str) -> str:
-    if (feed_params := RSS_FEEDS[feed_type]).get("show_description") and (summary := entry.summary):
-        return BeautifulSoup(_filter_text(summary, feed_params), "html.parser").get_text().strip()
+def parse_description(entry: FeedParserDict, feed_type: str) -> str | None:
+    if not (feed_params := RSS_FEEDS[feed_type]).get("show_description") or not (summary := entry.summary):
+        return None
+    description = _get_description_from_summary(summary)
+    return _filter_text(description, feed_params)
 
 
 def parse_title(entry: FeedParserDict, feed_type: str) -> str:
     if (feed_params := RSS_FEEDS[feed_type]).get("show_title") and (title := entry.title):
         return f"<b>{_filter_text(title, feed_params).strip()}</b>"
+
+
+def _get_description_from_summary(summary: str) -> str | None:
+    bs = BeautifulSoup(summary, "html.parser")
+    return bs.get_text().strip() or next(
+        (tag.get(attr).strip() for attr in ATTRS_FOR_DESCRIPTION if (tag := bs.find(lambda tag: tag.has_attr(attr)))),
+        None,
+    )
 
 
 def _filter_text(text: str, feed_params: dict[str, Any]) -> str:
