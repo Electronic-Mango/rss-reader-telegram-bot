@@ -16,7 +16,10 @@ EXPECTED_FILTERED_DESCRIPTION = "bold text\n\nlixt raext"
 @mark.parametrize(
     ("summary", "expected_description"),
     [
-        ("\n\n\n<b>bold text</b><a>\n\nlink text</a> raw\ntext\n\n\n", "bold text\n\nlink text raw\ntext"),
+        (
+            "\n\n\n<b>bold text</b><a>\n\nlink text</a> raw\ntext\n\n\n",
+            "bold text\n\nlink text raw\ntext",
+        ),
         ("<img title='A summary in title!'/>", "A summary in title!"),
         ("<a alt='A summary in alt!' title=' A summary in title!  '/>", "A summary in title!"),
         ("<a alt='  A summary in alt!  ' titl='A summary in titl!'/>", "A summary in alt!"),

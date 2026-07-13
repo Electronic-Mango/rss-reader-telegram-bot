@@ -23,9 +23,9 @@ def parse_link(entry: FeedParserDict) -> str:
 
 
 def parse_description(entry: FeedParserDict, feed_type: str) -> str | None:
-    if not (feed_params := RSS_FEEDS[feed_type]).get("show_description") or not (summary := entry.summary):
+    if not (feed_params := RSS_FEEDS[feed_type]).get("show_description") or not entry.summary:
         return None
-    description = _get_description_from_summary(summary)
+    description = _get_description_from_summary(entry.summary)
     return _filter_text(description, feed_params)
 
 
