@@ -18,15 +18,14 @@ from pymongo.collection import Collection
 from pymongo.cursor import Cursor
 from pymongo.results import DeleteResult, InsertOneResult
 
-from settings import DB_FEEDS_NAME, DB_HOST, DB_NAME, DB_PINNED_NAME, DB_PORT
+from settings import DB_FEEDS_NAME, DB_HOST, DB_NAME, DB_PORT
 
 _feeds_collection: Collection | None = None
-_pinned_collection: Collection | None = None
 
 
 def initialize_db() -> None:
     """Initialize MongoDB client, create relevant DB, collection and index."""
-    if _feeds_collection is not None and _pinned_collection is not None:
+    if _feeds_collection is not None:
         logger.warning("DB already initialized!")
         return
     logger.info("Initializing DB...")
@@ -38,8 +37,6 @@ def _initialize_collections() -> None:
     database = MongoClient(DB_HOST, DB_PORT)[DB_NAME]
     global _feeds_collection
     _feeds_collection = database[DB_FEEDS_NAME]
-    global _pinned_collection
-    _pinned_collection = database[DB_PINNED_NAME]
 
 
 def _create_indexes() -> None:
@@ -48,10 +45,7 @@ def _create_indexes() -> None:
         keys=[("chat_id", ASCENDING), ("feed_name", ASCENDING), ("feed_type", ASCENDING)],
         unique=True,
     )
-    pinned_index = _pinned_collection.create_index(
-        keys=[("chat_id", ASCENDING), ("message_id", ASCENDING)], unique=True
-    )
-    logger.info(f"Created indexes [{feed_index}] [{pinned_index}]")
+    logger.info(f"Created indexes [{feed_index}]")
 
 
 def insert_one(document: Mapping[str, Any], collection: str = DB_FEEDS_NAME) -> InsertOneResult:
@@ -99,4 +93,8 @@ def exists(db_filter: Mapping[str, Any], collection: str = DB_FEEDS_NAME) -> boo
 
 
 def _get_collection(name: str) -> Collection:
-    return _pinned_collection if name == DB_PINNED_NAME else _feeds_collection
+    if name == DB_FEEDS_NAME:
+        return _feeds_collection
+    # This might be pointless with only one collection, but since the mechanism is already
+    # implemented, it might be useful in the future.
+    raise ValueError(f"Unknown collection name: {name}")
