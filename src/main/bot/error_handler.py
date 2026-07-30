@@ -16,7 +16,7 @@ from db.wrapper import remove_stored_chat_data
 
 async def handle_errors(update: object | None, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update is None and context.job is None:
-        logger.error("Unexpected error occurred:", exc_info=context.error)
+        logger.opt(exception=context.error).error("Unexpected error occurred:")
     elif update and isinstance(update, Update):
         await _handle_update_error(update, context)
     else:
@@ -26,7 +26,7 @@ async def handle_errors(update: object | None, context: ContextTypes.DEFAULT_TYP
 async def _handle_update_error(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     chat_id = update.effective_chat.id
     error = context.error
-    logger.warning(f"[{chat_id}] Error when handling update:", exc_info=error)
+    logger.opt(exception=error).warning(f"[{chat_id}] Error when handling update:")
     if type(error) is Forbidden and chat_id:
         await _handle_forbidden_error(chat_id)
     elif chat_id:
@@ -37,7 +37,7 @@ async def _handle_job_error(context: ContextTypes.DEFAULT_TYPE) -> None:
     error = context.error
     chat_id, feed_type, feed_name, link, title, description = context.job.data
     context.job.data = chat_id
-    logger.warning(f"[{chat_id}] Error in job:", exc_info=error)
+    logger.opt(exception=error).warning(f"[{chat_id}] Error in job:")
     if type(error) is Forbidden:
         await _handle_forbidden_error(chat_id)
     else:
