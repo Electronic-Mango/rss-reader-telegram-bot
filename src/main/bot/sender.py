@@ -28,6 +28,7 @@ from settings import (
     MAX_MESSAGE_SIZE,
     PIN_VIDEOS,
     RSS_FEEDS,
+    SEND_MEDIA_TIMEOUT,
 )
 
 DEFAULT_SENDER_TEXT_FORMAT = "By <b>{name}</b> on {type}"
@@ -140,7 +141,9 @@ async def _handle_attachment_group(
         # Workaround for videos with skewed aspect ratio.
         await _handle_single_video(bot, chat_id, video, message)
     else:
-        await bot.send_media_group(chat_id, input_media_list, caption=message, write_timeout=180)
+        await bot.send_media_group(
+            chat_id, input_media_list, caption=message, write_timeout=SEND_MEDIA_TIMEOUT
+        )
 
 
 def _media_object(media: bytes, media_type: str) -> InputMediaPhoto | InputMediaVideo:
@@ -197,7 +200,7 @@ async def _handle_single_video(
         height=height,
         caption=message,
         supports_streaming=True,
-        write_timeout=180,
+        write_timeout=SEND_MEDIA_TIMEOUT,
     )
     if PIN_VIDEOS:
         await sent_message.pin()
