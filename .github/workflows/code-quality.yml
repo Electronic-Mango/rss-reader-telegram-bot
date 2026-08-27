@@ -27,10 +27,10 @@ jobs:
         python -m pip install black isort flake8
     - name: Check code formatting with black
       run: |
-        black -l 100 --check src/
+        black --check src/
     - name: Check import sorting with isort
       run: |
-        isort --check-only --profile black -l 100 src/
+        isort --check-only src/
     - name: Check with flake8
       run: |
-        flake8 --max-line-length 100 --show-source --statistics src/
+        flake8 --show-source --statistics src/
