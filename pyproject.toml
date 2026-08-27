@@ -6,7 +6,7 @@ readme = "README.md"
 authors = [
     { name = "Electronic Mango", email = "78230210+Electronic-Mango@users.noreply.github.com" },
 ]
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dependencies = [
     "beautifulsoup4>=4.15.0",
     "feedparser>=6.0.14",
