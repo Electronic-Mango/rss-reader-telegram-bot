@@ -152,4 +152,4 @@ def test_db_operations_fail_on_uninitialized_db(_, client_function, args):
 def test_db_operations_fail_on_unexpected_collection_name(_, client_function, args):
     with raises(ValueError) as exception_info:
         client_function(*args, collection="unexpected_collection_name")
-    assert str(exception_info.value) == f"Unknown collection name: unexpected_collection_name"
+    assert str(exception_info.value) == "Unknown collection name: unexpected_collection_name"
