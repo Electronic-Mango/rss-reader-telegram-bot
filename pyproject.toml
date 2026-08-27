@@ -1,6 +1,6 @@
 [project]
 name = "rss-reader-telegram-bot"
-version = "0.1.0"
+version = "1.0.0"
 description = "A simple RSS reader Telegram bot."
 readme = "README.md"
 authors = [
