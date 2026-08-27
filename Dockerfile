@@ -2,13 +2,23 @@
 
 FROM python:3.12-slim
 
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
 WORKDIR /app
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+ENV UV_NO_DEV=1
 
-COPY src/main ./src/main
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --locked --no-install-project
+
+COPY .python-version pyproject.toml uv.lock ./
+COPY src ./src
+
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --locked
 
 COPY *.yml ./
 
-CMD ["python", "src/main/main.py"]
+CMD ["uv", "run", "./src/main/main.py"]
