@@ -1,3 +1,47 @@
+[project]
+name = "rss-reader-telegram-bot"
+version = "0.1.0"
+description = "A simple RSS reader Telegram bot."
+readme = "README.md"
+authors = [
+    { name = "Electronic Mango", email = "78230210+Electronic-Mango@users.noreply.github.com" },
+]
+requires-python = ">=3.11"
+dependencies = [
+    "beautifulsoup4>=4.15.0",
+    "feedparser>=6.0.14",
+    "httpx>=0.28.1",
+    "loguru>=0.7.3",
+    "mergedeep>=1.3.4",
+    "more-itertools>=11.1.0",
+    "opencv-python-headless>=5.0.0.93",
+    "pillow>=12.3.0",
+    "pymongo>=4.17.0",
+    "python-dateutil>=2.9.0.post0",
+    "python-dotenv>=1.2.3",
+    "python-telegram-bot[callback-data,job-queue]>=22.8",
+    "pyyaml>=6.0.3",
+]
+
+[dependency-groups]
+dev = [
+    "black>=26.5.1",
+    "flake8>=7.3.0",
+    "isort>=9.0.0",
+    "pytest>=9.1.1",
+]
+
+[project.scripts]
+rss-reader-telegram-bot = "main:main"
+
+[build-system]
+requires = ["uv_build>=0.12.6,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "main"
+module-root = "src"
+
 [tool.pytest.ini_options]
 pythonpath = ["src/main", "src/test"]
 norecursedirs = [".venv"]
