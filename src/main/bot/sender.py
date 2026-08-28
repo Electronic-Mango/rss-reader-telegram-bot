@@ -224,9 +224,13 @@ async def _handle_single_video(
 ) -> int:
     with NamedTemporaryFile() as tmp_file:
         tmp_file.write(video.media.input_file_content)
+        tmp_file.flush()
         video_capture = VideoCapture(tmp_file.name)
         width = int(video_capture.get(CAP_PROP_FRAME_WIDTH))
         height = int(video_capture.get(CAP_PROP_FRAME_HEIGHT))
+        video_capture.release()
+    if width <= 0 or height <= 0:
+        width, height = None, None
     sent_message = await bot.send_video(
         chat_id,
         video.media,
