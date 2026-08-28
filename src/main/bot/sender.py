@@ -29,6 +29,7 @@ from settings import (
     PIN_VIDEOS,
     RSS_FEEDS,
     SEND_MEDIA_TIMEOUT,
+    UPDATES_AS_REPLIES,
 )
 
 DEFAULT_SENDER_TEXT_FORMAT = "By <b>{name}</b> on {type}"
@@ -90,7 +91,7 @@ def _trim_message(chat_id: int, message: str, appended_size: int) -> str:
 
 
 def _prepare_reply_params(latest_message_id: int | None) -> ReplyParameters | None:
-    if latest_message_id is None:
+    if not UPDATES_AS_REPLIES or latest_message_id is None:
         return None
     return ReplyParameters(latest_message_id, allow_sending_without_reply=True)
 

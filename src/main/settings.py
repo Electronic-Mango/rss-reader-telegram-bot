@@ -53,6 +53,7 @@ MAX_MEDIA_ITEMS_PER_MESSAGE = _load_config("telegram", "messages", "max_media_it
 PIN_VIDEOS = _load_config("telegram", "messages", "pin_videos")
 DEFAULT_IMAGE_PATH = _load_config("telegram", "messages", "default_image_path")
 SEND_MEDIA_TIMEOUT = _load_config("telegram", "messages", "send_media_timeout")
+UPDATES_AS_REPLIES = _load_config("telegram", "messages", "updates_as_replies")
 
 # logging
 LOG_PATH = _load_config("logging", "log_path")
