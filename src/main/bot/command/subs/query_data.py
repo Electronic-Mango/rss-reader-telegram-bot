@@ -24,3 +24,9 @@ class RemoveFeedData(NamedTuple):
     type: str
     name: str
     chat_data: dict[str, list[str]]
+
+
+class SendLatestUpdateData(NamedTuple):
+    type: str
+    name: str
+    chat_data: dict[str, list[str]]
