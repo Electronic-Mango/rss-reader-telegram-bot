@@ -114,7 +114,8 @@ async def _send_text_message(
 def _load_image(image_path: str) -> Image.Image | None:
     try:
         return Image.open(image_path)
-    except (FileNotFoundError, UnidentifiedImageError):
+    except OSError as e:
+        logger.opt(exception=e).warning(f"Failed to load image at [{image_path}]:")
         return None
 
 
