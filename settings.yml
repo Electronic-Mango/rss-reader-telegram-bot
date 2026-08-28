@@ -35,7 +35,7 @@ telegram:
     # Timeout for sending large media files in seconds
     send_media_timeout: 180
     # Send new RSS update as a reply to the previous one.
-    updates_as_replies: false
+    updates_as_replies: true
 
 logging:
   # Path for bot internal logs.
