@@ -209,6 +209,7 @@ def _trim_image(media: bytes) -> bytes:
         logger.info(f"Total size ({bytes_size}) too large, reducing to {new_dimensions}...")
         image.thumbnail(new_dimensions)
         image_bytes.truncate(0)
+        image_bytes.seek(0)
         image.save(image_bytes, format=image.format)
         image_raw = image_bytes.getvalue()
     return image_raw
