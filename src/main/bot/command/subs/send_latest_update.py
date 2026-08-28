@@ -35,4 +35,4 @@ async def _prepare_and_send_update(
     title = parse_title(latest_entry, type)
     description = parse_description(latest_entry, type)
     media = parse_media_links(latest_entry)
-    await send_update(bot, chat_id, type, name, link, title, description, media)
+    await send_update(bot, chat_id, type, name, link, title, description, None, media)
