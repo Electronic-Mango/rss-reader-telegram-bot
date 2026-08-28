@@ -20,7 +20,7 @@ from cv2 import CAP_PROP_FRAME_HEIGHT, CAP_PROP_FRAME_WIDTH, VideoCapture
 from httpx import get
 from loguru import logger
 from more_itertools import sliced
-from PIL import Image, UnidentifiedImageError
+from PIL import Image
 from telegram import Bot, InputMediaPhoto, InputMediaVideo, ReplyParameters
 
 from settings import (
