@@ -116,6 +116,14 @@ def update_latest_message_id(
     )
 
 
+# TODO: Add unit tests for this function
+def get_latest_message_id(chat_id: int, feed_type: str, feed_name: str) -> int | None:
+    """Get "latest_message_id" for a given feed in the DB."""
+    logger.info(f"[{chat_id}] Getting latest message ID [{feed_type}] [{feed_name}]")
+    document = find_one({"chat_id": chat_id, "feed_type": feed_type, "feed_name": feed_name})
+    return document.get("latest_message_id")
+
+
 def remove_stored_feed(chat_id: int, feed_type: str, feed_name: str) -> None:
     """Remove given feed from the DB."""
     logger.info(f"[{chat_id}] Deleting [{feed_type}] [{feed_name}]")
