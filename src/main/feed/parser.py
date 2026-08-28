@@ -19,8 +19,8 @@ from settings import RSS_FEEDS
 ATTRS_FOR_DESCRIPTION = ["title", "alt"]
 
 
-def parse_link(entry: FeedParserDict) -> str:
-    return entry.link
+def parse_link(entry: FeedParserDict) -> str | None:
+    return entry.get("link")
 
 
 def parse_description(entry: FeedParserDict, feed_type: str) -> str | None:
