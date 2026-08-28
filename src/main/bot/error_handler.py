@@ -11,7 +11,7 @@ from telegram.error import Forbidden
 from telegram.ext import ContextTypes
 
 from bot.sender import send_update
-from db.wrapper import remove_stored_chat_data
+from db.wrapper import remove_stored_chat_data, update_latest_message_id
 
 
 async def handle_errors(update: object | None, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -35,7 +35,7 @@ async def _handle_update_error(update: Update, context: ContextTypes.DEFAULT_TYP
 
 async def _handle_job_error(context: ContextTypes.DEFAULT_TYPE) -> None:
     error = context.error
-    chat_id, feed_type, feed_name, link, title, description = context.job.data
+    chat_id, feed_type, feed_name, link, title, description, latest_message_id = context.job.data
     context.job.data = chat_id
     logger.opt(exception=error).warning(f"[{chat_id}] Error in job:")
     if type(error) is Forbidden:
@@ -43,7 +43,10 @@ async def _handle_job_error(context: ContextTypes.DEFAULT_TYPE) -> None:
     else:
         logger.warning(f"[{chat_id}] Trying to resend data without media")
         description = f"<b>Error when sending original update: {error}</b>\n\n{description}"
-        await send_update(context.bot, chat_id, feed_type, feed_name, link, title, description)
+        latest_message_id = await send_update(
+            context.bot, chat_id, feed_type, feed_name, link, title, description, latest_message_id
+        )
+        update_latest_message_id(chat_id, feed_type, feed_name, latest_message_id)
 
 
 async def _handle_forbidden_error(chat_id: int) -> None:

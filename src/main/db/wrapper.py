@@ -17,7 +17,7 @@ from pymongo.results import DeleteResult
 from db.client import delete_many, exists, find_many, find_one, insert_one, update_one
 
 
-def get_all_stored_data() -> list[tuple[int, str, str, str, struct_time]]:
+def get_all_stored_data() -> list[tuple[int, str, str, str, struct_time, int | None]]:
     """Returns all data stored in the DB."""
     logger.info("Getting all data for all chats")
     return [
@@ -27,6 +27,7 @@ def get_all_stored_data() -> list[tuple[int, str, str, str, struct_time]]:
             document["feed_name"],
             document["latest_id"],
             _parse_date(document.get("latest_date")),
+            document.get("latest_message_id"),
         )
         for document in find_many()
     ]
@@ -95,6 +96,23 @@ def update_stored_latest_data(
     update_one(
         {"chat_id": chat_id, "feed_type": feed_type, "feed_name": feed_name},
         {"$set": {"latest_id": latest_id, "latest_link": latest_link, "latest_date": latest_date}},
+    )
+
+
+# TODO: Add unit tests for this function
+def update_latest_message_id(
+    chat_id: int, feed_type: str, feed_name: str, latest_message_id: int | None
+) -> None:
+    """Update "latest_message_id" for a given feed in the DB."""
+    if latest_message_id is None:
+        logger.warning(f"[{chat_id}] Cannot update 'None' message ID [{feed_type}] [{feed_name}]")
+        return
+    logger.info(
+        f"[{chat_id}] Updating latest message ID [{feed_type}] [{feed_name}] [{latest_message_id}]"
+    )
+    update_one(
+        {"chat_id": chat_id, "feed_type": feed_type, "feed_name": feed_name},
+        {"$set": {"latest_message_id": latest_message_id}},
     )
 
 
