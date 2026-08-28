@@ -2,6 +2,7 @@
 Module handling all RSS requests.
 """
 
+from datetime import datetime
 from itertools import takewhile
 from time import struct_time
 
@@ -47,12 +48,12 @@ def get_data(entry: FeedParserDict) -> tuple[str, str, struct_time]:
     """Return data (entry ID, link, data) for a given entry"""
     id = entry.get("id")
     link = entry.get("link")
-    date = entry.get("published_parsed") or entry.get("published_parsed")
+    date = _get_entry_date(entry)
     return id, link, date
 
 
 def get_not_handled_entries(
-    feed: FeedParserDict, id: str, date: struct_time
+    feed: FeedParserDict, id: str, date: struct_time | None
 ) -> list[FeedParserDict]:
     """
     Get not yet handled entries for a given feed.
@@ -67,11 +68,17 @@ def get_not_handled_entries(
 
 
 def get_sorted_entries(feed: FeedParserDict) -> list[FeedParserDict]:
-    return sorted(feed.entries, key=lambda entry: entry.get("published_parsed"), reverse=True)
+    return sorted(feed.entries, key=lambda entry: _get_entry_date(entry), reverse=True)
 
 
-def _not_latest_entry(latest_id: str, latest_date: struct_time, entry: FeedParserDict) -> bool:
+def _not_latest_entry(
+    latest_id: str, latest_date: struct_time | None, entry: FeedParserDict
+) -> bool:
     entry_id_is_not_latest = entry.id not in latest_id and latest_id not in entry.id
-    entry_date = entry.get("published_parsed")
-    entry_date_is_newer = entry_date > latest_date if entry_date else True
+    entry_date = _get_entry_date(entry)
+    entry_date_is_newer = entry_date > latest_date if entry_date and latest_date else True
     return entry_id_is_not_latest and entry_date_is_newer
+
+
+def _get_entry_date(entry: FeedParserDict) -> struct_time:
+    return entry.get("published_parsed") or entry.get("updated_parsed") or datetime.min.timetuple()
