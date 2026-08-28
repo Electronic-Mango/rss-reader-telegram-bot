@@ -8,8 +8,8 @@ Extracted information contains:
 """
 
 from functools import reduce
-from typing import Any
 from html import escape
+from typing import Any
 
 from bs4 import BeautifulSoup
 from feedparser.util import FeedParserDict
