@@ -34,7 +34,7 @@ from settings import (
 async def check_for_all_updates(context: ContextTypes.DEFAULT_TYPE) -> None:
     lookup_interval = randrange(max(LOOKUP_INTERVAL_RANDOMNESS, 1))  # randrange(1) always returns 0
     logger.info(f"Delaying checking for updates for [{lookup_interval}] seconds")
-    context.job_queue.run_once(callback=_delayed_check_for_all_updates, when=lookup_interval)
+    context.job_queue.run_once(_delayed_check_for_all_updates, lookup_interval)
 
 
 async def _delayed_check_for_all_updates(context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -46,7 +46,7 @@ async def _delayed_check_for_all_updates(context: ContextTypes.DEFAULT_TYPE) -> 
     for feed_data in get_all_stored_data():
         # Checking for updates for feeds is done through a job queue so that async exceptions
         # won't stop entire procedure.
-        context.job_queue.run_once(callback=_check_for_updates, when=delay, data=feed_data)
+        context.job_queue.run_once(_check_for_updates, delay, feed_data, chat_id=feed_data[0])
         delay += LOOKUP_FEED_DELAY
         delay += randrange(max(LOOKUP_FEED_DELAY_RANDOMNESS, 1))  # randrange(1) always returns 0
 

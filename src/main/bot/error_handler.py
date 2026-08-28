@@ -34,21 +34,67 @@ async def _handle_update_error(update: Update, context: ContextTypes.DEFAULT_TYP
 
 
 async def _handle_job_error(context: ContextTypes.DEFAULT_TYPE) -> None:
+    chat_id = context.job.chat_id
     error = context.error
-    chat_id, feed_type, feed_name, link, title, description, latest_message_id = context.job.data
-    context.job.data = chat_id
     logger.opt(exception=error).warning(f"[{chat_id}] Error in job:")
-    if type(error) is Forbidden:
+    if chat_id is None:
+        logger.error("Error occured when scheduling all update jobs")
+    elif type(error) is Forbidden:
         await _handle_forbidden_error(chat_id)
+    elif context.job.data is None:
+        logger.error(f"Error occured when handling previous error: {error}")
+    elif type(context.job.data) is int:
+        await _handle_update_retry_error(context, chat_id, error)
+    elif type(context.job.data) is tuple and len(context.job.data) == 7:
+        await _handle_send_error(context, chat_id, error)
+    elif type(context.job.data) is tuple and len(context.job.data) == 6:
+        await _handle_prepare_update_error(context, chat_id, error)
     else:
-        logger.warning(f"[{chat_id}] Trying to resend data without media")
-        description = f"<b>Error when sending original update: {error}</b>\n\n{description}"
-        latest_message_id = await send_update(
-            context.bot, chat_id, feed_type, feed_name, link, title, description, latest_message_id
-        )
-        update_latest_message_id(chat_id, feed_type, feed_name, latest_message_id)
+        await _handle_unexpected_error(context, chat_id, error)
 
 
 async def _handle_forbidden_error(chat_id: int) -> None:
     logger.warning(f"[{chat_id}] Cannot send updates to chat, removing chat data")
     remove_stored_chat_data(chat_id)
+
+
+async def _handle_update_retry_error(
+    context: ContextTypes.DEFAULT_TYPE, chat_id: int, error: Exception
+) -> None:
+    logger.warning(f"[{chat_id}] Error handling a previous error: {error}")
+    context.job.data = None
+    await context.bot.send_message(
+        chat_id, f"Error occurred when handling a previous error:\n{error}"
+    )
+
+
+async def _handle_send_error(
+    context: ContextTypes.DEFAULT_TYPE, chat_id: int, error: Exception
+) -> None:
+    logger.warning(f"[{chat_id}] Trying to resend data without media")
+    _, feed_type, feed_name, link, title, description, latest_message_id = context.job.data
+    context.job.data = chat_id
+    description = f"<b>Error when sending original update: {error}</b>\n\n{description}"
+    latest_message_id = await send_update(
+        context.bot, chat_id, feed_type, feed_name, link, title, description, latest_message_id
+    )
+    update_latest_message_id(chat_id, feed_type, feed_name, latest_message_id)
+
+
+async def _handle_prepare_update_error(
+    context: ContextTypes.DEFAULT_TYPE, chat_id: int, error: Exception
+) -> None:
+    logger.warning(f"[{chat_id}] Error when preparing update: {error}")
+    _, feed_type, feed_name, _, _, _ = context.job.data
+    context.job.data = chat_id
+    await context.bot.send_message(
+        chat_id, f"Error when preparing an update for {feed_name} in {feed_type}:\n{error}"
+    )
+
+
+async def _handle_unexpected_error(
+    context: ContextTypes.DEFAULT_TYPE, chat_id: int, error: Exception
+) -> None:
+    logger.warning(f"[{chat_id}] Unexpected error occurred: {error}")
+    context.job.data = None
+    await context.bot.send_message(chat_id, f"Unexpected error occurred:\n{error}")
