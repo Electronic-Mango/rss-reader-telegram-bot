@@ -11,6 +11,7 @@ This module will recognize and handle situations where:
 Only one media item will have a caption, so it's correctly displayed in chat.
 """
 
+from html import escape
 from http import HTTPStatus
 from io import BytesIO
 from tempfile import NamedTemporaryFile
@@ -67,8 +68,8 @@ def _format_message(
     title: str,
     description: str,
 ) -> str:
-    message_text = f"{title}" if title else ""
-    message_text += f"\n\n{description}" if description else ""
+    message_text = f"{escape(title)}" if title else ""
+    message_text += f"\n\n{escape(description)}" if description else ""
     sender_text = "\n\n" if len(message_text) else ""
     sender_text += f"<a href='{link}'>{_prepare_sender_text(feed_type, feed_name)}</a>"
     message_text = _trim_message(chat_id, message_text, len(sender_text))
