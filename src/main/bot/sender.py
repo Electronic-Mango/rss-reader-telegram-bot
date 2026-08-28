@@ -79,7 +79,7 @@ def _format_message(
 
 def _prepare_sender_text(feed_type: str, feed_name: str) -> str:
     text_format = RSS_FEEDS[feed_type].get("sender_text_format", None) or DEFAULT_SENDER_TEXT_FORMAT
-    return str(text_format).format(name=feed_name, type=feed_type)
+    return str(text_format).format(name=escape(feed_name), type=escape(feed_type))
 
 
 def _trim_message(chat_id: int, message: str, appended_size: int) -> str:
