@@ -42,11 +42,17 @@ def get_stored_feed_type_to_names(chat_id: int) -> dict[str, list[str]]:
     return feed_type_to_names
 
 
-def get_latest_entry_data(chat_id: int, feed_type: str, feed_name: str) -> tuple[str, struct_time]:
+def get_latest_entry_data(
+    chat_id: int, feed_type: str, feed_name: str
+) -> tuple[str | None, struct_time | None]:
     """Return latest stored entry ID for given feed"""
     logger.info(f"[{chat_id}] Getting latest entry ID for [{feed_type}] [{feed_name}]")
     document = find_one({"chat_id": chat_id, "feed_type": feed_type, "feed_name": feed_name})
-    return document.get("latest_link"), _parse_date(document.get("latest_date"))
+    return (
+        (document.get("latest_link"), _parse_date(document.get("latest_date")))
+        if document
+        else (None, None)
+    )
 
 
 def feed_is_already_stored(chat_id: int, feed_type: str, feed_name: str) -> bool:
@@ -119,7 +125,7 @@ def get_latest_message_id(chat_id: int, feed_type: str, feed_name: str) -> int |
     """Get "latest_message_id" for a given feed in the DB."""
     logger.info(f"[{chat_id}] Getting latest message ID [{feed_type}] [{feed_name}]")
     document = find_one({"chat_id": chat_id, "feed_type": feed_type, "feed_name": feed_name})
-    return document.get("latest_message_id")
+    return document.get("latest_message_id") if document else None
 
 
 def remove_stored_feed(chat_id: int, feed_type: str, feed_name: str) -> None:
