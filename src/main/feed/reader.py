@@ -38,7 +38,7 @@ def feed_is_valid(feed: FeedParserDict) -> bool:
 def get_latest_data(feed: FeedParserDict) -> tuple[str, str, struct_time]:
     """Get data (entry ID, link, date) of latest entry for a given feed"""
     logger.info(f"Getting data from latest entry for [{feed.href}]")
-    entries = _get_sorted_entries(feed)
+    entries = get_sorted_entries(feed)
     latest_entry = entries[0]
     return get_data(latest_entry)
 
@@ -59,14 +59,14 @@ def get_not_handled_entries(
     Return all elements from the feed list, until element with ID matching the target ID.
     """
     logger.info(f"Getting not handled entries for [{feed.href}] target ID [{id}]")
-    entries = _get_sorted_entries(feed)
+    entries = get_sorted_entries(feed)
     not_handled_entries = takewhile(lambda entry: _not_latest_entry(id, date, entry), entries)
     not_handled_entries = list(not_handled_entries)
     not_handled_entries.reverse()
     return not_handled_entries
 
 
-def _get_sorted_entries(feed: FeedParserDict) -> list[FeedParserDict]:
+def get_sorted_entries(feed: FeedParserDict) -> list[FeedParserDict]:
     return sorted(feed.entries, key=lambda entry: entry.get("published_parsed"), reverse=True)
 
 

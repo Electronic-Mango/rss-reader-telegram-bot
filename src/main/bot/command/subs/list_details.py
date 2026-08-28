@@ -12,7 +12,7 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import ContextTypes
 
 from bot.command.subs.conversation_state import ConversationState
-from bot.command.subs.query_data import NamesData, RemoveFeedData, TypesData
+from bot.command.subs.query_data import NamesData, RemoveFeedData, SendLatestUpdateData, TypesData
 from db.wrapper import get_latest_entry_data
 
 
@@ -45,6 +45,7 @@ def _prepare_keyboard(
     type: str, name: str, data: dict[str, list[str]], link: str
 ) -> InlineKeyboardMarkup:
     keyboard = [
+        [InlineKeyboardButton("Latest", callback_data=SendLatestUpdateData(type, name, data))],
         [InlineKeyboardButton("Remove", callback_data=RemoveFeedData(type, name, data))],
         [InlineKeyboardButton("« Back to subscriptions", callback_data=NamesData(type, data))],
         [InlineKeyboardButton("« Back to types", callback_data=TypesData(data))],
