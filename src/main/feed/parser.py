@@ -54,7 +54,9 @@ def _filter_text(text: str, feed_params: dict[str, Any]) -> str:
 def parse_media_links(entry: FeedParserDict) -> list[str]:
     if "media_content" in entry:
         return [media["url"] for media in entry.media_content if "url" in media]
-    media_source = BeautifulSoup(entry.summary, "html.parser")
+    if not (summary := entry.get("summary")):
+        return []
+    media_source = BeautifulSoup(summary, "html.parser")
     media_elements = media_source.find_all(["img", "source"])
     media_links = [media.get("src") for media in media_elements]
     return [link for link in media_links if link]
