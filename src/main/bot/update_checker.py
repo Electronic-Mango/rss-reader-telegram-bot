@@ -107,7 +107,7 @@ async def _send_update(
     feed_name: str,
     entry: FeedParserDict,
     latest_message_id: int | None,
-) -> None:
+) -> int:
     link = parse_link(entry)
     title = parse_title(entry, feed_type)
     description = parse_description(entry, feed_type)
