@@ -17,7 +17,7 @@ from pymongo.results import DeleteResult
 from db.client import delete_many, exists, find_many, find_one, insert_one, update_one
 
 
-def get_all_stored_data() -> list[tuple[int, str, str, str, struct_time, int | None]]:
+def get_all_stored_data() -> list[tuple[int, str, str, str, struct_time | None, int | None]]:
     """Returns all data stored in the DB."""
     logger.info("Getting all data for all chats")
     return [
@@ -142,7 +142,7 @@ def remove_stored_chat_data(chat_id: int) -> None:
     _log_delete_result(chat_id, result_feeds)
 
 
-def _parse_date(raw_date: list[int]) -> struct_time:
+def _parse_date(raw_date: list[int] | None) -> struct_time | None:
     return struct_time(raw_date) if raw_date else None
 
 
