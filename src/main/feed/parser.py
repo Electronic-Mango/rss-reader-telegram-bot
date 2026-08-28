@@ -9,6 +9,7 @@ Extracted information contains:
 
 from functools import reduce
 from typing import Any
+from html import escape
 
 from bs4 import BeautifulSoup
 from feedparser.util import FeedParserDict
@@ -26,12 +27,12 @@ def parse_description(entry: FeedParserDict, feed_type: str) -> str | None:
     if not (feed_params := RSS_FEEDS[feed_type]).get("show_description") or not entry.summary:
         return None
     description = _get_description_from_summary(entry.summary)
-    return _filter_text(description, feed_params)
+    return escape(_filter_text(description, feed_params))
 
 
-def parse_title(entry: FeedParserDict, feed_type: str) -> str:
+def parse_title(entry: FeedParserDict, feed_type: str) -> str | None:
     if (feed_params := RSS_FEEDS[feed_type]).get("show_title") and (title := entry.title):
-        return f"<b>{_filter_text(title, feed_params).strip()}</b>"
+        return f"<b>{escape(_filter_text(title, feed_params).strip())}</b>"
 
 
 def _get_description_from_summary(summary: str) -> str | None:
