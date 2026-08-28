@@ -99,7 +99,6 @@ def update_stored_latest_data(
     )
 
 
-# TODO: Add unit tests for this function
 def update_latest_message_id(
     chat_id: int, feed_type: str, feed_name: str, latest_message_id: int | None
 ) -> None:
@@ -116,7 +115,6 @@ def update_latest_message_id(
     )
 
 
-# TODO: Add unit tests for this function
 def get_latest_message_id(chat_id: int, feed_type: str, feed_name: str) -> int | None:
     """Get "latest_message_id" for a given feed in the DB."""
     logger.info(f"[{chat_id}] Getting latest message ID [{feed_type}] [{feed_name}]")
