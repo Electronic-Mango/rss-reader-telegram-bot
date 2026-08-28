@@ -1,3 +1,4 @@
+from feedparser.util import FeedParserDict
 from loguru import logger
 from telegram import Bot, Update
 from telegram.ext import ContextTypes
@@ -6,7 +7,7 @@ from bot.command.subs.conversation_state import ConversationState
 from bot.sender import send_update
 from db.wrapper import get_latest_message_id, update_latest_message_id
 from feed.parser import parse_description, parse_link, parse_media_links, parse_title
-from feed.reader import FeedParsedEntry, get_parsed_feed, get_sorted_entries
+from feed.reader import get_parsed_feed, get_sorted_entries
 
 
 async def send_latest_update(
@@ -29,7 +30,7 @@ async def send_latest_update(
 
 
 async def _prepare_and_send_update(
-    entries: list[FeedParsedEntry], bot: Bot, chat_id: int, type: str, name: str
+    entries: list[FeedParserDict], bot: Bot, chat_id: int, type: str, name: str
 ) -> None:
     latest_entry = entries[0]
     latest_message_id = await send_update(
