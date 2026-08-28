@@ -45,7 +45,11 @@ def _prepare_keyboard(
     type: str, name: str, data: dict[str, list[str]], link: str
 ) -> InlineKeyboardMarkup:
     keyboard = [
-        [InlineKeyboardButton("Latest", callback_data=SendLatestUpdateData(type, name, data))],
+        [
+            InlineKeyboardButton(
+                "Latest message", callback_data=SendLatestUpdateData(type, name, data)
+            )
+        ],
         [InlineKeyboardButton("Remove", callback_data=RemoveFeedData(type, name, data))],
         [InlineKeyboardButton("« Back to subscriptions", callback_data=NamesData(type, data))],
         [InlineKeyboardButton("« Back to types", callback_data=TypesData(data))],
