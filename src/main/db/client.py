@@ -51,14 +51,12 @@ def _create_indexes() -> None:
 def insert_one(document: Mapping[str, Any], collection: str = DB_FEEDS_NAME) -> InsertOneResult:
     """Wrapper for "insert_one" DB function."""
     collection = _get_collection(collection)
-    assert collection is not None, "DB is not initialized!"
     return collection.insert_one(document)
 
 
 def delete_many(db_filter: Mapping[str, Any], collection: str = DB_FEEDS_NAME) -> DeleteResult:
     """Wrapper for "delete_many" DB function."""
     collection = _get_collection(collection)
-    assert collection is not None, "DB is not initialized!"
     return collection.delete_many(db_filter)
 
 
@@ -67,14 +65,12 @@ def update_one(
 ) -> Any:
     """Wrapper for "find_one_and_update" DB function."""
     collection = _get_collection(collection)
-    assert collection is not None, "DB is not initialized!"
     return collection.find_one_and_update(db_filter, update)
 
 
 def find_many(db_filter: Mapping[str, Any] = None, collection: str = DB_FEEDS_NAME) -> Cursor:
     """Wrapper for "find" DB function."""
     collection = _get_collection(collection)
-    assert collection is not None, "DB is not initialized!"
     return collection.find(db_filter)
 
 
@@ -83,20 +79,18 @@ def find_one(
 ) -> Mapping[str, Any] | None:
     """Wrapper for "find_one" DB function."""
     collection = _get_collection(collection)
-    assert collection is not None, "DB is not initialized!"
     return collection.find_one(db_filter)
 
 
 def exists(db_filter: Mapping[str, Any], collection: str = DB_FEEDS_NAME) -> bool:
     """Check if there are any documents from a given filter, using count_documents DB function."""
     collection = _get_collection(collection)
-    assert collection is not None, "DB is not initialized!"
     return bool(collection.count_documents(db_filter, limit=1))
 
 
 def _get_collection(name: str) -> Collection:
-    if name == DB_FEEDS_NAME:
-        return _feeds_collection
-    # This might be pointless with only one collection, but since the mechanism is already
-    # implemented, it might be useful in the future.
-    raise ValueError(f"Unknown collection name: {name}")
+    if name != DB_FEEDS_NAME:
+        raise ValueError(f"Unknown collection name: {name}")
+    if _feeds_collection is None:
+        raise RuntimeError("DB is not initialized!")
+    return _feeds_collection
