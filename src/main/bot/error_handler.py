@@ -5,6 +5,8 @@ It can also detect when chat is deleted and stopped,
 after which all data related to this specific chat is deleted.
 """
 
+from html import escape
+
 from loguru import logger
 from telegram import Update
 from telegram.error import Forbidden
@@ -30,7 +32,9 @@ async def _handle_update_error(update: Update, context: ContextTypes.DEFAULT_TYP
     if type(error) is Forbidden and chat_id:
         await _handle_forbidden_error(chat_id)
     elif chat_id:
-        await context.bot.send_message(chat_id, f"Error when handling an update:\n{error}")
+        await context.bot.send_message(
+            chat_id, f"Error when handling an update:\n{error}", parse_mode=None
+        )
 
 
 async def _handle_job_error(context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -64,7 +68,7 @@ async def _handle_update_retry_error(
     logger.warning(f"[{chat_id}] Error handling a previous error: {error}")
     context.job.data = None
     await context.bot.send_message(
-        chat_id, f"Error occurred when handling a previous error:\n{error}"
+        chat_id, f"Error occurred when handling a previous error:\n{error}", parse_mode=None
     )
 
 
@@ -74,7 +78,7 @@ async def _handle_send_error(
     logger.warning(f"[{chat_id}] Trying to resend data without media")
     _, feed_type, feed_name, link, title, description, latest_message_id = context.job.data
     context.job.data = chat_id
-    description = f"<b>Error when sending original update: {error}</b>\n\n{description}"
+    description = f"Error when sending update: <b>{escape(str(error))}</b>\n\n{description}"
     latest_message_id = await send_update(
         context.bot, chat_id, feed_type, feed_name, link, title, description, latest_message_id
     )
@@ -88,7 +92,9 @@ async def _handle_prepare_update_error(
     _, feed_type, feed_name, _, _, _ = context.job.data
     context.job.data = chat_id
     await context.bot.send_message(
-        chat_id, f"Error when preparing an update for {feed_name} in {feed_type}:\n{error}"
+        chat_id,
+        f"Error when preparing an update for {feed_name} in {feed_type}:\n{error}",
+        parse_mode=None,
     )
 
 
@@ -97,4 +103,4 @@ async def _handle_unexpected_error(
 ) -> None:
     logger.warning(f"[{chat_id}] Unexpected error occurred: {error}")
     context.job.data = None
-    await context.bot.send_message(chat_id, f"Unexpected error occurred:\n{error}")
+    await context.bot.send_message(chat_id, f"Unexpected error occurred:\n{error}", parse_mode=None)
