@@ -46,14 +46,14 @@ async def send_update(
     title: str,
     description: str,
     media_links: list[str] = None,
-) -> None:
+) -> int:
     message = _format_message(chat_id, feed_type, feed_name, link, title, description)
     if not media_links:
         logger.info(f"[{chat_id}] Sending text only update [{feed_name}] [{feed_type}]")
-        await _send_text_message(bot, chat_id, message)
+        return await _send_text_message(bot, chat_id, message)
     else:
         logger.info(f"[{chat_id}] Sending update [{feed_name}] [{feed_type}]")
-        await _send_media_update(bot, chat_id, message, media_links)
+        return await _send_media_update(bot, chat_id, message, media_links)
 
 
 def _format_message(
@@ -87,14 +87,14 @@ def _trim_message(chat_id: int, message: str, appended_size: int) -> str:
     return message
 
 
-async def _send_text_message(bot: Bot, chat_id: int, message: str) -> None:
+async def _send_text_message(bot: Bot, chat_id: int, message: str) -> int:
     if (default_image := _load_image(DEFAULT_IMAGE_PATH)) is None:
         logger.info(f"[{chat_id}] No default media, sending only text")
-        await bot.send_message(chat_id, message)
-        return
+        sent_message = await bot.send_message(chat_id, message)
+        return sent_message.id
     logger.info(f"[{chat_id}] Sending default image [{DEFAULT_IMAGE_PATH}]")
     media_group = [(default_image.tobytes(), default_image.format)]
-    await _handle_attachment_group(bot, chat_id, media_group, message)
+    return await _handle_attachment_group(bot, chat_id, media_group, message)
 
 
 def _load_image(image_path: str) -> Image.Image | None:
@@ -104,17 +104,20 @@ def _load_image(image_path: str) -> Image.Image | None:
         return None
 
 
-async def _send_media_update(bot: Bot, chat_id: int, message: str, media_links: list[str]) -> None:
+async def _send_media_update(bot: Bot, chat_id: int, message: str, media_links: list[str]) -> int:
     media = [data for link in media_links if (data := _get_media_content_and_type(link))]
     if not media:
         logger.info(f"[{chat_id}] No media downloaded from [{media_links}]")
-        await _send_text_message(bot, chat_id, message)
-        return
+        return await _send_text_message(bot, chat_id, message)
+    if len(media) <= MAX_MEDIA_ITEMS_PER_MESSAGE:
+        return await _handle_attachment_group(bot, chat_id, media, message)
     media_groups = list(sliced(media, MAX_MEDIA_ITEMS_PER_MESSAGE))
-    # Only the last group should have a message
-    for media_group in media_groups[:-1]:
+    # Only the last group should have a message, but ID should be from the first group
+    message_id = await _handle_attachment_group(bot, chat_id, media_groups[0])
+    for media_group in media_groups[1:-1]:
         await _handle_attachment_group(bot, chat_id, media_group)
     await _handle_attachment_group(bot, chat_id, media_groups[-1], message)
+    return message_id
 
 
 def _get_media_content_and_type(link: str) -> tuple[bytes, str] | None:
@@ -131,7 +134,7 @@ async def _handle_attachment_group(
     chat_id: int,
     media_group: list[tuple[bytes, str]],
     message: str = None,
-) -> None:
+) -> int:
     # Technically single media elements don't have to be handled as media group,
     # but they can, so the same implementation can be used for both.
     input_media_list = [_media_object(media, media_type) for media, media_type in media_group]
@@ -139,11 +142,12 @@ async def _handle_attachment_group(
     logger.info(f"{chat_id} Sending media group is_video={is_video_list}")
     if len(input_media_list) == 1 and isinstance(video := input_media_list[0], InputMediaVideo):
         # Workaround for videos with skewed aspect ratio.
-        await _handle_single_video(bot, chat_id, video, message)
+        return await _handle_single_video(bot, chat_id, video, message)
     else:
-        await bot.send_media_group(
+        sent_message = await bot.send_media_group(
             chat_id, input_media_list, caption=message, write_timeout=SEND_MEDIA_TIMEOUT
         )
+        return sent_message[0].message_id
 
 
 def _media_object(media: bytes, media_type: str) -> InputMediaPhoto | InputMediaVideo:
@@ -187,7 +191,7 @@ async def _handle_single_video(
     chat_id: int,
     video: InputMediaVideo,
     message: str = None,
-) -> None:
+) -> int:
     with NamedTemporaryFile() as tmp_file:
         tmp_file.write(video.media.input_file_content)
         video_capture = VideoCapture(tmp_file.name)
@@ -204,3 +208,4 @@ async def _handle_single_video(
     )
     if PIN_VIDEOS:
         await sent_message.pin()
+    return sent_message.id
