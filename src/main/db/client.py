@@ -78,7 +78,9 @@ def find_many(db_filter: Mapping[str, Any] = None, collection: str = DB_FEEDS_NA
     return collection.find(db_filter)
 
 
-def find_one(db_filter: Mapping[str, Any] = None, collection: str = DB_FEEDS_NAME) -> Cursor:
+def find_one(
+    db_filter: Mapping[str, Any] = None, collection: str = DB_FEEDS_NAME
+) -> Mapping[str, Any] | None:
     """Wrapper for "find_one" DB function."""
     collection = _get_collection(collection)
     assert collection is not None, "DB is not initialized!"
