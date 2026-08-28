@@ -19,10 +19,12 @@ from db.wrapper import remove_stored_chat_data, update_latest_message_id
 async def handle_errors(update: object | None, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update is None and context.job is None:
         logger.opt(exception=context.error).error("Unexpected error occurred:")
-    elif update and isinstance(update, Update):
+    elif update and isinstance(update, Update) and update.effective_chat is not None:
         await _handle_update_error(update, context)
-    else:
+    elif context.job is not None:
         await _handle_job_error(context)
+    else:
+        logger.opt(exception=context.error).error("Unexpected error occurred:")
 
 
 async def _handle_update_error(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
