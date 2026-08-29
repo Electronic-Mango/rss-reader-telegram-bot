@@ -23,6 +23,8 @@ telegram:
     lookup_feed_delay_randomness: 0
     # List of hours in 24h (without padded 0) format where bot won't check for updates.
     quiet_hours: [0, 1, 2, 3, 4, 5, 6, 7, 23]
+    # Shuffle stored RSS feed data before scheduling update checks.
+    shuffle_updates: false
   messages:
     # Max text message size send by the bot.
     max_message_size: 1024
