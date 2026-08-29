@@ -12,7 +12,7 @@ is handled in separate modules.
 """
 
 from datetime import datetime
-from random import randrange
+from random import randrange, shuffle
 from time import struct_time
 
 from feedparser.util import FeedParserDict
@@ -43,7 +43,9 @@ async def _delayed_check_for_all_updates(context: ContextTypes.DEFAULT_TYPE) -> 
         return
     logger.info("Starting checking for all updates")
     delay = 0
-    for feed_data in get_all_stored_data():
+    all_data = get_all_stored_data()
+    shuffle(all_data)
+    for feed_data in all_data:
         # Checking for updates for feeds is done through a job queue so that async exceptions
         # won't stop entire procedure.
         context.job_queue.run_once(_check_for_updates, delay, feed_data, chat_id=feed_data[0])
