@@ -24,14 +24,14 @@ def parse_link(entry: FeedParserDict) -> str | None:
 
 
 def parse_description(entry: FeedParserDict, feed_type: str) -> str | None:
-    if not (feed_params := RSS_FEEDS[feed_type]).get("show_description") or not entry.summary:
+    if not (feed_params := RSS_FEEDS[feed_type]).get("show_description") or not entry.get("summary"):
         return None
     description = _get_description_from_summary(entry.summary)
     return escape(_filter_text(description, feed_params)) if description else None
 
 
 def parse_title(entry: FeedParserDict, feed_type: str) -> str | None:
-    if (feed_params := RSS_FEEDS[feed_type]).get("show_title") and (title := entry.title):
+    if (feed_params := RSS_FEEDS[feed_type]).get("show_title") and (title := entry.get("title")):
         return f"<b>{escape(_filter_text(title, feed_params).strip())}</b>"
 
 
