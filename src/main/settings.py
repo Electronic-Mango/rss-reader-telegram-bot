@@ -46,6 +46,7 @@ LOOKUP_INITIAL_DELAY = _load_config("telegram", "updates", "lookup_initial_delay
 LOOKUP_FEED_DELAY = _load_config("telegram", "updates", "lookup_feed_delay")
 LOOKUP_FEED_DELAY_RANDOMNESS = _load_config("telegram", "updates", "lookup_feed_delay_randomness")
 QUIET_HOURS = _load_config("telegram", "updates", "quiet_hours")
+SHUFFLE_UPDATES = _load_config("telegram", "updates", "shuffle_updates")
 
 # telegram messages
 MAX_MESSAGE_SIZE = _load_config("telegram", "messages", "max_message_size")

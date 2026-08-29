@@ -28,6 +28,7 @@ from settings import (
     LOOKUP_FEED_DELAY_RANDOMNESS,
     LOOKUP_INTERVAL_RANDOMNESS,
     QUIET_HOURS,
+    SHUFFLE_UPDATES,
 )
 
 
@@ -44,7 +45,8 @@ async def _delayed_check_for_all_updates(context: ContextTypes.DEFAULT_TYPE) -> 
     logger.info("Starting checking for all updates")
     delay = 0
     all_data = get_all_stored_data()
-    shuffle(all_data)
+    if SHUFFLE_UPDATES:
+        shuffle(all_data)
     for feed_data in all_data:
         # Checking for updates for feeds is done through a job queue so that async exceptions
         # won't stop entire procedure.
