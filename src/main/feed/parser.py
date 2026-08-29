@@ -31,8 +31,9 @@ def parse_description(entry: FeedParserDict, feed_type: str) -> str | None:
 
 
 def parse_title(entry: FeedParserDict, feed_type: str) -> str | None:
-    if (feed_params := RSS_FEEDS[feed_type]).get("show_title") and (title := entry.get("title")):
-        return f"<b>{escape(_filter_text(title, feed_params).strip())}</b>"
+    if not (feed_params := RSS_FEEDS[feed_type]).get("show_title") or not entry.get("title"):
+        return None
+    return f"<b>{escape(_filter_text(entry.title, feed_params).strip())}</b>"
 
 
 def _get_description_from_summary(summary: str) -> str | None:
@@ -53,8 +54,8 @@ def _filter_text(text: str, feed_params: dict[str, Any]) -> str:
 
 
 def parse_media_links(entry: FeedParserDict) -> list[str]:
-    if "media_content" in entry:
-        return [media["url"] for media in entry.media_content if "url" in media]
+    if media_content := entry.get("media_content"):
+        return [media["url"] for media in media_content if "url" in media]
     if not (summary := entry.get("summary")):
         return []
     media_source = BeautifulSoup(summary, "html.parser")
