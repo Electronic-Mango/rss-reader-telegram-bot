@@ -33,7 +33,7 @@ def feed_is_valid(feed: FeedParserDict) -> bool:
     logger.info(f"Checking if [{feed.href}] feed exists")
     # 301 is a workaround for Tumblr blogs with dedicated URLs.
     # Checking for any entries is a workaround for feeds which always respond with code 200.
-    return feed.status in [200, 301] and "entries" in feed and feed.entries
+    return feed.get("status") in [200, 301] and feed.get("entries")
 
 
 def get_latest_data(feed: FeedParserDict) -> tuple[str, str, struct_time]:
@@ -68,7 +68,9 @@ def get_not_handled_entries(
 
 
 def get_sorted_entries(feed: FeedParserDict) -> list[FeedParserDict]:
-    return sorted(feed.entries, key=lambda entry: _get_entry_date(entry), reverse=True)
+    if not (entries := feed.get("entries")):
+        return []
+    return sorted(entries, key=lambda entry: _get_entry_date(entry), reverse=True)
 
 
 def _not_latest_entry(
