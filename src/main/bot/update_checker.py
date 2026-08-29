@@ -46,6 +46,7 @@ async def _delayed_check_for_all_updates(context: ContextTypes.DEFAULT_TYPE) -> 
     delay = 0
     all_data = get_all_stored_data()
     if SHUFFLE_UPDATES:
+        logger.info("Shuffling RSS data before checking for updates")
         shuffle(all_data)
     for feed_data in all_data:
         # Checking for updates for feeds is done through a job queue so that async exceptions
