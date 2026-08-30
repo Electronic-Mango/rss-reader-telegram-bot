@@ -14,6 +14,7 @@ Only one media item will have a caption, so it's correctly displayed in chat.
 from html import escape
 from http import HTTPStatus
 from io import BytesIO
+from pathlib import Path
 from tempfile import NamedTemporaryFile
 
 from cv2 import CAP_PROP_FRAME_HEIGHT, CAP_PROP_FRAME_WIDTH, VideoCapture
@@ -115,6 +116,9 @@ async def _send_text_message(
 
 def _load_image(image_path: str) -> Image.Image | None:
     try:
+        if not Path(image_path).is_file():
+            logger.warning(f"Image at [{image_path}] does not exist, or is not a valid file.")
+            return None
         return Image.open(image_path)
     except OSError as e:
         logger.opt(exception=e).warning(f"Failed to load image at [{image_path}]:")
