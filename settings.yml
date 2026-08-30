@@ -10,8 +10,6 @@ telegram:
   allowed_usernames: []
   # File used for storing command states between bot restarts.
   persistence_file: persistence
-  # Run certain tasks concurrently, rather than just asynchronously.
-  concurrency: false
   updates:
     # How often should bot check for updates in seconds.
     lookup_interval: 3600
