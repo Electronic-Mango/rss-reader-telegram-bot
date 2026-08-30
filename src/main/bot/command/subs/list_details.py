@@ -22,7 +22,7 @@ async def list_details(update: Update, _: ContextTypes.DEFAULT_TYPE) -> Conversa
     chat_id = update.effective_chat.id
     type, name, chat_data = query.data
     logger.info(f"[{chat_id}] Showing details for [{type}] [{name}]")
-    link, date = get_latest_entry_data(chat_id, type, name)
+    link, date = await get_latest_entry_data(chat_id, type, name)
     await query.edit_message_text(
         _generate_description(type, name, date),
         reply_markup=_prepare_keyboard(type, name, chat_data, link),

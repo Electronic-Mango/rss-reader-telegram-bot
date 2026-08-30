@@ -37,6 +37,6 @@ async def _handle_update(bot: Bot, chat_id: int, type: str, name: str) -> None:
         parse_link(latest_entry),
         parse_title(latest_entry, type),
         parse_description(latest_entry, type),
-        get_latest_message_id(chat_id, type, name),
+        await get_latest_message_id(chat_id, type, name),
         parse_media_links(latest_entry),
     )

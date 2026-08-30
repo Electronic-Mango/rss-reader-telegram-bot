@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 from pymongo import ASCENDING
 from pytest import fixture, mark, raises
@@ -14,7 +14,8 @@ from db.client import (
 )
 from settings import DB_FEEDS_NAME, DB_HOST, DB_NAME, DB_PORT
 
-feeds_collection_mock = MagicMock()
+feeds_collection_mock = AsyncMock()
+feeds_collection_mock.find = MagicMock()  # "find" is synchronous in AsyncCollection
 operation_result_mock = MagicMock()
 document = MagicMock()
 db_filter = MagicMock()
@@ -40,11 +41,11 @@ def clear_mocks():
     yield
 
 
-@patch("db.client.MongoClient", side_effect=mocked_mongo_client)
-def test_initialize_db(mongo_client_mock: MagicMock):
+@patch("db.client.AsyncMongoClient", side_effect=mocked_mongo_client)
+async def test_initialize_db(mongo_client_mock: MagicMock):
     feeds_collection_mock.create_index.return_value = operation_result_mock
 
-    initialize_db()
+    await initialize_db()
 
     mongo_client_mock.assert_called()
 
@@ -60,16 +61,16 @@ def test_initialize_db(mongo_client_mock: MagicMock):
     assert create_feeds_index_kwargs.get("unique")
 
 
-@patch("db.client.MongoClient", side_effect=mocked_mongo_client)
-def test_db_is_not_initialized_again(mongo_client_mock: MagicMock):
+@patch("db.client.AsyncMongoClient", side_effect=mocked_mongo_client)
+async def test_db_is_not_initialized_again(mongo_client_mock: MagicMock):
     feeds_collection_mock.create_index.return_value = operation_result_mock
-    initialize_db()
-    initialize_db()
+    await initialize_db()
+    await initialize_db()
     mongo_client_mock.assert_called_once()
     feeds_collection_mock.create_index.assert_called_once()
 
 
-@patch("db.client.MongoClient", side_effect=mocked_mongo_client)
+@patch("db.client.AsyncMongoClient", side_effect=mocked_mongo_client)
 @mark.parametrize(
     argnames=["client_function", "db_function", "args"],
     argvalues=[
@@ -80,28 +81,28 @@ def test_db_is_not_initialized_again(mongo_client_mock: MagicMock):
         (find_one, "find_one", (db_filter,)),
     ],
 )
-def test_db_operations(_, client_function, db_function, args):
-    initialize_db()
+async def test_db_operations(_, client_function, db_function, args):
+    await initialize_db()
     db_function = getattr(feeds_collection_mock, db_function)
     db_function.return_value = operation_result_mock
-    operation_result = client_function(*args)
+    operation_result = await client_function(*args)
     db_function.assert_called()
     assert operation_result_mock == operation_result
     assert args == db_function.call_args.args
 
 
-@patch("db.client.MongoClient", side_effect=mocked_mongo_client)
+@patch("db.client.AsyncMongoClient", side_effect=mocked_mongo_client)
 @mark.parametrize(argnames="document_count", argvalues=[0, 1, 2])
-def test_element_exists(_, document_count: int):
-    initialize_db()
+async def test_element_exists(_, document_count: int):
+    await initialize_db()
     feeds_collection_mock.count_documents.return_value = document_count
-    result = exists(db_filter)
+    result = await exists(db_filter)
     feeds_collection_mock.count_documents.assert_called()
     assert bool(document_count) == result
     assert (db_filter,) == feeds_collection_mock.count_documents.call_args.args
 
 
-@patch("db.client.MongoClient", side_effect=mocked_mongo_client)
+@patch("db.client.AsyncMongoClient", side_effect=mocked_mongo_client)
 @mark.parametrize(
     argnames=["client_function", "db_function", "args"],
     argvalues=[
@@ -113,13 +114,13 @@ def test_element_exists(_, document_count: int):
         (exists, "count_documents", (db_filter,)),
     ],
 )
-def test_correct_collection_is_selected(_, client_function, db_function, args):
-    initialize_db()
-    client_function(*args, collection=DB_FEEDS_NAME)
+async def test_correct_collection_is_selected(_, client_function, db_function, args):
+    await initialize_db()
+    await client_function(*args, collection_name=DB_FEEDS_NAME)
     getattr(feeds_collection_mock, db_function).assert_called_once()
 
 
-@patch("db.client.MongoClient", side_effect=mocked_mongo_client)
+@patch("db.client.AsyncMongoClient", side_effect=mocked_mongo_client)
 @mark.parametrize(
     argnames=["client_function", "args"],
     argvalues=[
@@ -131,13 +132,13 @@ def test_correct_collection_is_selected(_, client_function, db_function, args):
         (exists, (db_filter,)),
     ],
 )
-def test_db_operations_fail_on_uninitialized_db(_, client_function, args):
+async def test_db_operations_fail_on_uninitialized_db(_, client_function, args):
     with raises(RuntimeError) as exception_info:
-        client_function(*args)
+        await client_function(*args)
     assert str(exception_info.value) == "DB is not initialized!"
 
 
-@patch("db.client.MongoClient", side_effect=mocked_mongo_client)
+@patch("db.client.AsyncMongoClient", side_effect=mocked_mongo_client)
 @mark.parametrize(
     argnames=["client_function", "args"],
     argvalues=[
@@ -149,7 +150,7 @@ def test_db_operations_fail_on_uninitialized_db(_, client_function, args):
         (exists, (db_filter,)),
     ],
 )
-def test_db_operations_fail_on_unexpected_collection_name(_, client_function, args):
+async def test_db_operations_fail_on_unexpected_collection_name(_, client_function, args):
     with raises(ValueError) as exception_info:
-        client_function(*args, collection="unexpected_collection_name")
+        await client_function(*args, collection_name="unexpected_collection_name")
     assert str(exception_info.value) == "Unknown collection name: unexpected_collection_name"

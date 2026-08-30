@@ -44,7 +44,7 @@ async def _delayed_check_for_all_updates(context: ContextTypes.DEFAULT_TYPE) -> 
         return
     logger.info("Starting checking for all updates")
     delay = 0
-    all_data = get_all_stored_data()
+    all_data = await get_all_stored_data()
     if SHUFFLE_UPDATES:
         logger.info("Shuffling RSS data before checking for updates")
         shuffle(all_data)
@@ -98,11 +98,11 @@ async def _handle_update(
     logger.info(f"[{chat_id}] Handling update [{feed_name}] [{feed_type}]")
     for entry in not_handled_feed_entries:
         id, link, date = get_data(entry)
-        update_stored_latest_data(chat_id, feed_type, feed_name, id, link, date)
+        await update_stored_latest_data(chat_id, feed_type, feed_name, id, link, date)
         latest_message_id = await _send_update(
             context, chat_id, feed_type, feed_name, entry, latest_message_id
         )
-        update_latest_message_id(chat_id, feed_type, feed_name, latest_message_id)
+        await update_latest_message_id(chat_id, feed_type, feed_name, latest_message_id)
 
 
 async def _send_update(

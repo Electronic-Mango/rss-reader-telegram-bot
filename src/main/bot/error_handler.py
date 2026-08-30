@@ -60,7 +60,7 @@ async def _handle_job_error(context: ContextTypes.DEFAULT_TYPE) -> None:
 
 async def _handle_forbidden_error(chat_id: int) -> None:
     logger.warning(f"[{chat_id}] Cannot send updates to chat, removing chat data")
-    remove_stored_chat_data(chat_id)
+    await remove_stored_chat_data(chat_id)
 
 
 async def _handle_update_retry_error(
@@ -83,7 +83,7 @@ async def _handle_send_error(
     latest_message_id = await send_update(
         context.bot, chat_id, feed_type, feed_name, link, title, description, latest_message_id
     )
-    update_latest_message_id(chat_id, feed_type, feed_name, latest_message_id)
+    await update_latest_message_id(chat_id, feed_type, feed_name, latest_message_id)
 
 
 async def _handle_prepare_update_error(

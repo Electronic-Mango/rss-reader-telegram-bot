@@ -39,6 +39,6 @@ async def remove_subscription(update: Update, _: ContextTypes.DEFAULT_TYPE) -> i
     chat_id = update.effective_chat.id
     feed_type, feed_name, _ = query.data
     logger.info(f"[{chat_id}] Confirmed [{feed_name}] [{feed_type}] for removal")
-    remove_stored_feed(chat_id, feed_type, feed_name)
+    await remove_stored_feed(chat_id, feed_type, feed_name)
     await query.edit_message_text(f"Removed subscription for <b>{feed_name}</b>!")
     return ConversationHandler.END
