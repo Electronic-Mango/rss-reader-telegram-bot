@@ -160,6 +160,7 @@ async def _send_media_update(
 
 
 async def _get_media_content_and_type(link: str) -> tuple[bytes, str] | None:
+    logger.info(f"Downloading media from [{link}]")
     headers = {"user-agent": "rss-reader/1.0", "accept": "*/*"}
     response = await aget(link, headers=headers, timeout=600)
     if response.status_code != HTTPStatus.OK:
