@@ -1,8 +1,8 @@
 # RSS reader Telegram bot
 
 [![CodeQL](https://github.com/Electronic-Mango/rss-reader-telegram-bot/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/Electronic-Mango/rss-reader-telegram-bot/actions/workflows/codeql-analysis.yml)
-[![flake8 and pytest](https://github.com/Electronic-Mango/rss-reader-telegram-bot/actions/workflows/flake8-pytest-verification.yml/badge.svg)](https://github.com/Electronic-Mango/rss-reader-telegram-bot/actions/workflows/flake8-pytest-verification.yml)
-[![black](https://github.com/Electronic-Mango/rss-reader-telegram-bot/actions/workflows/black-formatting-verification.yml/badge.svg)](https://github.com/Electronic-Mango/rss-reader-telegram-bot/actions/workflows/black-formatting-verification.yml)
+[![Pytest](https://github.com/Electronic-Mango/rss-reader-telegram-bot/actions/workflows/pytest.yml/badge.svg)](https://github.com/Electronic-Mango/rss-reader-telegram-bot/actions/workflows/pytest.yml)
+[![Black, isort, Flake8](https://github.com/Electronic-Mango/rss-reader-telegram-bot/actions/workflows/code-quality.yml/badge.svg)](https://github.com/Electronic-Mango/rss-reader-telegram-bot/actions/workflows/code-quality.yml)
 
 A simple Telegram bot sending updates for RSS feeds, build with [`python-telegram-bot`](https://github.com/python-telegram-bot/python-telegram-bot)!
 
@@ -127,7 +127,7 @@ Out of all parameters only `url` is required, others are optional.
 Bot uses a separate MongoDB to store chat data.
 DB configuration is stored in `database` section of configuration YAML.
 DB host and port can be configured via `host` and `port` parameters.
-Parameters `name` and `collection_name` specify names of DB and collection where all the data will be stored.
+Parameters `name` and `feeds_name` specify names of DB and collection where all the data will be stored.
 
 All data is stored within a single collection, for simplicity, so the latter parameters don't matter much.
 
@@ -169,6 +169,11 @@ Additional random delay when checking for individual feeds can be configured via
 It is an additional delay to `lookup_feed_delay` between `0` and configured value.
 
 Setting parameters to `0` will disable their respective randomness.
+
+Delay before the first check for updates after the bot is started can be configured via `lookup_initial_delay`.
+
+You can also shuffle the order in which stored feeds are checked via the `shuffle_updates` flag.
+When it's disabled feeds are always checked in the order they're returned from the DB.
 
 
 ### Docker
@@ -264,9 +269,10 @@ This, however, doesn't take into account neither `lookup_feed_delay` nor `lookup
 ### Sending updates and message formatting
 
 Each RSS feed entry will be sent in a separate message.
-If an entry contains more than 10 images/videos the update will be split into more messages, since Telegram only allows up to 10 images/videos per message. Only the final message will contain the caption.
+If an entry contains more images/videos than `max_media_items_per_message` the update will be split into more messages.
+Telegram only allows up to 10 images/videos per message, which is the default value of `max_media_items_per_message`.
 
-Each message will contain the RSS feed source and type, RSS entry title, summary and link.
+Each message will contain the RSS feed source and type, RSS entry link and, depending on `show_title` and `show_description` for a given feed, entry title and summary.
 
 Bot assumes that RSS entry summary (or description) will be in HTML format.
 Bot will send only raw text from summary, without any tags.
