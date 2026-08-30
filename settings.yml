@@ -10,7 +10,7 @@ telegram:
   allowed_usernames: []
   # File used for storing command states between bot restarts.
   persistence_file: persistence
-  # Whether the bot should handle certain tasks concurrently, rather than just asynchronously.
+  # Run certain tasks concurrently, rather than just asynchronously.
   concurrency: false
   updates:
     # How often should bot check for updates in seconds.
