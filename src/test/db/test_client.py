@@ -132,7 +132,7 @@ def test_correct_collection_is_selected(_, client_function, db_function, args):
     ],
 )
 def test_db_operations_fail_on_uninitialized_db(_, client_function, args):
-    with raises(AssertionError) as exception_info:
+    with raises(RuntimeError) as exception_info:
         client_function(*args)
     assert str(exception_info.value) == "DB is not initialized!"
 
