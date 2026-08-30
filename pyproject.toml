@@ -29,6 +29,7 @@ dev = [
     "flake8>=7.3.0",
     "isort>=9.0.0",
     "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
 ]
 
 [tool.black]
@@ -46,3 +47,4 @@ max-line-length = 100
 [tool.pytest.ini_options]
 pythonpath = ["src/main", "src/test"]
 norecursedirs = [".venv"]
+asyncio_mode = "auto"

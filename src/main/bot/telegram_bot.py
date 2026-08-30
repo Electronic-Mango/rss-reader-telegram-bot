@@ -18,6 +18,7 @@ from bot.command.start_help import start_help_command_handler
 from bot.command.subs.handler import subscriptions_followup_handler, subscriptions_initial_handler
 from bot.error_handler import handle_errors
 from bot.update_checker import check_for_all_updates
+from db.client import initialize_db
 from settings import LOOKUP_INITIAL_DELAY, LOOKUP_INTERVAL, PERSISTENCE_FILE, TOKEN
 
 _UPDATE_HANDLERS = [
@@ -47,6 +48,7 @@ def _prepare_application() -> Application:
         .defaults(Defaults("HTML"))
         .arbitrary_callback_data(True)
         .persistence(PicklePersistence(PERSISTENCE_FILE))
+        .post_init(lambda _: initialize_db())
         .build()
     )
 

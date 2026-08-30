@@ -89,7 +89,7 @@ async def _handle_feed_names(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
 
 async def _handle_feed_name(message: Message, chat_id: int, feed_type: str, feed_name: str) -> None:
-    if feed_is_already_stored(chat_id, feed_type, feed_name):
+    if await feed_is_already_stored(chat_id, feed_type, feed_name):
         await _feed_with_given_name_already_exists(message, chat_id, feed_name, feed_type)
     elif feed_is_valid(parsed_feed := get_parsed_feed(feed_type, feed_name)):
         await _store_subscription(message, chat_id, parsed_feed, feed_type, feed_name)
@@ -115,7 +115,7 @@ async def _store_subscription(
     feed_name: str,
 ) -> None:
     id, link, date = get_latest_data(parsed_feed)
-    store_feed_data(chat_id, feed_name, feed_type, id, link, date)
+    await store_feed_data(chat_id, feed_name, feed_type, id, link, date)
     await message.reply_text(f"Added subscription for <b>{feed_name}</b>!")
 
 

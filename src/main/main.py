@@ -7,13 +7,11 @@ from logging.handlers import RotatingFileHandler
 from loguru import logger
 
 from bot.telegram_bot import run_bot
-from db.client import initialize_db
 from settings import BACKUP_COUNT, LOG_PATH, MAX_BYTES
 
 
 def _main() -> None:
     _configure_logging()
-    initialize_db()
     run_bot()
 
 

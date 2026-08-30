@@ -13,82 +13,88 @@ Additionally, this module is also creating needed database, collection and index
 from typing import Any, Mapping
 
 from loguru import logger
-from pymongo import ASCENDING, MongoClient
-from pymongo.collection import Collection
-from pymongo.cursor import Cursor
+from pymongo import ASCENDING, AsyncMongoClient
+from pymongo.asynchronous.collection import AsyncCollection
+from pymongo.asynchronous.cursor import AsyncCursor
 from pymongo.results import DeleteResult, InsertOneResult
 
 from settings import DB_FEEDS_NAME, DB_HOST, DB_NAME, DB_PORT
 
-_feeds_collection: Collection | None = None
+_feeds_collection: AsyncCollection | None = None
 
 
-def initialize_db() -> None:
+async def initialize_db() -> None:
     """Initialize MongoDB client, create relevant DB, collection and index."""
     if _feeds_collection is not None:
         logger.warning("DB already initialized!")
         return
     logger.info("Initializing DB...")
     _initialize_collections()
-    _create_indexes()
+    await _create_indexes()
 
 
 def _initialize_collections() -> None:
-    database = MongoClient(DB_HOST, DB_PORT)[DB_NAME]
+    database = AsyncMongoClient(DB_HOST, DB_PORT)[DB_NAME]
     global _feeds_collection
     _feeds_collection = database[DB_FEEDS_NAME]
 
 
-def _create_indexes() -> None:
+async def _create_indexes() -> None:
     logger.info("Creating DB indexes...")
-    feed_index = _feeds_collection.create_index(
+    feed_index = await _feeds_collection.create_index(
         keys=[("chat_id", ASCENDING), ("feed_name", ASCENDING), ("feed_type", ASCENDING)],
         unique=True,
     )
     logger.info(f"Created indexes [{feed_index}]")
 
 
-def insert_one(document: Mapping[str, Any], collection: str = DB_FEEDS_NAME) -> InsertOneResult:
+async def insert_one(
+    document: Mapping[str, Any], collection_name: str = DB_FEEDS_NAME
+) -> InsertOneResult:
     """Wrapper for "insert_one" DB function."""
-    collection = _get_collection(collection)
-    return collection.insert_one(document)
+    collection = _get_collection(collection_name)
+    return await collection.insert_one(document)
 
 
-def delete_many(db_filter: Mapping[str, Any], collection: str = DB_FEEDS_NAME) -> DeleteResult:
+async def delete_many(
+    db_filter: Mapping[str, Any], collection_name: str = DB_FEEDS_NAME
+) -> DeleteResult:
     """Wrapper for "delete_many" DB function."""
-    collection = _get_collection(collection)
-    return collection.delete_many(db_filter)
+    collection = _get_collection(collection_name)
+    return await collection.delete_many(db_filter)
 
 
-def update_one(
-    db_filter: Mapping[str, Any], update: Mapping[str, Any], collection: str = DB_FEEDS_NAME
+async def update_one(
+    db_filter: Mapping[str, Any], update: Mapping[str, Any], collection_name: str = DB_FEEDS_NAME
 ) -> Any:
     """Wrapper for "find_one_and_update" DB function."""
-    collection = _get_collection(collection)
-    return collection.find_one_and_update(db_filter, update)
+    collection = _get_collection(collection_name)
+    return await collection.find_one_and_update(db_filter, update)
 
 
-def find_many(db_filter: Mapping[str, Any] = None, collection: str = DB_FEEDS_NAME) -> Cursor:
+async def find_many(
+    db_filter: Mapping[str, Any] = None, collection_name: str = DB_FEEDS_NAME
+) -> AsyncCursor:
     """Wrapper for "find" DB function."""
-    collection = _get_collection(collection)
+    collection = _get_collection(collection_name)
     return collection.find(db_filter)
 
 
-def find_one(
-    db_filter: Mapping[str, Any] = None, collection: str = DB_FEEDS_NAME
+async def find_one(
+    db_filter: Mapping[str, Any] = None, collection_name: str = DB_FEEDS_NAME
 ) -> Mapping[str, Any] | None:
     """Wrapper for "find_one" DB function."""
-    collection = _get_collection(collection)
-    return collection.find_one(db_filter)
+    collection = _get_collection(collection_name)
+    return await collection.find_one(db_filter)
 
 
-def exists(db_filter: Mapping[str, Any], collection: str = DB_FEEDS_NAME) -> bool:
+async def exists(db_filter: Mapping[str, Any], collection_name: str = DB_FEEDS_NAME) -> bool:
     """Check if there are any documents from a given filter, using count_documents DB function."""
-    collection = _get_collection(collection)
-    return bool(collection.count_documents(db_filter, limit=1))
+    collection = _get_collection(collection_name)
+    return bool(await collection.count_documents(db_filter, limit=1))
 
 
-def _get_collection(name: str) -> Collection:
+def _get_collection(name: str) -> AsyncCollection:
     if name != DB_FEEDS_NAME:
         raise ValueError(f"Unknown collection name: {name}")
     if _feeds_collection is None:

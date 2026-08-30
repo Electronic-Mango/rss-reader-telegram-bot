@@ -17,7 +17,7 @@ async def initial_list_feed_types(update: Update, _: ContextTypes.DEFAULT_TYPE) 
     """Initial list of types directly after "subscriptions" command is run"""
     chat_id = update.effective_chat.id
     logger.info(f"[{chat_id}] Initial request of feed type")
-    if chat_data := get_stored_feed_type_to_names(chat_id):
+    if chat_data := await get_stored_feed_type_to_names(chat_id):
         await _send_types_list(update.message.reply_text, chat_data)
     else:
         await update.message.reply_text("No subscriptions")

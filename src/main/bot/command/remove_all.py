@@ -57,7 +57,7 @@ def _data_rejected(data: Any) -> bool:
 async def _request_confirmation_1(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
     chat_id = update.effective_chat.id
     logger.info(f"[{chat_id}] User requested removal of all subscriptions")
-    if not chat_has_stored_feeds(chat_id):
+    if not await chat_has_stored_feeds(chat_id):
         logger.info(f"[{chat_id}] No subscriptions to remove")
         await update.message.reply_text("No subscriptions to remove")
     else:
@@ -84,7 +84,7 @@ async def _remove_all_subscriptions(update: Update, _: ContextTypes.DEFAULT_TYPE
     await query.answer()
     chat_id = update.effective_chat.id
     logger.info(f"[{chat_id}] Removing all subscriptions")
-    remove_stored_chat_data(chat_id)
+    await remove_stored_chat_data(chat_id)
     await query.edit_message_text("Removed all subscriptions")
     return ConversationHandler.END
 
