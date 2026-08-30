@@ -229,15 +229,7 @@ async def _handle_single_video(
     message: str = None,
     reply_params: ReplyParameters | None = None,
 ) -> int:
-    with NamedTemporaryFile() as tmp_file:
-        tmp_file.write(video.media.input_file_content)
-        tmp_file.flush()
-        video_capture = VideoCapture(tmp_file.name)
-        width = int(video_capture.get(CAP_PROP_FRAME_WIDTH))
-        height = int(video_capture.get(CAP_PROP_FRAME_HEIGHT))
-        video_capture.release()
-    if width <= 0 or height <= 0:
-        width, height = None, None
+    width, height = await to_thread(_probe_video_size, video.media.input_file_content)
     sent_message = await bot.send_video(
         chat_id,
         video.media,
@@ -252,3 +244,14 @@ async def _handle_single_video(
     if PIN_VIDEOS:
         await sent_message.pin()
     return sent_message.id
+
+
+def _probe_video_size(video_bytes: bytes) -> tuple[int | None, int | None]:
+    with NamedTemporaryFile() as tmp_file:
+        tmp_file.write(video_bytes)
+        tmp_file.flush()
+        video_capture = VideoCapture(tmp_file.name)
+        width = int(video_capture.get(CAP_PROP_FRAME_WIDTH))
+        height = int(video_capture.get(CAP_PROP_FRAME_HEIGHT))
+        video_capture.release()
+    return (width, height) if width > 0 and height > 0 else (None, None)
