@@ -111,7 +111,7 @@ async def _send_text_message(
         return sent_message.id
     logger.info(f"[{chat_id}] Sending default image [{DEFAULT_IMAGE_PATH}]")
     image_bytes = BytesIO()
-    default_image.save(image_bytes, format=default_image.format or "PNG")
+    await to_thread(default_image.save, image_bytes, format=default_image.format or "PNG")
     media_group = [(image_bytes.getvalue(), default_image.format or "PNG")]
     return await _handle_attachment_group(bot, chat_id, media_group, message, reply_params)
 
