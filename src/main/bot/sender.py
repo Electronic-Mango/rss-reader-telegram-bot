@@ -22,7 +22,7 @@ from tempfile import NamedTemporaryFile
 from cv2 import CAP_PROP_FRAME_HEIGHT, CAP_PROP_FRAME_WIDTH, VideoCapture
 from loguru import logger
 from more_itertools import sliced
-from niquests import aget
+from niquests import AsyncResponse, aget
 from PIL import Image
 from telegram import Bot, InputMediaPhoto, InputMediaVideo, ReplyParameters
 
@@ -38,7 +38,11 @@ from settings import (
 )
 
 DEFAULT_SENDER_TEXT_FORMAT = "By <b>{name}</b> on {type}"
+# Per Telegram Bot API limits: images up to 10 MB, videos/other files up to 50 MB.
 MAX_IMAGE_SIZE = 10_000_000
+MAX_VIDEO_SIZE = 50_000_000
+# Technically 10000 is a limit for sum of width and height of an image.
+# However, it's simpler to just enforce 5000 as max for either width or height.
 MAX_IMAGE_DIMENSIONS = 10_000
 MAX_IMAGE_THUMBNAIL = (MAX_IMAGE_DIMENSIONS // 2, MAX_IMAGE_DIMENSIONS // 2)
 
@@ -162,11 +166,38 @@ async def _send_media_update(
 async def _get_media_content_and_type(link: str) -> tuple[bytes, str] | None:
     logger.info(f"Downloading media from [{link}]")
     headers = {"user-agent": "rss-reader/1.0", "accept": "*/*"}
-    response = await aget(link, headers=headers, timeout=600)
-    if response.status_code != HTTPStatus.OK:
-        logger.warning(f"Could download media at [{link}], status code [{response.status_code}]")
+    timeout = (60, 600)  # 60s for connection, 600s for download; default is 30s for both
+    async with await aget(link, headers=headers, timeout=timeout, stream=True) as response:
+        if (content_type := _get_media_type(link, response)) is None:
+            return None
+        max_size = MAX_VIDEO_SIZE if _is_video(content_type) else MAX_IMAGE_SIZE
+        if (content := await _download_up_to(link, response, max_size)) is None:
+            return None
+        return content, content_type
+
+
+def _get_media_type(link: str, response: AsyncResponse) -> str | None:
+    if (status_code := response.status_code) != HTTPStatus.OK:
+        logger.warning(f"Could not download media at [{link}], status code [{status_code}]")
         return None
-    return response.content, response.headers["Content-Type"]
+    if not (content_type := response.headers.get("Content-Type")):
+        logger.warning(f"Media at [{link}] has no Content-Type, skipping")
+        return None
+    return content_type
+
+
+async def _download_up_to(link: str, response: AsyncResponse, max_size: int) -> bytes | None:
+    content_length = response.headers.get("Content-Length")
+    if content_length and content_length.isnumeric() and int(content_length) > max_size:
+        logger.warning(f"Media at [{link}] declares [{content_length}] bytes, over limit, skipping")
+        return None
+    content = bytearray()
+    async for chunk in await response.iter_content():
+        content += chunk
+        if len(content) > max_size:
+            logger.warning(f"Media at [{link}] exceeded size limit while downloading, skipping")
+            return None
+    return bytes(content)
 
 
 async def _handle_attachment_group(
