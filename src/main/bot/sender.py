@@ -174,8 +174,9 @@ async def _handle_attachment_group(
             chat_id,
             input_media_list,
             caption=message,
-            write_timeout=SEND_MEDIA_TIMEOUT,
             reply_parameters=reply_params,
+            read_timeout=SEND_MEDIA_TIMEOUT,
+            write_timeout=SEND_MEDIA_TIMEOUT,
         )
         return sent_message[0].message_id
 
@@ -240,8 +241,9 @@ async def _handle_single_video(
         height=height,
         caption=message,
         supports_streaming=True,
-        write_timeout=SEND_MEDIA_TIMEOUT,
         reply_parameters=reply_params,
+        read_timeout=SEND_MEDIA_TIMEOUT,
+        write_timeout=SEND_MEDIA_TIMEOUT,
     )
     if PIN_VIDEOS:
         await sent_message.pin()
