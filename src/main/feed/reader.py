@@ -6,18 +6,25 @@ from datetime import datetime
 from itertools import takewhile
 from time import struct_time
 
-from feedparser import parse
-from feedparser.util import FeedParserDict
+from feedparser import FeedParserDict, parse
 from loguru import logger
+from niquests import aget
 
 from settings import RSS_FEEDS
 
 
-def get_parsed_feed(feed_type: str, feed_name: str) -> FeedParserDict:
+async def get_parsed_feed(feed_type: str, feed_name: str) -> FeedParserDict:
     """Parse given feed type and feed name into FeedParserDict, based on URL from RSS links YAML."""
     feed_link = RSS_FEEDS[feed_type]["url"].format(source_pattern=feed_name)
     logger.info(f"Parsed [{feed_name}][{feed_type}] to link [{feed_link}]")
-    return parse(feed_link)
+    feed_response = await aget(feed_link)
+    # parse() only sets "status"/"href" when it performs the HTTP request itself.
+    # Headers must be lowercased, parse() header-based encoding detection expects lowercase keys.
+    response_headers = {key.lower(): value for key, value in feed_response.headers.items()}
+    parsed_feed = parse(feed_response.content, response_headers=response_headers)
+    parsed_feed["status"] = feed_response.status_code
+    parsed_feed["href"] = feed_response.url
+    return parsed_feed
 
 
 def feed_is_valid(feed: FeedParserDict) -> bool:

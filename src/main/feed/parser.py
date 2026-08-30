@@ -12,7 +12,7 @@ from html import escape
 from typing import Any
 
 from bs4 import BeautifulSoup
-from feedparser.util import FeedParserDict
+from feedparser import FeedParserDict
 
 from settings import RSS_FEEDS
 
