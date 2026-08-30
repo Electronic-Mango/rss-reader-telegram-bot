@@ -2,6 +2,7 @@
 Module handling all RSS requests.
 """
 
+from asyncio import to_thread
 from datetime import datetime
 from itertools import takewhile
 from time import struct_time
@@ -21,7 +22,7 @@ async def get_parsed_feed(feed_type: str, feed_name: str) -> FeedParserDict:
     # parse() only sets "status"/"href" when it performs the HTTP request itself.
     # Headers must be lowercased, parse() header-based encoding detection expects lowercase keys.
     response_headers = {key.lower(): value for key, value in feed_response.headers.items()}
-    parsed_feed = parse(feed_response.content, response_headers=response_headers)
+    parsed_feed = await to_thread(parse, feed_response.content, response_headers=response_headers)
     parsed_feed["status"] = feed_response.status_code
     parsed_feed["href"] = feed_response.url
     return parsed_feed
