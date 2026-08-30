@@ -117,7 +117,7 @@ async def _send_text_message(
 def _load_image(image_path: str) -> Image.Image | None:
     try:
         if not Path(image_path).is_file():
-            logger.warning(f"Image at [{image_path}] does not exist, or is not a valid file.")
+            logger.info(f"[{image_path}] is not a valid file, no default image will be used.")
             return None
         return Image.open(image_path)
     except OSError as e:
