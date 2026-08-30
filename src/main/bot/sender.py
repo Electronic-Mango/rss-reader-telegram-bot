@@ -114,9 +114,9 @@ async def _send_text_message(
     return await _handle_attachment_group(bot, chat_id, media_group, message, reply_params)
 
 
-def _load_image(image_path: str) -> Image.Image | None:
+def _load_image(image_path: str | None) -> Image.Image | None:
     try:
-        if not Path(image_path).is_file():
+        if not image_path or not Path(image_path).is_file():
             logger.info(f"[{image_path}] is not a valid file, no default image will be used.")
             return None
         return Image.open(image_path)
