@@ -11,6 +11,7 @@ This module will recognize and handle situations where:
 Only one media item will have a caption, so it's correctly displayed in chat.
 """
 
+from asyncio import to_thread
 from html import escape
 from http import HTTPStatus
 from io import BytesIO
@@ -166,7 +167,7 @@ async def _handle_attachment_group(
 ) -> int:
     # Technically single media elements don't have to be handled as media group,
     # but they can, so the same implementation can be used for both.
-    input_media_list = [_media_object(media, media_type) for media, media_type in media_group]
+    input_media_list = [await _media_object(media, media_type) for media, media_type in media_group]
     is_video_list = [isinstance(m, InputMediaVideo) for m in input_media_list]
     logger.info(f"{chat_id} Sending media group is_video={is_video_list}")
     if len(input_media_list) == 1 and isinstance(video := input_media_list[0], InputMediaVideo):
@@ -184,11 +185,11 @@ async def _handle_attachment_group(
         return sent_message[0].message_id
 
 
-def _media_object(media: bytes, media_type: str) -> InputMediaPhoto | InputMediaVideo:
+async def _media_object(media: bytes, media_type: str) -> InputMediaPhoto | InputMediaVideo:
     if _is_video(media_type):
         return InputMediaVideo(media, supports_streaming=True)
     else:
-        return InputMediaPhoto(_trim_image(media))
+        return InputMediaPhoto(await to_thread(_trim_image, media))
 
 
 def _is_video(media_type: str) -> bool:
