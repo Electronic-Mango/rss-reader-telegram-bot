@@ -12,6 +12,7 @@ Only one media item will have a caption, so it's correctly displayed in chat.
 """
 
 from asyncio import gather, to_thread
+from functools import lru_cache
 from html import escape
 from http import HTTPStatus
 from io import BytesIO
@@ -116,11 +117,15 @@ async def _send_text_message(
     return await _handle_attachment_group(bot, chat_id, media_group, message, reply_params)
 
 
+@lru_cache(maxsize=1)
 def _load_image(image_path: str | None) -> Image.Image | None:
     try:
         if not image_path or not Path(image_path).is_file():
             return None
-        return Image.open(image_path)
+        image = Image.open(image_path)
+        # Force the read now, so the file is loaded and closed only once, not on every call.
+        image.load()
+        return image
     except OSError as e:
         logger.opt(exception=e).warning(f"Failed to load image at [{image_path}]: ")
         return None
