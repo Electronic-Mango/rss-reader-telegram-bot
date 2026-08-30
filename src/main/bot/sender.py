@@ -104,7 +104,7 @@ async def _send_text_message(
     bot: Bot, chat_id: int, message: str, reply_params: ReplyParameters | None
 ) -> int:
     if (default_image := _load_image(DEFAULT_IMAGE_PATH)) is None:
-        logger.info(f"[{chat_id}] No default media, sending only text")
+        logger.info(f"[{chat_id}] No default media [{DEFAULT_IMAGE_PATH}], sending only text")
         sent_message = await bot.send_message(chat_id, message, reply_parameters=reply_params)
         return sent_message.id
     logger.info(f"[{chat_id}] Sending default image [{DEFAULT_IMAGE_PATH}]")
@@ -117,7 +117,6 @@ async def _send_text_message(
 def _load_image(image_path: str | None) -> Image.Image | None:
     try:
         if not image_path or not Path(image_path).is_file():
-            logger.info(f"[{image_path}] is not a valid file, no default image will be used.")
             return None
         return Image.open(image_path)
     except OSError as e:
