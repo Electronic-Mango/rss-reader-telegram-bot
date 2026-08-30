@@ -18,9 +18,9 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 
 from cv2 import CAP_PROP_FRAME_HEIGHT, CAP_PROP_FRAME_WIDTH, VideoCapture
-from httpx import get
 from loguru import logger
 from more_itertools import sliced
+from niquests import aget
 from PIL import Image
 from telegram import Bot, InputMediaPhoto, InputMediaVideo, ReplyParameters
 
@@ -132,7 +132,7 @@ async def _send_media_update(
     reply_params: ReplyParameters | None,
     media_links: list[str],
 ) -> int:
-    media = [data for link in media_links if (data := _get_media_content_and_type(link))]
+    media = [data for link in media_links if (data := await _get_media_content_and_type(link))]
     if not media:
         logger.info(f"[{chat_id}] No media downloaded from [{media_links}]")
         return await _send_text_message(bot, chat_id, message, reply_params)
@@ -149,9 +149,9 @@ async def _send_media_update(
     return message_id
 
 
-def _get_media_content_and_type(link: str) -> tuple[bytes, str] | None:
+async def _get_media_content_and_type(link: str) -> tuple[bytes, str] | None:
     headers = {"user-agent": "rss-reader/1.0", "accept": "*/*"}
-    response = get(link, headers=headers, timeout=600)
+    response = await aget(link, headers=headers, timeout=600)
     if response.status_code != HTTPStatus.OK:
         logger.warning(f"Could download media at [{link}], status code [{response.status_code}]")
         return None
