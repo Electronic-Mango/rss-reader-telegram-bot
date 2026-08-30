@@ -15,7 +15,7 @@ from datetime import datetime
 from random import randrange, shuffle
 from time import struct_time
 
-from feedparser.util import FeedParserDict
+from feedparser import FeedParserDict
 from loguru import logger
 from telegram.ext import ContextTypes
 
@@ -59,7 +59,7 @@ async def _delayed_check_for_all_updates(context: ContextTypes.DEFAULT_TYPE) -> 
 async def _check_for_updates(context: ContextTypes.DEFAULT_TYPE) -> None:
     chat_id, feed_type, feed_name, id, date, latest_message_id = context.job.data
     logger.info(f"[{chat_id}] Checking for updates for [{feed_name}] [{feed_type}]")
-    feed = get_parsed_feed(feed_type, feed_name)
+    feed = await get_parsed_feed(feed_type, feed_name)
     if feed_is_valid(feed):
         await _check_for_new_entries(
             context, chat_id, feed, feed_type, feed_name, id, date, latest_message_id

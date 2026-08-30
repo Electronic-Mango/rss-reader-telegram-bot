@@ -23,7 +23,7 @@ async def send_latest_update(
 
 
 async def _handle_update(bot: Bot, chat_id: int, type: str, name: str) -> None:
-    if not (entries := get_sorted_entries(get_parsed_feed(type, name))):
+    if not (entries := get_sorted_entries(await get_parsed_feed(type, name))):
         logger.warning(f"[{chat_id}] No entries found for [{type}] [{name}]")
         await bot.send_message(chat_id, f"No entries found for <b>{name}</b>!")
         return
