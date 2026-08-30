@@ -11,7 +11,7 @@ This module will recognize and handle situations where:
 Only one media item will have a caption, so it's correctly displayed in chat.
 """
 
-from asyncio import to_thread
+from asyncio import gather, to_thread
 from html import escape
 from http import HTTPStatus
 from io import BytesIO
@@ -26,6 +26,7 @@ from PIL import Image
 from telegram import Bot, InputMediaPhoto, InputMediaVideo, ReplyParameters
 
 from settings import (
+    CONCURRENCY,
     DEFAULT_IMAGE_PATH,
     MAX_MEDIA_ITEMS_PER_MESSAGE,
     MAX_MESSAGE_SIZE,
@@ -132,7 +133,11 @@ async def _send_media_update(
     reply_params: ReplyParameters | None,
     media_links: list[str],
 ) -> int:
-    media = [data for link in media_links if (data := await _get_media_content_and_type(link))]
+    if CONCURRENCY:
+        downloaded = await gather(*(_get_media_content_and_type(link) for link in media_links))
+    else:
+        downloaded = [await _get_media_content_and_type(link) for link in media_links]
+    media = [data for data in downloaded if data]
     if not media:
         logger.info(f"[{chat_id}] No media downloaded from [{media_links}]")
         return await _send_text_message(bot, chat_id, message, reply_params)
