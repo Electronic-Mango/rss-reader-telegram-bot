@@ -27,7 +27,6 @@ from PIL import Image
 from telegram import Bot, InputMediaPhoto, InputMediaVideo, ReplyParameters
 
 from settings import (
-    CONCURRENCY,
     DEFAULT_IMAGE_PATH,
     MAX_MEDIA_ITEMS_PER_MESSAGE,
     MAX_MESSAGE_SIZE,
@@ -142,10 +141,7 @@ async def _send_media_update(
     reply_params: ReplyParameters | None,
     media_links: list[str],
 ) -> int:
-    if CONCURRENCY:
-        downloaded = await gather(*(_get_media_content_and_type(link) for link in media_links))
-    else:
-        downloaded = [await _get_media_content_and_type(link) for link in media_links]
+    downloaded = await gather(*(_get_media_content_and_type(link) for link in media_links))
     media = [data for data in downloaded if data]
     if not media:
         logger.info(f"[{chat_id}] No media downloaded from [{media_links}]")

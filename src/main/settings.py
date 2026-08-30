@@ -38,7 +38,6 @@ def _load_config(*keys: str) -> Any:
 TOKEN = _load_config("telegram", "token")
 ALLOWED_USERNAMES = _load_config("telegram", "allowed_usernames")
 PERSISTENCE_FILE = _load_config("telegram", "persistence_file")
-CONCURRENCY = _load_config("telegram", "concurrency")
 
 # telegram updates
 LOOKUP_INTERVAL = _load_config("telegram", "updates", "lookup_interval")

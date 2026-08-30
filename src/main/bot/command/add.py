@@ -21,7 +21,7 @@ from telegram.ext.filters import COMMAND, TEXT
 from bot.user_filter import USER_FILTER
 from db.wrapper import feed_is_already_stored, store_feed_data
 from feed.reader import feed_is_valid, get_latest_data, get_parsed_feed
-from settings import CONCURRENCY, RSS_FEEDS
+from settings import RSS_FEEDS
 
 ADD_HELP_MESSAGE = "/add - adds subscription for a given feed"
 
@@ -85,11 +85,7 @@ async def _handle_feed_names(update: Update, context: ContextTypes.DEFAULT_TYPE)
     feed_names = update.message.text.splitlines()
     feed_type = context.user_data[_ConversationState.FEED_NAME]
     logger.info(f"{chat_id} User send feed name {feed_names} for [{feed_type}]")
-    if CONCURRENCY:
-        await gather(*(_handle_feed_name(message, chat_id, feed_type, name) for name in feed_names))
-    else:
-        for feed_name in feed_names:
-            await _handle_feed_name(message, chat_id, feed_type, feed_name)
+    await gather(*(_handle_feed_name(message, chat_id, feed_type, name) for name in feed_names))
     return ConversationHandler.END
 
 
