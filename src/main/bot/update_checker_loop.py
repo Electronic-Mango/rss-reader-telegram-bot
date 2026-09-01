@@ -49,6 +49,7 @@ async def check_for_all_updates(context: ContextTypes.DEFAULT_TYPE) -> None:
         await _delayed_check_for_all_updates(context)
     except Exception as e:
         logger.opt(exception=e).error("Error occured during update job: ")
+    logger.info("Finished checking for all updates")
 
 
 async def _delayed_check_for_all_updates(context: ContextTypes.DEFAULT_TYPE) -> None:
