@@ -55,17 +55,32 @@ async def send_update(
     title: str,
     description: str,
     latest_message_id: int | None,
-    media_links: list[str] = None,
+    media_links: list[str] | None = None,
     pin_videos: bool = PIN_VIDEOS,
 ) -> int:
+    logger.info(f"[{chat_id}] Sending update [{feed_name}] [{feed_type}]")
     message = _format_message(chat_id, feed_type, feed_name, link, title, description)
     reply_params = _prepare_reply_params(latest_message_id)
-    if not media_links:
-        logger.info(f"[{chat_id}] Sending text only update [{feed_name}] [{feed_type}]")
+    downloaded = await gather(*(_get_media_content_and_type(link) for link in media_links or []))
+    media = [data for data in downloaded if data]
+    if not media:
+        logger.info(f"[{chat_id}] No media downloaded from [{media_links}]")
         return await _send_text(bot, chat_id, message, reply_params)
-    else:
-        logger.info(f"[{chat_id}] Sending update [{feed_name}] [{feed_type}]")
-        return await _send_media(bot, chat_id, message, reply_params, media_links, pin_videos)
+    media_groups = list(sliced(media, MAX_MEDIA_ITEMS_PER_MESSAGE))
+    last_index = len(media_groups) - 1
+    message_id = None
+    for index, media_group in enumerate(media_groups):
+        sent_id = await _send_media_group(
+            bot,
+            chat_id,
+            media_group,
+            pin_videos,
+            message if index == last_index else None,
+            reply_params if index == 0 else None,
+        )
+        # Only the first message's ID is relevant, subsequent ones are follow-ups.
+        message_id = message_id if message_id is not None else sent_id
+    return message_id
 
 
 def _format_message(
@@ -118,7 +133,7 @@ async def _send_text(
     image_bytes = BytesIO()
     await to_thread(default_image.save, image_bytes, format=default_image.format or "PNG")
     media_group = [(image_bytes.getvalue(), default_image.format or "PNG")]
-    return await _handle_media_group(bot, chat_id, media_group, False, message, reply_params)
+    return await _send_media_group(bot, chat_id, media_group, False, message, reply_params)
 
 
 @lru_cache(maxsize=1)
@@ -133,32 +148,6 @@ def _load_image(image_path: str | None) -> Image.Image | None:
     except OSError as e:
         logger.opt(exception=e).warning(f"Failed to load image at [{image_path}]: ")
         return None
-
-
-async def _send_media(
-    bot: Bot,
-    chat_id: int,
-    message: str,
-    reply_params: ReplyParameters | None,
-    media_links: list[str],
-    pin_videos: bool,
-) -> int:
-    downloaded = await gather(*(_get_media_content_and_type(link) for link in media_links))
-    media = [data for data in downloaded if data]
-    if not media:
-        logger.info(f"[{chat_id}] No media downloaded from [{media_links}]")
-        return await _send_text(bot, chat_id, message, reply_params)
-    if len(media) <= MAX_MEDIA_ITEMS_PER_MESSAGE:
-        return await _handle_media_group(bot, chat_id, media, pin_videos, message, reply_params)
-    media_groups = list(sliced(media, MAX_MEDIA_ITEMS_PER_MESSAGE))
-    # Only the last group should have a message, but ID should be from the first group
-    message_id = await _handle_media_group(
-        bot, chat_id, media_groups[0], pin_videos, reply_params=reply_params
-    )
-    for media_group in media_groups[1:-1]:
-        await _handle_media_group(bot, chat_id, media_group, pin_videos)
-    await _handle_media_group(bot, chat_id, media_groups[-1], pin_videos, message)
-    return message_id
 
 
 async def _get_media_content_and_type(link: str) -> tuple[bytes, str] | None:
@@ -198,13 +187,13 @@ async def _download_up_to(link: str, response: AsyncResponse, max_size: int) -> 
     return bytes(content)
 
 
-async def _handle_media_group(
+async def _send_media_group(
     bot: Bot,
     chat_id: int,
     media_group: list[tuple[bytes, str]],
     pin_videos: bool,
-    message: str | None = None,
-    reply_params: ReplyParameters | None = None,
+    message: str | None,
+    reply_params: ReplyParameters | None,
 ) -> int:
     # Technically single media elements don't have to be handled as media group,
     # but they can, so the same implementation can be used for both.
