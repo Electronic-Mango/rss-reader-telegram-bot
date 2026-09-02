@@ -161,9 +161,8 @@ You can configure additional delay when checking for updates on two levels - mai
 
 Parameters related to updates, delays and randomness are in `telegram` - `updates` section of configuration YAML.
 
-Delay in the main loop checking for all updates can be added via `lookup_interval_randomness` parameter.
-Main job still triggers every `lookup_interval`, however it will only trigger a new delayed job which will check for all updates.
-This job is scheduled after `0` to `lookup_interval_randomness` seconds.
+Delay at the start of the main loop checking for all updates can be added via `lookup_interval_randomness` parameter.
+Main job is scheduled every `lookup_interval`, but it will wait between `0` and `lookup_interval_randomness` seconds before checking feeds.
 
 Additional random delay when checking for individual feeds can be configured via `lookup_feed_delay_randomness` parameter.
 It is an additional delay to `lookup_feed_delay` between `0` and configured value.
@@ -236,34 +235,31 @@ It's not a perfect solution, but it works for my use case.
 
 ### Checking for updates
 
-Bot check for updates for all subscriptions in a regular intervals, configured by the configuration YAML parameter `telegram` - `updates` - `lookup_interval`.
+Bot checks for updates for all subscriptions in regular intervals, configured by the configuration YAML parameter `telegram` - `updates` - `lookup_interval`.
 
 By default, it will check for updates every hour.
 
 A different parameter `lookup_feed_delay` configures the delay between checking each feed.
-This should prevent the bot from stopping responding to commands when it's checking for updates, since it might take a while.
+Feeds are checked one by one, and the bot waits for this delay after each stored feed is checked.
 
-You should check how long checking for each update takes in your case and modify the `lookup_feed_delay` accordingly, so the bot has the time to respond to commands in the meantime.
-At the same time it shouldn't be so big, that last checks are done when next iteration of checking for updates starts.
+The update job is configured to run only once at a time, so a new update loop won't start while the previous one is still running.
+You should check how long checking for each update takes in your case and modify the `lookup_feed_delay` accordingly, so the bot has the time to respond to commands in the meantime and can finish checking all feeds before the next regular interval.
 
 
 ### Randomness in delays and checking for updates
 
 Randomness can be added to checking for updates on two levels:
-1. Main job triggering check for each feed via `lookup_interval_randomness`
+1. Before each update loop starts via `lookup_interval_randomness`
 2. Between individual feeds via `lookup_feed_delay_randomness`
 
-Main job still triggers every exactly `lookup_interval` seconds.
-However, only responsibility of this job is triggering delayed checks.
-These delayed checks will happen after between `0` and `lookup_interval_randomness` seconds.
+Main update job is scheduled every `lookup_interval` seconds.
+After it starts, it waits between `0` and `lookup_interval_randomness` seconds before checking quiet hours and stored feeds.
 
 Delay between checking each feed is `lookup_feed_delay` plus a random value between `0` and `lookup_feed_delay_randomness`.
 So minimum amount of seconds between checking for each feed is `lookup_feed_delay` and maximum is `lookup_feed_delay + lookup_feed_delay_randomness`.
 
-However, the main job isn't taking into account any of the additional delays and randomness, it still triggers every `lookup_interval`, triggering delayed job every `0` to `lookup_interval_randomness` seconds, etc.
-
-So minimum amount of seconds between triggering checking for updates is `lookup_interval - lookup_interval_randomness` and maximum is `lookup_interval + lookup_interval_randomness`.
-This, however, doesn't take into account neither `lookup_feed_delay` nor `lookup_feed_delay_randomness`.
+All these delays are part of the same update job.
+If checking all feeds takes longer than `lookup_interval`, the next update job won't run in parallel with the still running one.
 
 
 ### Sending updates and message formatting
