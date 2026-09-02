@@ -210,7 +210,7 @@ async def _handle_media_group(
     # but they can, so the same implementation can be used for both.
     input_media_list = [await _media_object(media, media_type) for media, media_type in media_group]
     logger.info(f"{chat_id} Sending media group")
-    sent_message = await bot.send_media_group(
+    sent_messages = await bot.send_media_group(
         chat_id,
         input_media_list,
         caption=message,
@@ -218,9 +218,11 @@ async def _handle_media_group(
         read_timeout=SEND_MEDIA_TIMEOUT,
         write_timeout=SEND_MEDIA_TIMEOUT,
     )
-    if pin_videos and any(isinstance(m, InputMediaVideo) for m in input_media_list):
-        await sent_message[0].pin()
-    return sent_message[0].message_id
+    if pin_videos:
+        for sent_message in sent_messages:
+            if sent_message.video is not None:
+                await sent_message.pin()
+    return sent_messages[0].message_id
 
 
 async def _media_object(media: bytes, media_type: str) -> InputMediaPhoto | InputMediaVideo:
