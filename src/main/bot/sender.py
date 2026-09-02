@@ -206,32 +206,41 @@ async def _handle_attachment_group(
     # Technically single media elements don't have to be handled as media group,
     # but they can, so the same implementation can be used for both.
     input_media_list = [await _media_object(media, media_type) for media, media_type in media_group]
-    is_video_list = [isinstance(m, InputMediaVideo) for m in input_media_list]
-    logger.info(f"{chat_id} Sending media group is_video={is_video_list}")
-    if len(input_media_list) == 1 and isinstance(video := input_media_list[0], InputMediaVideo):
-        # Workaround for videos with skewed aspect ratio.
-        return await _handle_single_video(bot, chat_id, video, message, reply_params)
-    else:
-        sent_message = await bot.send_media_group(
-            chat_id,
-            input_media_list,
-            caption=message,
-            reply_parameters=reply_params,
-            read_timeout=SEND_MEDIA_TIMEOUT,
-            write_timeout=SEND_MEDIA_TIMEOUT,
-        )
-        return sent_message[0].message_id
+    logger.info(f"{chat_id} Sending media group")
+    sent_message = await bot.send_media_group(
+        chat_id,
+        input_media_list,
+        caption=message,
+        reply_parameters=reply_params,
+        read_timeout=SEND_MEDIA_TIMEOUT,
+        write_timeout=SEND_MEDIA_TIMEOUT,
+    )
+    if PIN_VIDEOS and any(isinstance(m, InputMediaVideo) for m in input_media_list):
+        await sent_message[0].pin()
+    return sent_message[0].message_id
 
 
 async def _media_object(media: bytes, media_type: str) -> InputMediaPhoto | InputMediaVideo:
     if _is_video(media_type):
-        return InputMediaVideo(media, supports_streaming=True)
+        width, height = await to_thread(_probe_video_size, media)
+        return InputMediaVideo(media, supports_streaming=True, width=width, height=height)
     else:
         return InputMediaPhoto(await to_thread(_trim_image, media))
 
 
 def _is_video(media_type: str) -> bool:
     return "video" in media_type.lower()
+
+
+def _probe_video_size(video_bytes: bytes) -> tuple[int | None, int | None]:
+    with NamedTemporaryFile() as tmp_file:
+        tmp_file.write(video_bytes)
+        tmp_file.flush()
+        video_capture = VideoCapture(tmp_file.name)
+        width = int(video_capture.get(CAP_PROP_FRAME_WIDTH))
+        height = int(video_capture.get(CAP_PROP_FRAME_HEIGHT))
+        video_capture.release()
+    return (width, height) if width > 0 and height > 0 else (None, None)
 
 
 def _trim_image(media: bytes) -> bytes:
@@ -258,38 +267,3 @@ def _trim_image(media: bytes) -> bytes:
         image.save(image_bytes, format=image.format)
         image_raw = image_bytes.getvalue()
     return image_raw
-
-
-async def _handle_single_video(
-    bot: Bot,
-    chat_id: int,
-    video: InputMediaVideo,
-    message: str = None,
-    reply_params: ReplyParameters | None = None,
-) -> int:
-    width, height = await to_thread(_probe_video_size, video.media.input_file_content)
-    sent_message = await bot.send_video(
-        chat_id,
-        video.media,
-        width=width,
-        height=height,
-        caption=message,
-        supports_streaming=True,
-        reply_parameters=reply_params,
-        read_timeout=SEND_MEDIA_TIMEOUT,
-        write_timeout=SEND_MEDIA_TIMEOUT,
-    )
-    if PIN_VIDEOS:
-        await sent_message.pin()
-    return sent_message.id
-
-
-def _probe_video_size(video_bytes: bytes) -> tuple[int | None, int | None]:
-    with NamedTemporaryFile() as tmp_file:
-        tmp_file.write(video_bytes)
-        tmp_file.flush()
-        video_capture = VideoCapture(tmp_file.name)
-        width = int(video_capture.get(CAP_PROP_FRAME_WIDTH))
-        height = int(video_capture.get(CAP_PROP_FRAME_HEIGHT))
-        video_capture.release()
-    return (width, height) if width > 0 and height > 0 else (None, None)
