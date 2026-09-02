@@ -56,15 +56,16 @@ async def send_update(
     description: str,
     latest_message_id: int | None,
     media_links: list[str] = None,
+    pin_videos: bool = PIN_VIDEOS,
 ) -> int:
     message = _format_message(chat_id, feed_type, feed_name, link, title, description)
     reply_params = _prepare_reply_params(latest_message_id)
     if not media_links:
         logger.info(f"[{chat_id}] Sending text only update [{feed_name}] [{feed_type}]")
-        return await _send_text_message(bot, chat_id, message, reply_params)
+        return await _send_text(bot, chat_id, message, reply_params)
     else:
         logger.info(f"[{chat_id}] Sending update [{feed_name}] [{feed_type}]")
-        return await _send_media_update(bot, chat_id, message, reply_params, media_links)
+        return await _send_media(bot, chat_id, message, reply_params, media_links, pin_videos)
 
 
 def _format_message(
@@ -106,7 +107,7 @@ def _prepare_reply_params(latest_message_id: int | None) -> ReplyParameters | No
     return ReplyParameters(latest_message_id, allow_sending_without_reply=True)
 
 
-async def _send_text_message(
+async def _send_text(
     bot: Bot, chat_id: int, message: str, reply_params: ReplyParameters | None
 ) -> int:
     if (default_image := _load_image(DEFAULT_IMAGE_PATH)) is None:
@@ -117,7 +118,7 @@ async def _send_text_message(
     image_bytes = BytesIO()
     await to_thread(default_image.save, image_bytes, format=default_image.format or "PNG")
     media_group = [(image_bytes.getvalue(), default_image.format or "PNG")]
-    return await _handle_attachment_group(bot, chat_id, media_group, message, reply_params)
+    return await _handle_media_group(bot, chat_id, media_group, False, message, reply_params)
 
 
 @lru_cache(maxsize=1)
@@ -134,28 +135,29 @@ def _load_image(image_path: str | None) -> Image.Image | None:
         return None
 
 
-async def _send_media_update(
+async def _send_media(
     bot: Bot,
     chat_id: int,
     message: str,
     reply_params: ReplyParameters | None,
     media_links: list[str],
+    pin_videos: bool,
 ) -> int:
     downloaded = await gather(*(_get_media_content_and_type(link) for link in media_links))
     media = [data for data in downloaded if data]
     if not media:
         logger.info(f"[{chat_id}] No media downloaded from [{media_links}]")
-        return await _send_text_message(bot, chat_id, message, reply_params)
+        return await _send_text(bot, chat_id, message, reply_params)
     if len(media) <= MAX_MEDIA_ITEMS_PER_MESSAGE:
-        return await _handle_attachment_group(bot, chat_id, media, message, reply_params)
+        return await _handle_media_group(bot, chat_id, media, pin_videos, message, reply_params)
     media_groups = list(sliced(media, MAX_MEDIA_ITEMS_PER_MESSAGE))
     # Only the last group should have a message, but ID should be from the first group
-    message_id = await _handle_attachment_group(
-        bot, chat_id, media_groups[0], reply_params=reply_params
+    message_id = await _handle_media_group(
+        bot, chat_id, media_groups[0], pin_videos, reply_params=reply_params
     )
     for media_group in media_groups[1:-1]:
-        await _handle_attachment_group(bot, chat_id, media_group)
-    await _handle_attachment_group(bot, chat_id, media_groups[-1], message)
+        await _handle_media_group(bot, chat_id, media_group, pin_videos)
+    await _handle_media_group(bot, chat_id, media_groups[-1], pin_videos, message)
     return message_id
 
 
@@ -196,11 +198,12 @@ async def _download_up_to(link: str, response: AsyncResponse, max_size: int) -> 
     return bytes(content)
 
 
-async def _handle_attachment_group(
+async def _handle_media_group(
     bot: Bot,
     chat_id: int,
     media_group: list[tuple[bytes, str]],
-    message: str = None,
+    pin_videos: bool,
+    message: str | None = None,
     reply_params: ReplyParameters | None = None,
 ) -> int:
     # Technically single media elements don't have to be handled as media group,
@@ -215,7 +218,7 @@ async def _handle_attachment_group(
         read_timeout=SEND_MEDIA_TIMEOUT,
         write_timeout=SEND_MEDIA_TIMEOUT,
     )
-    if PIN_VIDEOS and any(isinstance(m, InputMediaVideo) for m in input_media_list):
+    if pin_videos and any(isinstance(m, InputMediaVideo) for m in input_media_list):
         await sent_message[0].pin()
     return sent_message[0].message_id
 
