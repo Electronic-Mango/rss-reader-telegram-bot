@@ -11,7 +11,7 @@ This module will recognize and handle situations where:
 Only one media item will have a caption, so it's correctly displayed in chat.
 """
 
-from asyncio import gather, to_thread
+from asyncio import gather, sleep, to_thread
 from functools import lru_cache
 from html import escape
 from http import HTTPStatus
@@ -80,6 +80,7 @@ async def send_update(
         )
         # Only the first message's ID is relevant, subsequent ones are follow-ups.
         message_id = message_id if message_id is not None else sent_id
+        await sleep(1 if index != last_index else 0)  # Avoid hitting the bot too hard
     return message_id
 
 
