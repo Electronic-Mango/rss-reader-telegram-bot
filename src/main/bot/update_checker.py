@@ -11,7 +11,7 @@ Accessing DB, reading and parsing the RSS feed and sending updates to chats
 is handled in separate modules.
 """
 
-from asyncio import sleep
+from asyncio import Task, current_task, sleep
 from datetime import datetime
 from random import randrange, shuffle
 from time import struct_time
@@ -39,17 +39,28 @@ from settings import (
     SHUFFLE_UPDATES,
 )
 
+_active_update_check: Task[None] | None = None
+
+
+def cancel_active_update_check() -> None:
+    if _active_update_check is not None and not _active_update_check.done():
+        logger.info("Cancelling active update check")
+        _active_update_check.cancel()
+
 
 async def check_for_all_updates(context: ContextTypes.DEFAULT_TYPE) -> None:
-    lookup_interval = randrange(max(LOOKUP_INTERVAL_RANDOMNESS, 1))  # randrange(1) always returns 0
-    if lookup_interval:
-        logger.info(f"Delaying checking for updates for [{lookup_interval}] seconds")
-        await sleep(lookup_interval)
+    global _active_update_check
+    _active_update_check = current_task()
     try:
+        if initial_delay := randrange(max(LOOKUP_INTERVAL_RANDOMNESS, 1)):
+            logger.info(f"Delaying checking for updates for [{initial_delay}] seconds")
+            await sleep(initial_delay)
         await _delayed_check_for_all_updates(context)
+        logger.info("Finished checking for all updates")
     except Exception as e:
         logger.opt(exception=e).error("Error occured during update job: ")
-    logger.info("Finished checking for all updates")
+    finally:
+        _active_update_check = None
 
 
 async def _delayed_check_for_all_updates(context: ContextTypes.DEFAULT_TYPE) -> None:
