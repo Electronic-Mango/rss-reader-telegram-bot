@@ -2,7 +2,7 @@
 
 [![CodeQL](https://github.com/Electronic-Mango/rss-reader-telegram-bot/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/Electronic-Mango/rss-reader-telegram-bot/actions/workflows/codeql-analysis.yml)
 [![Pytest](https://github.com/Electronic-Mango/rss-reader-telegram-bot/actions/workflows/pytest.yml/badge.svg)](https://github.com/Electronic-Mango/rss-reader-telegram-bot/actions/workflows/pytest.yml)
-[![Black, isort, Flake8](https://github.com/Electronic-Mango/rss-reader-telegram-bot/actions/workflows/code-quality.yml/badge.svg)](https://github.com/Electronic-Mango/rss-reader-telegram-bot/actions/workflows/code-quality.yml)
+[![Ruff](https://github.com/Electronic-Mango/rss-reader-telegram-bot/actions/workflows/code-quality.yml/badge.svg)](https://github.com/Electronic-Mango/rss-reader-telegram-bot/actions/workflows/code-quality.yml)
 
 A simple Telegram bot sending updates for RSS feeds, build with [`python-telegram-bot`](https://github.com/python-telegram-bot/python-telegram-bot)!
 
