@@ -1,0 +1,138 @@
+"""
+Module holding all configuration parameters for the project based on "settings.yml" file.
+Additional parameters, overwriting the default ones can be loaded from a file defined in
+"CUSTOM_SETTINGS_PATH" environment variable.
+This overwriting file doesn't have to contain everything, only values to overwrite.
+"""
+
+from functools import reduce
+from os import getenv
+from pathlib import Path
+from typing import Any
+
+from dotenv import load_dotenv
+from mergedeep import merge
+from yaml import safe_load
+
+
+class Settings:
+    _DEFAULT_SETTINGS_PATH_VARIABLE_NAME = "DEFAULT_SETTINGS_PATH"
+    _CUSTOM_SETTINGS_PATH_VARIABLE_NAME = "CUSTOM_SETTINGS_PATH"
+
+    _SETTINGS = None
+
+    # Telegram
+    TOKEN: str = None
+    ALLOWED_USERNAMES: list[str] = None
+    PERSISTENCE_FILE: str = None
+
+    # Telegram updates
+    LOOKUP_INTERVAL: int = None
+    LOOKUP_INTERVAL_RANDOMNESS: int = None
+    LOOKUP_INITIAL_DELAY: int = None
+    LOOKUP_FEED_DELAY: int = None
+    LOOKUP_FEED_DELAY_RANDOMNESS: int = None
+    QUIET_HOURS: list[int] = None
+    SHUFFLE_UPDATES: bool = None
+
+    # Telegram messages
+    MAX_MESSAGE_SIZE: int = None
+    MAX_MEDIA_ITEMS_PER_MESSAGE: int = None
+    PIN_VIDEOS: bool = None
+    DEFAULT_IMAGE_PATH: str = None
+    SEND_MEDIA_TIMEOUT: int = None
+    UPDATES_AS_REPLIES: bool = None
+
+    # Logging
+    LOG_PATH: str = None
+    MAX_BYTES: int = None
+    BACKUP_COUNT: int = None
+
+    # Database
+    DB_HOST: str = None
+    DB_PORT: int = None
+    DB_NAME: str = None
+    DB_FEEDS_NAME: str = None
+
+    # RSS
+    RSS_FEEDS: dict[str, dict[str, Any]] = None
+
+    @classmethod
+    def init(cls, default_settings: Path | None = None, custom_settings: list[Path] | None = None):
+        cls._prepare_settings(default_settings, custom_settings)
+
+        cls.TOKEN = cls._load_config("telegram", "token")
+        cls.ALLOWED_USERNAMES = cls._load_config("telegram", "allowed_usernames")
+        cls.PERSISTENCE_FILE = cls._load_config("telegram", "persistence_file")
+
+        # telegram updates
+        cls.LOOKUP_INTERVAL = cls._load_config("telegram", "updates", "lookup_interval")
+        cls.LOOKUP_INTERVAL_RANDOMNESS = cls._load_config(
+            "telegram", "updates", "lookup_interval_randomness"
+        )
+        cls.LOOKUP_INITIAL_DELAY = cls._load_config("telegram", "updates", "lookup_initial_delay")
+        cls.LOOKUP_FEED_DELAY = cls._load_config("telegram", "updates", "lookup_feed_delay")
+        cls.LOOKUP_FEED_DELAY_RANDOMNESS = cls._load_config(
+            "telegram", "updates", "lookup_feed_delay_randomness"
+        )
+        cls.QUIET_HOURS = cls._load_config("telegram", "updates", "quiet_hours")
+        cls.SHUFFLE_UPDATES = cls._load_config("telegram", "updates", "shuffle_updates")
+
+        # telegram messages
+        cls.MAX_MESSAGE_SIZE = cls._load_config("telegram", "messages", "max_message_size")
+        cls.MAX_MEDIA_ITEMS_PER_MESSAGE = cls._load_config(
+            "telegram", "messages", "max_media_items_per_message"
+        )
+        cls.PIN_VIDEOS = cls._load_config("telegram", "messages", "pin_videos")
+        cls.DEFAULT_IMAGE_PATH = cls._load_config("telegram", "messages", "default_image_path")
+        cls.SEND_MEDIA_TIMEOUT = cls._load_config("telegram", "messages", "send_media_timeout")
+        cls.UPDATES_AS_REPLIES = cls._load_config("telegram", "messages", "updates_as_replies")
+
+        # logging
+        cls.LOG_PATH = cls._load_config("logging", "log_path")
+        cls.MAX_BYTES = cls._load_config("logging", "max_bytes")
+        cls.BACKUP_COUNT = cls._load_config("logging", "backup_count")
+
+        # database
+        cls.DB_HOST = cls._load_config("database", "host")
+        cls.DB_PORT = cls._load_config("database", "port")
+        cls.DB_NAME = cls._load_config("database", "name")
+        cls.DB_FEEDS_NAME = cls._load_config("database", "feeds_name")
+
+        # rss
+        with open(cls._load_config("rss", "feeds_yaml_filename"), "r") as feeds_path:
+            feeds = safe_load(feeds_path) or {}
+            cls.RSS_FEEDS = {name: data for name, data in feeds.items() if "url" in data}
+
+    @classmethod
+    def _prepare_settings(cls, default_settings: Path | None, custom_settings: list[Path] | None):
+        load_dotenv()
+        default_settings = default_settings or (
+            Path(default_settings_env)
+            if (default_settings_env := getenv(cls._DEFAULT_SETTINGS_PATH_VARIABLE_NAME))
+            else Path("settings.yml")
+        )
+        custom_settings = custom_settings or (
+            [Path(p) for p in custom_settings_env.split(",")]
+            if (custom_settings_env := getenv(cls._CUSTOM_SETTINGS_PATH_VARIABLE_NAME))
+            else []
+        )
+        cls._SETTINGS = merge(
+            cls._load_settings(default_settings),
+            *[cls._load_settings(custom) for custom in custom_settings],
+        )
+
+    @classmethod
+    def _load_settings(cls, settings_path: Path) -> dict[str, Any]:
+        if not settings_path.exists():
+            return {}
+        with open(settings_path) as settings_yaml:
+            return safe_load(settings_yaml) or {}
+
+    @classmethod
+    def _load_config(cls, *keys: str) -> Any:
+        return reduce(
+            lambda table, key: table.get(key) if table is not None else None,
+            keys,
+            cls._SETTINGS,
+        )
