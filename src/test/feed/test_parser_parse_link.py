@@ -7,4 +7,4 @@ ENTRY = FeedParserDict({"link": EXPECTED_ENTRY_LINK})
 
 
 def test_parse_link() -> None:
-    assert EXPECTED_ENTRY_LINK == parse_link(ENTRY)
+    assert parse_link(ENTRY) == EXPECTED_ENTRY_LINK

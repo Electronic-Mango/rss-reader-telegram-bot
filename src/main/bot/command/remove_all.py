@@ -1,6 +1,4 @@
-"""
-Module handling the "removeall" command, allowing users delete all subscriptions.
-"""
+"""Module handling the "removeall" command, allowing users delete all subscriptions."""
 
 from enum import Enum, auto
 from typing import Any, NamedTuple

@@ -22,8 +22,8 @@ db_filter = MagicMock()
 
 
 def mocked_mongo_client(host: str, port: str):
-    assert DB_HOST == host
-    assert DB_PORT == port
+    assert host == DB_HOST
+    assert port == DB_PORT
     return {DB_NAME: {DB_FEEDS_NAME: feeds_collection_mock}}
 
 
@@ -32,13 +32,11 @@ def clear_initialized_collection():
     import db.client as dbc
 
     dbc._feeds_collection = None
-    yield
 
 
 @fixture(autouse=True)
 def clear_mocks():
     feeds_collection_mock.reset_mock()
-    yield
 
 
 @patch("db.client.AsyncMongoClient", side_effect=mocked_mongo_client)
@@ -72,7 +70,7 @@ async def test_db_is_not_initialized_again(mongo_client_mock: MagicMock):
 
 @patch("db.client.AsyncMongoClient", side_effect=mocked_mongo_client)
 @mark.parametrize(
-    argnames=["client_function", "db_function", "args"],
+    argnames=("client_function", "db_function", "args"),
     argvalues=[
         (insert_one, "insert_one", (document,)),
         (delete_many, "delete_many", (db_filter,)),
@@ -104,7 +102,7 @@ async def test_element_exists(_, document_count: int):
 
 @patch("db.client.AsyncMongoClient", side_effect=mocked_mongo_client)
 @mark.parametrize(
-    argnames=["client_function", "db_function", "args"],
+    argnames=("client_function", "db_function", "args"),
     argvalues=[
         (insert_one, "insert_one", (document,)),
         (delete_many, "delete_many", (db_filter,)),
@@ -122,7 +120,7 @@ async def test_correct_collection_is_selected(_, client_function, db_function, a
 
 @patch("db.client.AsyncMongoClient", side_effect=mocked_mongo_client)
 @mark.parametrize(
-    argnames=["client_function", "args"],
+    argnames=("client_function", "args"),
     argvalues=[
         (insert_one, (document,)),
         (delete_many, (db_filter,)),
@@ -140,7 +138,7 @@ async def test_db_operations_fail_on_uninitialized_db(_, client_function, args):
 
 @patch("db.client.AsyncMongoClient", side_effect=mocked_mongo_client)
 @mark.parametrize(
-    argnames=["client_function", "args"],
+    argnames=("client_function", "args"),
     argvalues=[
         (insert_one, (document,)),
         (delete_many, (db_filter,)),

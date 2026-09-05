@@ -1,6 +1,4 @@
-"""
-Module handling subscription removal from the details view.
-"""
+"""Module handling subscription removal from the details view."""
 
 from loguru import logger
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
@@ -12,7 +10,7 @@ from db.wrapper import remove_stored_feed
 
 
 async def request_confirmation(update: Update, _: ContextTypes.DEFAULT_TYPE) -> ConversationState:
-    """Request confirmation for removal of selected subscription"""
+    """Request confirmation for removal of selected subscription."""
     query = update.callback_query
     await query.answer()
     type, name, chat_data = query.data
@@ -33,7 +31,7 @@ async def request_confirmation(update: Update, _: ContextTypes.DEFAULT_TYPE) -> 
 
 
 async def remove_subscription(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
-    """Remove selected subscription"""
+    """Remove selected subscription."""
     query = update.callback_query
     await query.answer()
     chat_id = update.effective_chat.id

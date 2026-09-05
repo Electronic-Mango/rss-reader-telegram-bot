@@ -25,12 +25,12 @@ from bot.user_filter import USER_FILTER
 
 
 def subscriptions_initial_handler() -> CommandHandler:
-    """Initial handler responding to "subscriptions" command itself, creates initial query"""
+    """Initial handler responding to "subscriptions" command itself, creates initial query."""
     return CommandHandler("subscriptions", initial_list_feed_types, USER_FILTER)
 
 
 def subscriptions_followup_handler() -> ConversationHandler:
-    """Followup conversation handler for inline keyboard queries"""
+    """Followup conversation handler for inline keyboard queries."""
     return ConversationHandler(
         entry_points=[CallbackQueryHandler(list_names, NamesData)],
         states={

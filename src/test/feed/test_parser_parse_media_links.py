@@ -16,7 +16,7 @@ EXPECTED_LINKS_FROM_SUMMARY = ["expected-img-link", "expected-source-link"]
 
 
 @mark.parametrize(
-    argnames=["entry", "expected_links"],
+    argnames=("entry", "expected_links"),
     argvalues=[
         (ENTRY_WITH_MEDIA_CONTENT, EXPECTED_LINKS_FROM_MEDIA_CONTENT),
         (ENTRY_WITHOUT_MEDIA_CONTENT, EXPECTED_LINKS_FROM_SUMMARY),

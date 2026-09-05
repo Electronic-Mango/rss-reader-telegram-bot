@@ -12,7 +12,7 @@ FEED_LINK = "FEED_LINK"
 
 @patch("feed.reader.RSS_FEEDS", {FEED_TYPE: {"url": FEED_LINK}})
 @mark.parametrize(
-    argnames=["parsed_rss", "expected_validity"],
+    argnames=("parsed_rss", "expected_validity"),
     argvalues=[
         (FeedParserDict({"href": FEED_LINK, "status": 200, "entries": [None]}), True),
         (FeedParserDict({"href": FEED_LINK, "status": 301, "entries": [None]}), True),

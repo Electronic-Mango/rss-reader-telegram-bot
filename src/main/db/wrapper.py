@@ -45,7 +45,7 @@ async def get_stored_feed_type_to_names(chat_id: int) -> dict[str, list[str]]:
 async def get_latest_entry_data(
     chat_id: int, feed_type: str, feed_name: str
 ) -> tuple[str | None, struct_time | None]:
-    """Return latest stored entry ID for given feed"""
+    """Return latest stored entry ID for given feed."""
     logger.info(f"[{chat_id}] Getting latest entry ID for [{feed_type}] [{feed_name}]")
     document = await find_one({"chat_id": chat_id, "feed_type": feed_type, "feed_name": feed_name})
     return (

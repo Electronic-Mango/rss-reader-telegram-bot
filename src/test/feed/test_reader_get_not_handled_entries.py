@@ -20,7 +20,7 @@ ENTRIES = [
 
 @patch("feed.reader.RSS_FEEDS", {FEED_TYPE: FEED_LINK})
 @mark.parametrize(
-    argnames=["latest_id", "latest_date", "expected_entries"],
+    argnames=("latest_id", "latest_date", "expected_entries"),
     argvalues=[
         ("ID-5", strptime("05.05.2005", "%d.%m.%Y"), []),
         ("ID-0", strptime("01.01.2000", "%d.%m.%Y"), ENTRIES),

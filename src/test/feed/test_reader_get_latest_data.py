@@ -33,11 +33,11 @@ LATEST_ENTRY = FeedParserDict(
 @mark.parametrize(
     argnames="entries",
     argvalues=[
-        ENTRIES + [LATEST_ENTRY],
-        [LATEST_ENTRY] + ENTRIES,
-        ENTRIES[:2] + [LATEST_ENTRY] + ENTRIES[2:],
+        [*ENTRIES, LATEST_ENTRY],
+        [LATEST_ENTRY, *ENTRIES],
+        [*ENTRIES[:2], LATEST_ENTRY, *ENTRIES[2:]],
     ],
 )
 def test_get_latest_data(entries: list[FeedParserDict]) -> None:
     feed = FeedParserDict({"href": FEED_LINK, "entries": entries})
-    assert EXPECTED_LATEST_ENTRY_DATA == get_latest_data(feed)
+    assert get_latest_data(feed) == EXPECTED_LATEST_ENTRY_DATA

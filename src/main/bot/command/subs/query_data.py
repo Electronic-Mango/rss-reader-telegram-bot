@@ -1,6 +1,4 @@
-"""
-NamedTuples storing data passed via inline keyboard buttons in the "subscriptions" command.
-"""
+"""NamedTuples storing data passed via inline keyboard buttons in the "subscriptions" command."""
 
 from typing import NamedTuple
 

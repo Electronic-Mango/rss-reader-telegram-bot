@@ -13,12 +13,12 @@ EXPECTED_FILTERED_TITLE = "<b>te\nte</b>"
 
 @patch("feed.parser.RSS_FEEDS", {FEED_TYPE: {"show_title": True}})
 def test_parse_title_enabled() -> None:
-    assert EXPECTED_TITLE == parse_title(ENTRY, FEED_TYPE)
+    assert parse_title(ENTRY, FEED_TYPE) == EXPECTED_TITLE
 
 
 @patch("feed.parser.RSS_FEEDS", {FEED_TYPE: {"show_title": True, "filters": FILTERS}})
 def test_parse_title_filtered() -> None:
-    assert EXPECTED_FILTERED_TITLE == parse_title(ENTRY, FEED_TYPE)
+    assert parse_title(ENTRY, FEED_TYPE) == EXPECTED_FILTERED_TITLE
 
 
 @patch("feed.parser.RSS_FEEDS", {FEED_TYPE: {}})

@@ -10,7 +10,8 @@ only this module needs to be modified.
 Additionally, this module is also creating needed database, collection and index in the database.
 """
 
-from typing import Any, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 from loguru import logger
 from pymongo import ASCENDING, AsyncMongoClient
@@ -73,7 +74,7 @@ async def update_one(
 
 
 async def find_many(
-    db_filter: Mapping[str, Any] = None, collection_name: str = DB_FEEDS_NAME
+    db_filter: Mapping[str, Any] | None = None, collection_name: str = DB_FEEDS_NAME
 ) -> AsyncCursor:
     """Wrapper for "find" DB function."""
     collection = _get_collection(collection_name)
@@ -81,7 +82,7 @@ async def find_many(
 
 
 async def find_one(
-    db_filter: Mapping[str, Any] = None, collection_name: str = DB_FEEDS_NAME
+    db_filter: Mapping[str, Any] | None = None, collection_name: str = DB_FEEDS_NAME
 ) -> Mapping[str, Any] | None:
     """Wrapper for "find_one" DB function."""
     collection = _get_collection(collection_name)
