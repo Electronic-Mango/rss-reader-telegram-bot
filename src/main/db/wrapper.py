@@ -17,10 +17,6 @@ from pymongo.results import DeleteResult
 from db.client import delete_many, exists, find_many, find_one, insert_one, update_one
 
 
-def _feed_filter(chat_id: int, feed_type: str, feed_name: str) -> dict[str, object]:
-    return {"chat_id": chat_id, "feed_type": feed_type, "feed_name": feed_name}
-
-
 async def get_all_stored_data() -> list[
     tuple[int, str, str, str, struct_time | None, int | None]
 ]:
@@ -173,3 +169,7 @@ def _log_delete_result(chat_id: int, delete_result: DeleteResult) -> None:
         f"acknowledged=[{delete_result.acknowledged}] "
         f"count=[{delete_result.deleted_count}]"
     )
+
+
+def _feed_filter(chat_id: int, feed_type: str, feed_name: str) -> dict[str, object]:
+    return {"chat_id": chat_id, "feed_type": feed_type, "feed_name": feed_name}
