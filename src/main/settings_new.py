@@ -74,10 +74,10 @@ class Settings:
             "telegram", "updates", "lookup_interval_randomness", default=0
         )
         cls.LOOKUP_INITIAL_DELAY = cls._load_int(
-            "telegram", "updates", "lookup_initial_delay", default=30
+            "telegram", "updates", "lookup_initial_delay", default=0
         )
         cls.LOOKUP_FEED_DELAY = cls._load_int(
-            "telegram", "updates", "lookup_feed_delay", default=10
+            "telegram", "updates", "lookup_feed_delay", default=0
         )
         cls.LOOKUP_FEED_DELAY_RANDOMNESS = cls._load_int(
             "telegram", "updates", "lookup_feed_delay_randomness", default=0
