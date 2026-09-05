@@ -5,7 +5,12 @@ from typing import Any, NamedTuple
 
 from loguru import logger
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import CallbackQueryHandler, CommandHandler, ContextTypes, ConversationHandler
+from telegram.ext import (
+    CallbackQueryHandler,
+    CommandHandler,
+    ContextTypes,
+    ConversationHandler,
+)
 
 from bot.user_filter import USER_FILTER
 from db.wrapper import chat_has_stored_feeds, remove_stored_chat_data
@@ -72,12 +77,16 @@ async def _request_confirmation_2(
     await query.answer()
     await query.edit_message_text(
         "Are you sure you want to remove <b>all</b> subscriptions?",
-        reply_markup=_prepare_keyboard(("No, don't remove", False), ("Yes, I'm sure", True)),
+        reply_markup=_prepare_keyboard(
+            ("No, don't remove", False), ("Yes, I'm sure", True)
+        ),
     )
     return _ConversationState.CONFIRM_2
 
 
-async def _remove_all_subscriptions(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
+async def _remove_all_subscriptions(
+    update: Update, _: ContextTypes.DEFAULT_TYPE
+) -> int:
     query = update.callback_query
     await query.answer()
     chat_id = update.effective_chat.id

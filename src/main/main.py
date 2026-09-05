@@ -14,7 +14,9 @@ def _main() -> None:
 
 
 def _configure_logging() -> None:
-    logger.add(RotatingFileHandler(LOG_PATH, maxBytes=MAX_BYTES, backupCount=BACKUP_COUNT))
+    logger.add(
+        RotatingFileHandler(LOG_PATH, maxBytes=MAX_BYTES, backupCount=BACKUP_COUNT)
+    )
 
 
 if __name__ == "__main__":

@@ -61,7 +61,9 @@ async def send_update(
     logger.info(f"[{chat_id}] Sending update [{feed_name}] [{feed_type}]")
     message = _format_message(chat_id, feed_type, feed_name, link, title, description)
     reply_params = _prepare_reply_params(latest_message_id)
-    downloaded = await gather(*(_get_media_content_and_type(link) for link in media_links or []))
+    downloaded = await gather(
+        *(_get_media_content_and_type(link) for link in media_links or [])
+    )
     media = [data for data in downloaded if data]
     if not media:
         logger.info(f"[{chat_id}] No media downloaded from [{media_links}]")
@@ -104,7 +106,10 @@ def _format_message(
 
 
 def _prepare_sender_text(feed_type: str, feed_name: str) -> str:
-    text_format = RSS_FEEDS[feed_type].get("sender_text_format", None) or DEFAULT_SENDER_TEXT_FORMAT
+    text_format = (
+        RSS_FEEDS[feed_type].get("sender_text_format", None)
+        or DEFAULT_SENDER_TEXT_FORMAT
+    )
     return str(text_format).format(name=escape(feed_name), type=escape(feed_type))
 
 
@@ -127,14 +132,22 @@ async def _send_text(
     bot: Bot, chat_id: int, message: str, reply_params: ReplyParameters | None
 ) -> int:
     if (default_image := _load_image(DEFAULT_IMAGE_PATH)) is None:
-        logger.info(f"[{chat_id}] No default media [{DEFAULT_IMAGE_PATH}], sending only text")
-        sent_message = await bot.send_message(chat_id, message, reply_parameters=reply_params)
+        logger.info(
+            f"[{chat_id}] No default media [{DEFAULT_IMAGE_PATH}], sending only text"
+        )
+        sent_message = await bot.send_message(
+            chat_id, message, reply_parameters=reply_params
+        )
         return sent_message.message_id
     logger.info(f"[{chat_id}] Sending default image [{DEFAULT_IMAGE_PATH}]")
     image_bytes = BytesIO()
-    await to_thread(default_image.save, image_bytes, format=default_image.format or "PNG")
+    await to_thread(
+        default_image.save, image_bytes, format=default_image.format or "PNG"
+    )
     media_group = [(image_bytes.getvalue(), default_image.format or "PNG")]
-    return await _send_media_group(bot, chat_id, media_group, False, message, reply_params)
+    return await _send_media_group(
+        bot, chat_id, media_group, False, message, reply_params
+    )
 
 
 @lru_cache(maxsize=1)
@@ -143,7 +156,8 @@ def _load_image(image_path: str | None) -> Image.Image | None:
         if not image_path or not Path(image_path).is_file():
             return None
         image = Image.open(image_path)
-        # Force the read now, so the file is loaded and closed only once, not on every call.
+        # Force the read now, so the file is loaded and closed only once,
+        # not on every call.
         image.load()
     except OSError as e:
         logger.opt(exception=e).warning(f"Failed to load image at [{image_path}]: ")
@@ -155,8 +169,13 @@ def _load_image(image_path: str | None) -> Image.Image | None:
 async def _get_media_content_and_type(link: str) -> tuple[bytes, str] | None:
     logger.info(f"Downloading media from [{link}]")
     headers = {"user-agent": "rss-reader/1.0", "accept": "*/*"}
-    timeout = (60, 600)  # 60s for connection, 600s for download; default is 30s for both
-    async with await aget(link, headers=headers, timeout=timeout, stream=True) as response:
+    timeout = (
+        60,
+        600,
+    )  # 60s for connection, 600s for download; default is 30s for both
+    async with await aget(
+        link, headers=headers, timeout=timeout, stream=True
+    ) as response:
         if (content_type := _get_media_type(link, response)) is None:
             return None
         max_size = MAX_VIDEO_SIZE if _is_video(content_type) else MAX_IMAGE_SIZE
@@ -167,7 +186,9 @@ async def _get_media_content_and_type(link: str) -> tuple[bytes, str] | None:
 
 def _get_media_type(link: str, response: AsyncResponse) -> str | None:
     if (status_code := response.status_code) != HTTPStatus.OK:
-        logger.warning(f"Could not download media at [{link}], status code [{status_code}]")
+        logger.warning(
+            f"Could not download media at [{link}], status code [{status_code}]"
+        )
         return None
     if not (content_type := response.headers.get("Content-Type")):
         logger.warning(f"Media at [{link}] has no Content-Type, skipping")
@@ -175,16 +196,22 @@ def _get_media_type(link: str, response: AsyncResponse) -> str | None:
     return content_type
 
 
-async def _download_up_to(link: str, response: AsyncResponse, max_size: int) -> bytes | None:
+async def _download_up_to(
+    link: str, response: AsyncResponse, max_size: int
+) -> bytes | None:
     content_length = response.headers.get("Content-Length")
     if content_length and content_length.isnumeric() and int(content_length) > max_size:
-        logger.warning(f"Media at [{link}] declares [{content_length}] bytes, over limit, skipping")
+        logger.warning(
+            f"Media at [{link}] declares [{content_length}] bytes, over limit, skipping"
+        )
         return None
     content = bytearray()
     async for chunk in await response.iter_content():
         content += chunk
         if len(content) > max_size:
-            logger.warning(f"Media at [{link}] exceeded size limit while downloading, skipping")
+            logger.warning(
+                f"Media at [{link}] exceeded size limit while downloading, skipping"
+            )
             return None
     return bytes(content)
 
@@ -199,7 +226,9 @@ async def _send_media_group(
 ) -> int:
     # Technically single media elements don't have to be handled as media group,
     # but they can, so the same implementation can be used for both.
-    input_media_list = [await _media_object(media, media_type) for media, media_type in media_group]
+    input_media_list = [
+        await _media_object(media, media_type) for media, media_type in media_group
+    ]
     logger.info(f"{chat_id} Sending media group")
     sent_messages = await bot.send_media_group(
         chat_id,
@@ -214,10 +243,14 @@ async def _send_media_group(
     return sent_messages[0].message_id
 
 
-async def _media_object(media: bytes, media_type: str) -> InputMediaPhoto | InputMediaVideo:
+async def _media_object(
+    media: bytes, media_type: str
+) -> InputMediaPhoto | InputMediaVideo:
     if _is_video(media_type):
         width, height = await to_thread(_probe_video_size, media)
-        return InputMediaVideo(media, supports_streaming=True, width=width, height=height)
+        return InputMediaVideo(
+            media, supports_streaming=True, width=width, height=height
+        )
     return InputMediaPhoto(await to_thread(_trim_image, media))
 
 
@@ -238,14 +271,17 @@ def _probe_video_size(video_bytes: bytes) -> tuple[int | None, int | None]:
 
 def _trim_image(media: bytes) -> bytes:
     image = Image.open(BytesIO(media))
-    if (total_size := sum(image.size)) <= MAX_IMAGE_DIMENSIONS and len(media) <= MAX_IMAGE_SIZE:
+    if (total_size := sum(image.size)) <= MAX_IMAGE_DIMENSIONS and len(
+        media
+    ) <= MAX_IMAGE_SIZE:
         return media
     logger.info("Reducing image size...")
     if total_size > MAX_IMAGE_DIMENSIONS:
         logger.info(f"Total dimensions too large, reducing to {MAX_IMAGE_THUMBNAIL}...")
         # Technically image can have size larger than 5000 pixels,
         # as long as sum of both dimensions is lower than 10000 pixels.
-        # However, this is the simplest solution and images up to 5000x5000 should be big enough.
+        # However, this is the simplest solution and images up to 5000x5000 pixels
+        # should be big enough.
         image.thumbnail(MAX_IMAGE_THUMBNAIL)
     image_bytes = BytesIO()
     image.save(image_bytes, format=image.format)
@@ -253,7 +289,9 @@ def _trim_image(media: bytes) -> bytes:
     while (bytes_size := len(image_raw)) > MAX_IMAGE_SIZE:
         max_dimension = max(image.size)
         new_dimensions = (max_dimension // 2, max_dimension // 2)
-        logger.info(f"Total size ({bytes_size}) too large, reducing to {new_dimensions}...")
+        logger.info(
+            f"Total size ({bytes_size}) too large, reducing to {new_dimensions}..."
+        )
         image.thumbnail(new_dimensions)
         image_bytes.truncate(0)
         image_bytes.seek(0)
@@ -269,4 +307,6 @@ async def _pin_videos(chat_id: int, messages: list[Message]) -> None:
         try:
             await message.pin()
         except Exception as e:
-            logger.warning(f"[{chat_id}] Failed to pin video [{message.message_id}] due to: {e}")
+            logger.warning(
+                f"[{chat_id}] Failed to pin video [{message.message_id}] due to: {e}"
+            )

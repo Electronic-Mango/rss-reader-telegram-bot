@@ -26,8 +26,8 @@ def parse_link(entry: FeedParserDict) -> str | None:
 def parse_description(entry: FeedParserDict, feed_type: str) -> str | None:
     if not RSS_FEEDS[feed_type].get("show_description") or not entry.get("summary"):
         return None
-    description = _get_description_from_summary(entry.summary)
-    return escape(_filter_text(description, RSS_FEEDS[feed_type])) if description else None
+    desc = _get_description_from_summary(entry.summary)
+    return escape(_filter_text(desc, RSS_FEEDS[feed_type])) if desc else None
 
 
 def parse_title(entry: FeedParserDict, feed_type: str) -> str | None:
@@ -50,7 +50,7 @@ def _get_description_from_summary(summary: str) -> str | None:
 
 def _filter_text(text: str, feed_params: dict[str, Any]) -> str:
     filters = feed_params.get("filters", [])
-    return reduce(lambda text, feed_filter: text.replace(feed_filter, ""), filters, text)
+    return reduce(lambda text, pattern: text.replace(pattern, ""), filters, text)
 
 
 def parse_media_links(entry: FeedParserDict) -> list[str]:

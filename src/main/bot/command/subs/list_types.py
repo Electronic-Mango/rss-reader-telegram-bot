@@ -32,7 +32,9 @@ async def followup_list_feed_types(
     return ConversationState.LIST_TYPES
 
 
-async def _send_types_list(response_callback: Callable, chat_data: dict[str, list[str]]) -> None:
+async def _send_types_list(
+    response_callback: Callable, chat_data: dict[str, list[str]]
+) -> None:
     keyboard = [
         [InlineKeyboardButton(feed_type, callback_data=NamesData(feed_type, chat_data))]
         for feed_type in sorted(chat_data.keys())

@@ -12,7 +12,10 @@ from telegram.ext import CallbackQueryHandler, CommandHandler, ConversationHandl
 from bot.command.subs.conversation_state import ConversationState
 from bot.command.subs.list_details import list_details
 from bot.command.subs.list_names import list_names
-from bot.command.subs.list_types import followup_list_feed_types, initial_list_feed_types
+from bot.command.subs.list_types import (
+    followup_list_feed_types,
+    initial_list_feed_types,
+)
 from bot.command.subs.query_data import (
     DetailsData,
     NamesData,

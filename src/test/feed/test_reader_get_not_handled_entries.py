@@ -10,11 +10,21 @@ FEED_TYPE = "FEED_TYPE"
 FEED_NAME = "FEED_NAME"
 FEED_LINK = "FEED_LINK"
 ENTRIES = [
-    FeedParserDict({"published_parsed": strptime("01.01.2001", "%d.%m.%Y"), "id": "ID-1"}),
-    FeedParserDict({"published_parsed": strptime("02.02.2002", "%d.%m.%Y"), "id": "ID-2"}),
-    FeedParserDict({"published_parsed": strptime("03.03.2003", "%d.%m.%Y"), "id": "ID-3"}),
-    FeedParserDict({"published_parsed": strptime("04.04.2004", "%d.%m.%Y"), "id": "ID-4"}),
-    FeedParserDict({"published_parsed": strptime("05.05.2005", "%d.%m.%Y"), "id": "ID-5"}),
+    FeedParserDict(
+        {"published_parsed": strptime("01.01.2001", "%d.%m.%Y"), "id": "ID-1"}
+    ),
+    FeedParserDict(
+        {"published_parsed": strptime("02.02.2002", "%d.%m.%Y"), "id": "ID-2"}
+    ),
+    FeedParserDict(
+        {"published_parsed": strptime("03.03.2003", "%d.%m.%Y"), "id": "ID-3"}
+    ),
+    FeedParserDict(
+        {"published_parsed": strptime("04.04.2004", "%d.%m.%Y"), "id": "ID-4"}
+    ),
+    FeedParserDict(
+        {"published_parsed": strptime("05.05.2005", "%d.%m.%Y"), "id": "ID-5"}
+    ),
 ]
 
 

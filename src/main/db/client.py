@@ -7,7 +7,7 @@ Application-specific functions are in the "wrapper" module.
 This way it should be simple to switch to a different DB altogether,
 only this module needs to be modified.
 
-Additionally, this module is also creating needed database, collection and index in the database.
+This module is also creating needed database, collection and index.
 """
 
 from collections.abc import Mapping
@@ -43,7 +43,11 @@ def _initialize_collections() -> None:
 async def _create_indexes() -> None:
     logger.info("Creating DB indexes...")
     feed_index = await _feeds_collection.create_index(
-        keys=[("chat_id", ASCENDING), ("feed_name", ASCENDING), ("feed_type", ASCENDING)],
+        keys=[
+            ("chat_id", ASCENDING),
+            ("feed_name", ASCENDING),
+            ("feed_type", ASCENDING),
+        ],
         unique=True,
     )
     logger.info(f"Created indexes [{feed_index}]")
@@ -66,7 +70,9 @@ async def delete_many(
 
 
 async def update_one(
-    db_filter: Mapping[str, Any], update: Mapping[str, Any], collection_name: str = DB_FEEDS_NAME
+    db_filter: Mapping[str, Any],
+    update: Mapping[str, Any],
+    collection_name: str = DB_FEEDS_NAME,
 ) -> Any:
     """Wrap "find_one_and_update" DB function."""
     collection = _get_collection(collection_name)
@@ -89,8 +95,10 @@ async def find_one(
     return await collection.find_one(db_filter)
 
 
-async def exists(db_filter: Mapping[str, Any], collection_name: str = DB_FEEDS_NAME) -> bool:
-    """Check if there are any documents from a given filter, using count_documents DB function."""
+async def exists(
+    db_filter: Mapping[str, Any], collection_name: str = DB_FEEDS_NAME
+) -> bool:
+    """Check if there are any documents from a given filter."""
     collection = _get_collection(collection_name)
     return bool(await collection.count_documents(db_filter, limit=1))
 

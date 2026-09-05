@@ -30,7 +30,12 @@ from db.wrapper import (
     update_stored_latest_data,
 )
 from feed.parser import parse_description, parse_link, parse_media_links, parse_title
-from feed.reader import feed_is_valid, get_data, get_not_handled_entries, get_parsed_feed
+from feed.reader import (
+    feed_is_valid,
+    get_data,
+    get_not_handled_entries,
+    get_parsed_feed,
+)
 from settings import (
     LOOKUP_FEED_DELAY,
     LOOKUP_FEED_DELAY_RANDOMNESS,
@@ -72,7 +77,14 @@ async def _delayed_check_for_all_updates(context: ContextTypes.DEFAULT_TYPE) -> 
     if SHUFFLE_UPDATES:
         logger.info("Shuffling RSS data before checking for updates")
         shuffle(all_data)
-    for chat_id, feed_type, feed_name, latest_id, latest_date, latest_message_id in all_data:
+    for (
+        chat_id,
+        feed_type,
+        feed_name,
+        latest_id,
+        latest_date,
+        latest_message_id,
+    ) in all_data:
         context.job.chat_id = chat_id
         context.job.data = feed_type, feed_name
         try:
@@ -86,7 +98,7 @@ async def _delayed_check_for_all_updates(context: ContextTypes.DEFAULT_TYPE) -> 
                 latest_message_id,
             )
         except Forbidden:
-            logger.warning(f"[{chat_id}] Cannot send updates to chat, removing chat data")
+            logger.warning(f"[{chat_id}] Cannot send updates, removing chat data")
             await remove_stored_chat_data(chat_id)
         except Exception as e:
             logger.opt(exception=e).error(
@@ -113,11 +125,17 @@ async def _check_for_updates(
         logger.info(f"[{chat_id}] No new data for [{feed_name}] [{feed_type}]")
         return
     try:
-        await _handle_update(bot, chat_id, feed_type, feed_name, not_handled, latest_message_id)
+        await _handle_update(
+            bot, chat_id, feed_type, feed_name, not_handled, latest_message_id
+        )
     except Exception as e:
-        logger.opt(exception=e).warning(f"[{chat_id}] Error occurred when handling previous one: ")
+        logger.opt(exception=e).warning(
+            f"[{chat_id}] Error occurred when handling previous one: "
+        )
         await bot.send_message(
-            chat_id, f"Error occurred when handling a previous error:\n{e}", parse_mode=None
+            chat_id,
+            f"Error occurred when handling a previous error:\n{e}",
+            parse_mode=None,
         )
 
 
@@ -132,7 +150,9 @@ async def _handle_update(
     logger.info(f"[{chat_id}] Handling update [{feed_name}] [{feed_type}]")
     for entry in not_handled_feed_entries:
         entry_id, link, date = get_data(entry)
-        await update_stored_latest_data(chat_id, feed_type, feed_name, entry_id, link, date)
+        await update_stored_latest_data(
+            chat_id, feed_type, feed_name, entry_id, link, date
+        )
         latest_message_id = await _send_update(
             bot, chat_id, feed_type, feed_name, entry, latest_message_id
         )
@@ -152,9 +172,20 @@ async def _send_update(
     title = parse_title(entry, feed_type)
     description = parse_description(entry, feed_type)
     media = parse_media_links(entry)
-    base_send_args = bot, chat_id, feed_type, feed_name, link, title, description, latest_message_id
+    base_send_args = (
+        bot,
+        chat_id,
+        feed_type,
+        feed_name,
+        link,
+        title,
+        description,
+        latest_message_id,
+    )
     try:
         return await send_update(*base_send_args, media)
     except Exception as e:
-        logger.opt(exception=e).warning(f"[{chat_id}] Trying to resend data without media due to: ")
+        logger.opt(exception=e).warning(
+            f"[{chat_id}] Trying to resend data without media due to: "
+        )
         return await send_update(*base_send_args)

@@ -24,10 +24,18 @@ async def list_names(update: Update, _: ContextTypes.DEFAULT_TYPE) -> Conversati
     return ConversationState.LIST_NAMES
 
 
-def _prepare_keyboard(feed_type: str, chat_data: dict[str, list[str]]) -> InlineKeyboardMarkup:
+def _prepare_keyboard(
+    feed_type: str, chat_data: dict[str, list[str]]
+) -> InlineKeyboardMarkup:
     keyboard = [
-        [InlineKeyboardButton(name, callback_data=DetailsData(feed_type, name, chat_data))]
+        [
+            InlineKeyboardButton(
+                name, callback_data=DetailsData(feed_type, name, chat_data)
+            )
+        ]
         for name in chat_data[feed_type]
     ]
-    keyboard += [[InlineKeyboardButton("« Back to types", callback_data=TypesData(chat_data))]]
+    keyboard += [
+        [InlineKeyboardButton("« Back to types", callback_data=TypesData(chat_data))]
+    ]
     return InlineKeyboardMarkup(keyboard)
