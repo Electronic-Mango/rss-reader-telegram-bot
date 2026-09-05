@@ -18,7 +18,7 @@ from db.client import delete_many, exists, find_many, find_one, insert_one, upda
 
 
 async def get_all_stored_data() -> list[tuple[int, str, str, str, struct_time | None, int | None]]:
-    """Returns all data stored in the DB."""
+    """Return all data stored in the DB."""
     logger.info("Getting all data for all chats")
     return [
         (

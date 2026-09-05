@@ -113,8 +113,8 @@ async def _store_subscription(
     feed_type: str,
     feed_name: str,
 ) -> None:
-    id, link, date = get_latest_data(parsed_feed)
-    await store_feed_data(chat_id, feed_name, feed_type, id, link, date)
+    entry_id, link, date = get_latest_data(parsed_feed)
+    await store_feed_data(chat_id, feed_name, feed_type, entry_id, link, date)
     await message.reply_text(f"Added subscription for <b>{feed_name}</b>!")
 
 

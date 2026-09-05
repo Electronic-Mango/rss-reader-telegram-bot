@@ -12,7 +12,7 @@ from db.wrapper import get_stored_feed_type_to_names
 
 
 async def initial_list_feed_types(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
-    """Initial list of types directly after "subscriptions" command is run."""
+    """Send initial list of types directly after "subscriptions" command is run."""
     chat_id = update.effective_chat.id
     logger.info(f"[{chat_id}] Initial request of feed type")
     if chat_data := await get_stored_feed_type_to_names(chat_id):

@@ -131,8 +131,8 @@ async def _handle_update(
 ) -> None:
     logger.info(f"[{chat_id}] Handling update [{feed_name}] [{feed_type}]")
     for entry in not_handled_feed_entries:
-        id, link, date = get_data(entry)
-        await update_stored_latest_data(chat_id, feed_type, feed_name, id, link, date)
+        entry_id, link, date = get_data(entry)
+        await update_stored_latest_data(chat_id, feed_type, feed_name, entry_id, link, date)
         latest_message_id = await _send_update(
             bot, chat_id, feed_type, feed_name, entry, latest_message_id
         )

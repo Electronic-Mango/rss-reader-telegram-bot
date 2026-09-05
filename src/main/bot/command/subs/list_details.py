@@ -1,5 +1,6 @@
 """
 Module showing details of a single subscription.
+
 Allows going back to list of specific subscriptions and list of all types.
 """
 
@@ -20,20 +21,20 @@ async def list_details(update: Update, _: ContextTypes.DEFAULT_TYPE) -> Conversa
     query = update.callback_query
     await query.answer()
     chat_id = update.effective_chat.id
-    type, name, chat_data = query.data
-    logger.info(f"[{chat_id}] Showing details for [{type}] [{name}]")
-    link, date = await get_latest_entry_data(chat_id, type, name)
+    feed_type, feed_name, chat_data = query.data
+    logger.info(f"[{chat_id}] Showing details for [{feed_type}] [{feed_name}]")
+    link, date = await get_latest_entry_data(chat_id, feed_type, feed_name)
     await query.edit_message_text(
-        _generate_description(type, name, date),
-        reply_markup=_prepare_keyboard(type, name, chat_data, link),
+        _generate_description(feed_type, feed_name, date),
+        reply_markup=_prepare_keyboard(feed_type, feed_name, chat_data, link),
     )
     return ConversationState.SHOW_DETAILS
 
 
-def _generate_description(type: str, name: str, date: struct_time) -> str:
+def _generate_description(feed_type: str, feed_name: str, date: struct_time) -> str:
     details = [
-        f"Source: <b>{type}</b>",
-        f"Name: <b>{name}</b>",
+        f"Source: <b>{feed_type}</b>",
+        f"Name: <b>{feed_name}</b>",
     ]
     if date:
         parsed_date = datetime(*date[:6]).replace(tzinfo=tzutc()).astimezone(tzlocal())
@@ -42,16 +43,16 @@ def _generate_description(type: str, name: str, date: struct_time) -> str:
 
 
 def _prepare_keyboard(
-    type: str, name: str, data: dict[str, list[str]], link: str
+    feed_type: str, feed_name: str, data: dict[str, list[str]], link: str
 ) -> InlineKeyboardMarkup:
     keyboard = [
         [
             InlineKeyboardButton(
-                "Latest message", callback_data=SendLatestUpdateData(type, name, data)
+                "Latest message", callback_data=SendLatestUpdateData(feed_type, feed_name, data)
             )
         ],
-        [InlineKeyboardButton("Remove", callback_data=RemoveFeedData(type, name, data))],
-        [InlineKeyboardButton("« Back to subscriptions", callback_data=NamesData(type, data))],
+        [InlineKeyboardButton("Remove", callback_data=RemoveFeedData(feed_type, feed_name, data))],
+        [InlineKeyboardButton("« Back to subscriptions", callback_data=NamesData(feed_type, data))],
         [InlineKeyboardButton("« Back to types", callback_data=TypesData(data))],
     ]
     if link:

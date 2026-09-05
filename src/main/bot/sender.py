@@ -145,10 +145,11 @@ def _load_image(image_path: str | None) -> Image.Image | None:
         image = Image.open(image_path)
         # Force the read now, so the file is loaded and closed only once, not on every call.
         image.load()
-        return image
     except OSError as e:
         logger.opt(exception=e).warning(f"Failed to load image at [{image_path}]: ")
         return None
+    else:
+        return image
 
 
 async def _get_media_content_and_type(link: str) -> tuple[bytes, str] | None:
