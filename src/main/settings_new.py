@@ -5,7 +5,6 @@ Additional parameters, overwriting the default ones can be loaded from a file de
 This overwriting file doesn't have to contain everything, only values to overwrite.
 """
 
-from functools import reduce
 from os import getenv
 from pathlib import Path
 from typing import Any
@@ -22,6 +21,7 @@ class Settings:
 
     # Internal settings storage and optional fields
     _SETTINGS = None
+    _MISSING = object()
     _OPTIONAL_FIELDS = {"DEFAULT_IMAGE_PATH", "ALLOWED_USERNAMES"}
 
     # Telegram
@@ -151,36 +151,46 @@ class Settings:
 
     @classmethod
     def _load_str(cls, *keys: str, default: str | None = None) -> str | None:
-        if (val := cls._load(*keys)) is None:
+        if (val := cls._load(*keys)) is cls._MISSING:
             return default
+        if val is None:
+            return None
         return str(val)
 
     @classmethod
     def _load_int(cls, *keys: str, default: int | None = None) -> int | None:
-        if (val := cls._load(*keys)) is None:
+        if (val := cls._load(*keys)) is cls._MISSING:
             return default
+        if val is None:
+            return None
         return int(val)
 
     @classmethod
     def _load_bool(cls, *keys: str, default: bool | None = None) -> bool | None:
-        if (val := cls._load(*keys)) is None:
+        if (val := cls._load(*keys)) is cls._MISSING:
             return default
+        if val is None:
+            return None
         if isinstance(val, bool):
             return val
         return str(val).lower() in ("1", "true", "yes")
 
     @classmethod
     def _load_str_list(cls, *keys: str, default: list[str] | None = None) -> list[str] | None:
-        if (val := cls._load(*keys)) is None:
+        if (val := cls._load(*keys)) is cls._MISSING:
             return default
+        if val is None:
+            return None
         if isinstance(val, list):
             return [str(x) for x in val]
         return [item.strip() for item in str(val).split(",") if item.strip()]
 
     @classmethod
     def _load_int_list(cls, *keys: str, default: list[int] | None = None) -> list[int] | None:
-        if (val := cls._load(*keys)) is None:
+        if (val := cls._load(*keys)) is cls._MISSING:
             return default
+        if val is None:
+            return None
         if isinstance(val, list):
             return [int(x) for x in val]
         return [int(item.strip()) for item in str(val).split(",") if item.strip()]
@@ -189,11 +199,13 @@ class Settings:
     def _load(cls, *keys: str) -> Any:
         if (env_val := getenv("_".join(keys).upper())) is not None:
             return env_val
-        return reduce(
-            lambda table, key: table.get(key) if isinstance(table, dict) else None,
-            keys,
-            cls._SETTINGS,
-        )
+        current = cls._SETTINGS
+        for key in keys:
+            if isinstance(current, dict) and key in current:
+                current = current[key]
+            else:
+                return cls._MISSING
+        return current
 
     @classmethod
     def _validate(cls) -> None:
