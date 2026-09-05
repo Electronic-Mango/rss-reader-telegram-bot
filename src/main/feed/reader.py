@@ -2,6 +2,7 @@
 
 from asyncio import to_thread
 from datetime import datetime
+from functools import partial
 from itertools import takewhile
 from time import struct_time
 
@@ -68,14 +69,9 @@ def get_not_handled_entries(
 
     Return all elements from the list, until element with ID matching the target ID.
     """
-    logger.info(
-        f"Getting not handled entries for [{feed.href}] target ID [{target_id}]"
-    )
-    entries = get_sorted_entries(feed)
-    not_handled_entries = takewhile(
-        lambda entry: _not_latest_entry(target_id, date, entry), entries
-    )
-    not_handled_entries = list(not_handled_entries)
+    logger.info(f"Getting not handled entries for [{feed.href}] ID [{target_id}]")
+    is_not_handled = partial(_not_latest_entry, target_id, date)
+    not_handled_entries = list(takewhile(is_not_handled, get_sorted_entries(feed)))
     not_handled_entries.reverse()
     return not_handled_entries
 
@@ -89,12 +85,10 @@ def get_sorted_entries(feed: FeedParserDict) -> list[FeedParserDict]:
 def _not_latest_entry(
     latest_id: str, latest_date: struct_time | None, entry: FeedParserDict
 ) -> bool:
-    entry_id_is_not_latest = entry.id not in latest_id and latest_id not in entry.id
+    id_is_not_latest = entry.id not in latest_id and latest_id not in entry.id
     entry_date = _get_entry_date(entry)
-    entry_date_is_newer = (
-        entry_date > latest_date if entry_date and latest_date else True
-    )
-    return entry_id_is_not_latest and entry_date_is_newer
+    date_is_newer = entry_date > latest_date if entry_date and latest_date else True
+    return id_is_not_latest and date_is_newer
 
 
 def _get_entry_date(entry: FeedParserDict) -> struct_time:

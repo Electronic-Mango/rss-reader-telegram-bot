@@ -36,7 +36,7 @@ from settings import (
     UPDATES_AS_REPLIES,
 )
 
-DEFAULT_SENDER_TEXT_FORMAT = "By <b>{name}</b> on {type}"
+DEFAULT_SENDER_TEXT = "By <b>{name}</b> on {type}"
 # Per Telegram Bot API limits: images up to 10 MB, videos/other files up to 50 MB.
 MAX_IMAGE_SIZE = 10_000_000
 MAX_VIDEO_SIZE = 50_000_000
@@ -61,9 +61,7 @@ async def send_update(
     logger.info(f"[{chat_id}] Sending update [{feed_name}] [{feed_type}]")
     message = _format_message(chat_id, feed_type, feed_name, link, title, description)
     reply_params = _prepare_reply_params(latest_message_id)
-    downloaded = await gather(
-        *(_get_media_content_and_type(link) for link in media_links or [])
-    )
+    downloaded = await gather(*(_download_media(link) for link in media_links or []))
     media = [data for data in downloaded if data]
     if not media:
         logger.info(f"[{chat_id}] No media downloaded from [{media_links}]")
@@ -106,10 +104,7 @@ def _format_message(
 
 
 def _prepare_sender_text(feed_type: str, feed_name: str) -> str:
-    text_format = (
-        RSS_FEEDS[feed_type].get("sender_text_format", None)
-        or DEFAULT_SENDER_TEXT_FORMAT
-    )
+    text_format = RSS_FEEDS[feed_type].get("sender_text_format") or DEFAULT_SENDER_TEXT
     return str(text_format).format(name=escape(feed_name), type=escape(feed_type))
 
 
@@ -166,7 +161,7 @@ def _load_image(image_path: str | None) -> Image.Image | None:
         return image
 
 
-async def _get_media_content_and_type(link: str) -> tuple[bytes, str] | None:
+async def _download_media(link: str) -> tuple[bytes, str] | None:
     logger.info(f"Downloading media from [{link}]")
     headers = {"user-agent": "rss-reader/1.0", "accept": "*/*"}
     timeout = (
