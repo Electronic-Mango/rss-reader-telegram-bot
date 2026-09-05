@@ -49,8 +49,8 @@ ignore = [
     "D1",      # Ignore all missing docstring rules
     "D203",    # Conflicts with D211
     "D212",    # Conflicts with D213
-    "DTZ005",  # Doesn't matter here
-    "DTZ901",  # Doesn't matter here
+    "DTZ005",  # Quiet hours intentionally use host local time
+    "DTZ901",  # Datetime is converted straight to 'struct_time' so 'tz' is irrelevant
     "FBT",
     "FIX002",
     "INP001",
