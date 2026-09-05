@@ -13,14 +13,26 @@ from asyncio import get_running_loop
 from signal import SIGABRT, SIGINT, SIGTERM
 
 from loguru import logger
-from telegram.ext import Application, ApplicationBuilder, Defaults, JobQueue, PicklePersistence
+from telegram.ext import (
+    Application,
+    ApplicationBuilder,
+    Defaults,
+    JobQueue,
+    PicklePersistence,
+)
 
 from bot.command.add import add_followup_handler, add_initial_handler
 from bot.command.cancel import cancel_command_handler
 from bot.command.hello import hello_command_handler
-from bot.command.remove_all import remove_all_followup_handler, remove_all_initial_handler
+from bot.command.remove_all import (
+    remove_all_followup_handler,
+    remove_all_initial_handler,
+)
 from bot.command.start_help import start_help_command_handler
-from bot.command.subs.handler import subscriptions_followup_handler, subscriptions_initial_handler
+from bot.command.subs.handler import (
+    subscriptions_followup_handler,
+    subscriptions_initial_handler,
+)
 from bot.error_handler import handle_errors
 from bot.update_checker import cancel_active_update_check, check_for_all_updates
 from db.client import initialize_db

@@ -13,14 +13,16 @@ from settings import RSS_FEEDS
 
 
 async def get_parsed_feed(feed_type: str, feed_name: str) -> FeedParserDict:
-    """Parse given feed type and feed name into FeedParserDict, based on URL from RSS links YAML."""
+    """Parse given information into FeedParserDict, based on URL from RSS links YAML."""
     feed_link = RSS_FEEDS[feed_type]["url"].format(source_pattern=feed_name)
     logger.info(f"Parsed [{feed_name}][{feed_type}] to link [{feed_link}]")
     feed_response = await aget(feed_link)
     # parse() only sets "status"/"href" when it performs the HTTP request itself.
-    # Headers must be lowercased, parse() header-based encoding detection expects lowercase keys.
-    response_headers = {key.lower(): value for key, value in feed_response.headers.items()}
-    parsed_feed = await to_thread(parse, feed_response.content, response_headers=response_headers)
+    # Headers must be lowercased.
+    # parse() header-based encoding detection expects lowercase keys.
+    feed_content = feed_response.content
+    headers = {k.lower(): v for k, v in feed_response.headers.items()}
+    parsed_feed = await to_thread(parse, feed_content, response_headers=headers)
     parsed_feed["status"] = feed_response.status_code
     parsed_feed["href"] = feed_response.url
     return parsed_feed
@@ -34,11 +36,11 @@ def feed_is_valid(feed: FeedParserDict) -> bool:
      - HTTP status code is either 200 or 301 (301 is a workaround for Tumblr blogs)
      - there are any feed items in the response
     Technically a feed can be valid, but without any items, when it was just created.
-    Checking for those items is a workaround for feeds which always respond with code 200.
+    This is a workaround for feeds which always respond with code 200.
     """
     logger.info(f"Checking if [{feed.href}] feed exists")
     # 301 is a workaround for Tumblr blogs with dedicated URLs.
-    # Checking for any entries is a workaround for feeds which always respond with code 200.
+    # Workaround for feeds which always respond with code 200.
     return feed.get("status") in [200, 301] and feed.get("entries")
 
 
@@ -64,9 +66,11 @@ def get_not_handled_entries(
     """
     Get not yet handled entries for a given feed.
 
-    Return all elements from the feed list, until element with ID matching the target ID.
+    Return all elements from the list, until element with ID matching the target ID.
     """
-    logger.info(f"Getting not handled entries for [{feed.href}] target ID [{target_id}]")
+    logger.info(
+        f"Getting not handled entries for [{feed.href}] target ID [{target_id}]"
+    )
     entries = get_sorted_entries(feed)
     not_handled_entries = takewhile(
         lambda entry: _not_latest_entry(target_id, date, entry), entries
@@ -87,9 +91,15 @@ def _not_latest_entry(
 ) -> bool:
     entry_id_is_not_latest = entry.id not in latest_id and latest_id not in entry.id
     entry_date = _get_entry_date(entry)
-    entry_date_is_newer = entry_date > latest_date if entry_date and latest_date else True
+    entry_date_is_newer = (
+        entry_date > latest_date if entry_date and latest_date else True
+    )
     return entry_id_is_not_latest and entry_date_is_newer
 
 
 def _get_entry_date(entry: FeedParserDict) -> struct_time:
-    return entry.get("published_parsed") or entry.get("updated_parsed") or datetime.min.timetuple()
+    return (
+        entry.get("published_parsed")
+        or entry.get("updated_parsed")
+        or datetime.min.timetuple()
+    )

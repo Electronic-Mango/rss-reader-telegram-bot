@@ -1,6 +1,7 @@
 """
-Module holding all configuration parameters for the project based on "settings.yml" file.
+Module holding all configuration parameters for the project.
 
+Parameters are loaded from YAML files. Default values are loaded from "settings.yml".
 Additional parameters, overwriting the default ones can be loaded from a file defined in
 "CUSTOM_SETTINGS_PATH" environment variable.
 This overwriting file doesn't have to contain everything, only values to overwrite.
@@ -33,7 +34,11 @@ _SETTINGS = merge(
 
 
 def _load_config(*keys: str) -> Any:
-    return reduce(lambda table, key: table.get(key) if table is not None else None, keys, _SETTINGS)
+    return reduce(
+        lambda table, key: table.get(key) if table is not None else None,
+        keys,
+        _SETTINGS,
+    )
 
 
 # telegram
@@ -43,16 +48,22 @@ PERSISTENCE_FILE = _load_config("telegram", "persistence_file")
 
 # telegram updates
 LOOKUP_INTERVAL = _load_config("telegram", "updates", "lookup_interval")
-LOOKUP_INTERVAL_RANDOMNESS = _load_config("telegram", "updates", "lookup_interval_randomness")
+LOOKUP_INTERVAL_RANDOMNESS = _load_config(
+    "telegram", "updates", "lookup_interval_randomness"
+)
 LOOKUP_INITIAL_DELAY = _load_config("telegram", "updates", "lookup_initial_delay")
 LOOKUP_FEED_DELAY = _load_config("telegram", "updates", "lookup_feed_delay")
-LOOKUP_FEED_DELAY_RANDOMNESS = _load_config("telegram", "updates", "lookup_feed_delay_randomness")
+LOOKUP_FEED_DELAY_RANDOMNESS = _load_config(
+    "telegram", "updates", "lookup_feed_delay_randomness"
+)
 QUIET_HOURS = _load_config("telegram", "updates", "quiet_hours")
 SHUFFLE_UPDATES = _load_config("telegram", "updates", "shuffle_updates")
 
 # telegram messages
 MAX_MESSAGE_SIZE = _load_config("telegram", "messages", "max_message_size")
-MAX_MEDIA_ITEMS_PER_MESSAGE = _load_config("telegram", "messages", "max_media_items_per_message")
+MAX_MEDIA_ITEMS_PER_MESSAGE = _load_config(
+    "telegram", "messages", "max_media_items_per_message"
+)
 PIN_VIDEOS = _load_config("telegram", "messages", "pin_videos")
 DEFAULT_IMAGE_PATH = _load_config("telegram", "messages", "default_image_path")
 SEND_MEDIA_TIMEOUT = _load_config("telegram", "messages", "send_media_timeout")
@@ -71,4 +82,6 @@ DB_FEEDS_NAME = _load_config("database", "feeds_name")
 
 # rss
 with Path(_load_config("rss", "feeds_yaml_filename")).open() as feeds_yml:
-    RSS_FEEDS = {name: data for name, data in safe_load(feeds_yml).items() if "url" in data}
+    RSS_FEEDS = {
+        name: data for name, data in safe_load(feeds_yml).items() if "url" in data
+    }

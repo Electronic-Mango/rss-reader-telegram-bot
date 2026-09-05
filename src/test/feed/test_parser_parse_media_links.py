@@ -3,7 +3,9 @@ from pytest import mark
 
 from feed.parser import parse_media_links
 
-ENTRY_WITH_MEDIA_CONTENT = FeedParserDict({"media_content": [{"url": "link-1"}, {"url": "link-2"}]})
+ENTRY_WITH_MEDIA_CONTENT = FeedParserDict(
+    {"media_content": [{"url": "link-1"}, {"url": "link-2"}]}
+)
 EXPECTED_LINKS_FROM_MEDIA_CONTENT = ["link-1", "link-2"]
 
 MEDIA_LINKS_IN_SUMMARY = """

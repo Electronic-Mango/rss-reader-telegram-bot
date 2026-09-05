@@ -36,7 +36,6 @@ norecursedirs = [".venv"]
 asyncio_mode = "auto"
 
 [tool.ruff]
-line-length = 100
 src = ["src/main", "src/test"]
 
 [tool.ruff.lint]

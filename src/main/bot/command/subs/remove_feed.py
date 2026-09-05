@@ -9,16 +9,22 @@ from bot.command.subs.query_data import DetailsData, NamesData, TypesData
 from db.wrapper import remove_stored_feed
 
 
-async def request_confirmation(update: Update, _: ContextTypes.DEFAULT_TYPE) -> ConversationState:
+async def request_confirmation(
+    update: Update, _: ContextTypes.DEFAULT_TYPE
+) -> ConversationState:
     """Request confirmation for removal of selected subscription."""
     query = update.callback_query
     await query.answer()
     feed_type, feed_name, chat_data = query.data
-    logger.info(f"[{update.effective_chat.id}] Selected [{feed_type}] [{feed_name}] for removal")
+    logger.info(
+        f"[{update.effective_chat.id}] Selected [{feed_type}] [{feed_name}] for removal"
+    )
     keyboard = [
         [
             InlineKeyboardButton("Yes", callback_data=query.data),
-            InlineKeyboardButton("No", callback_data=DetailsData(feed_type, feed_name, chat_data)),
+            InlineKeyboardButton(
+                "No", callback_data=DetailsData(feed_type, feed_name, chat_data)
+            ),
         ],
         [
             InlineKeyboardButton(

@@ -12,7 +12,7 @@ from feed.reader import get_parsed_feed, get_sorted_entries
 async def send_latest_update(
     update: Update, context: ContextTypes.DEFAULT_TYPE
 ) -> ConversationState:
-    """Send latest entry for selected subscription, mostly meant for debugging purposes."""
+    """Send latest entry for selected subscription."""
     query = update.callback_query
     await query.answer()
     bot = context.bot
@@ -22,7 +22,9 @@ async def send_latest_update(
     return ConversationState.SHOW_DETAILS
 
 
-async def _handle_update(bot: Bot, chat_id: int, feed_type: str, feed_name: str) -> None:
+async def _handle_update(
+    bot: Bot, chat_id: int, feed_type: str, feed_name: str
+) -> None:
     if not (entries := get_sorted_entries(await get_parsed_feed(feed_type, feed_name))):
         logger.warning(f"[{chat_id}] No entries found for [{feed_type}] [{feed_name}]")
         await bot.send_message(chat_id, f"No entries found for <b>{feed_name}</b>!")

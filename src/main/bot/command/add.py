@@ -55,7 +55,8 @@ def add_followup_handler() -> ConversationHandler:
 async def _request_feed_type(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
     logger.info(f"[{update.effective_chat.id}] User requested new subscription")
     keyboard = [
-        [InlineKeyboardButton(name, callback_data=_AddFeedData(name))] for name in RSS_FEEDS
+        [InlineKeyboardButton(name, callback_data=_AddFeedData(name))]
+        for name in RSS_FEEDS
     ]
     await update.message.reply_text(
         "Select source:",
@@ -70,9 +71,13 @@ async def _request_feed_names(
     await query.answer()
     feed_type = query.data.feed_type
     context.user_data[_ConversationState.FEED_NAME] = feed_type
-    logger.info(f"[{update.effective_chat.id}] User selected type [{feed_type}], requesting name")
+    logger.info(
+        f"[{update.effective_chat.id}] User selected type [{feed_type}]; "
+        "requesting feed name"
+    )
     await update.effective_chat.send_message(
-        f"Send <b>{feed_type}</b> name, multiple names separated by a new line, or /cancel",
+        f"Send <b>{feed_type}</b> name, multiple names separated by a new line, "
+        "or /cancel",
     )
     return _ConversationState.FEED_NAME
 
@@ -83,13 +88,19 @@ async def _handle_feed_names(update: Update, context: ContextTypes.DEFAULT_TYPE)
     feed_names = update.message.text.splitlines()
     feed_type = context.user_data[_ConversationState.FEED_NAME]
     logger.info(f"{chat_id} User send feed name {feed_names} for [{feed_type}]")
-    await gather(*(_handle_feed_name(message, chat_id, feed_type, name) for name in feed_names))
+    await gather(
+        *(_handle_feed_name(message, chat_id, feed_type, name) for name in feed_names)
+    )
     return ConversationHandler.END
 
 
-async def _handle_feed_name(message: Message, chat_id: int, feed_type: str, feed_name: str) -> None:
+async def _handle_feed_name(
+    message: Message, chat_id: int, feed_type: str, feed_name: str
+) -> None:
     if await feed_is_already_stored(chat_id, feed_type, feed_name):
-        await _feed_with_given_name_already_exists(message, chat_id, feed_name, feed_type)
+        await _feed_with_given_name_already_exists(
+            message, chat_id, feed_name, feed_type
+        )
     elif feed_is_valid(parsed_feed := await get_parsed_feed(feed_type, feed_name)):
         await _store_subscription(message, chat_id, parsed_feed, feed_type, feed_name)
     else:
@@ -103,7 +114,9 @@ async def _feed_with_given_name_already_exists(
     feed_type: str,
 ) -> None:
     logger.info(f"{chat_id} Feed [{feed_name}][{feed_type}] is subscribed")
-    await message.reply_text(f"Subscription for <b>{feed_name}</b> ({feed_type}) already exists!")
+    await message.reply_text(
+        f"Subscription for <b>{feed_name}</b> ({feed_type}) already exists!"
+    )
 
 
 async def _store_subscription(
