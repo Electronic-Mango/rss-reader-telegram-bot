@@ -98,16 +98,14 @@ async def _handle_feed_name(
     message: Message, chat_id: int, feed_type: str, feed_name: str
 ) -> None:
     if await feed_is_already_stored(chat_id, feed_type, feed_name):
-        await _feed_with_given_name_already_exists(
-            message, chat_id, feed_name, feed_type
-        )
+        await _feed_already_exists(message, chat_id, feed_name, feed_type)
     elif feed_is_valid(parsed_feed := await get_parsed_feed(feed_type, feed_name)):
         await _store_subscription(message, chat_id, parsed_feed, feed_type, feed_name)
     else:
         await _feed_does_not_exist(message, chat_id, feed_type, feed_name)
 
 
-async def _feed_with_given_name_already_exists(
+async def _feed_already_exists(
     message: Message,
     chat_id: int,
     feed_name: str,

@@ -17,6 +17,10 @@ from pymongo.results import DeleteResult
 from db.client import delete_many, exists, find_many, find_one, insert_one, update_one
 
 
+def _feed_filter(chat_id: int, feed_type: str, feed_name: str) -> dict[str, object]:
+    return {"chat_id": chat_id, "feed_type": feed_type, "feed_name": feed_name}
+
+
 async def get_all_stored_data() -> list[
     tuple[int, str, str, str, struct_time | None, int | None]
 ]:
@@ -49,9 +53,7 @@ async def get_latest_entry_data(
 ) -> tuple[str | None, struct_time | None]:
     """Return latest stored entry ID for given feed."""
     logger.info(f"[{chat_id}] Getting latest entry ID for [{feed_type}] [{feed_name}]")
-    document = await find_one(
-        {"chat_id": chat_id, "feed_type": feed_type, "feed_name": feed_name}
-    )
+    document = await find_one(_feed_filter(chat_id, feed_type, feed_name))
     return (
         (document.get("latest_link"), _parse_date(document.get("latest_date")))
         if document
@@ -62,9 +64,7 @@ async def get_latest_entry_data(
 async def feed_is_already_stored(chat_id: int, feed_type: str, feed_name: str) -> bool:
     """Check if given feed is already stored in the DB."""
     logger.info(f"[{chat_id}] Checking for [{feed_type}] [{feed_name}]")
-    return await exists(
-        {"chat_id": chat_id, "feed_type": feed_type, "feed_name": feed_name}
-    )
+    return await exists(_feed_filter(chat_id, feed_type, feed_name))
 
 
 async def chat_has_stored_feeds(chat_id: int) -> bool:
@@ -110,7 +110,7 @@ async def update_stored_latest_data(
         f"[{chat_id}] Updating latest item ID [{feed_type}] [{feed_name}] [{latest_id}]"
     )
     await update_one(
-        {"chat_id": chat_id, "feed_type": feed_type, "feed_name": feed_name},
+        _feed_filter(chat_id, feed_type, feed_name),
         {
             "$set": {
                 "latest_id": latest_id,
@@ -135,7 +135,7 @@ async def update_latest_message_id(
         f"[{latest_message_id}]"
     )
     await update_one(
-        {"chat_id": chat_id, "feed_type": feed_type, "feed_name": feed_name},
+        _feed_filter(chat_id, feed_type, feed_name),
         {"$set": {"latest_message_id": latest_message_id}},
     )
 
@@ -145,18 +145,14 @@ async def get_latest_message_id(
 ) -> int | None:
     """Get "latest_message_id" for a given feed in the DB."""
     logger.info(f"[{chat_id}] Getting latest message ID [{feed_type}] [{feed_name}]")
-    document = await find_one(
-        {"chat_id": chat_id, "feed_type": feed_type, "feed_name": feed_name}
-    )
+    document = await find_one(_feed_filter(chat_id, feed_type, feed_name))
     return document.get("latest_message_id") if document else None
 
 
 async def remove_stored_feed(chat_id: int, feed_type: str, feed_name: str) -> None:
     """Remove given feed from the DB."""
     logger.info(f"[{chat_id}] Deleting [{feed_type}] [{feed_name}]")
-    result = await delete_many(
-        {"chat_id": chat_id, "feed_type": feed_type, "feed_name": feed_name}
-    )
+    result = await delete_many(_feed_filter(chat_id, feed_type, feed_name))
     _log_delete_result(chat_id, result)
 
 
