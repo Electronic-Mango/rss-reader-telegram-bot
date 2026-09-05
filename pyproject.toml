@@ -34,3 +34,6 @@ dev = [
 pythonpath = ["src/main", "src/test"]
 norecursedirs = [".venv"]
 asyncio_mode = "auto"
+
+[tool.ruff]
+line-length = 100
