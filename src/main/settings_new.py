@@ -107,8 +107,8 @@ class Settings:
 
         # logging
         cls.LOG_PATH = cls._load_str("logging", "log_path", default="bot.log")
-        cls.MAX_BYTES = cls._load_int("logging", "max_bytes", default=1000000)
-        cls.BACKUP_COUNT = cls._load_int("logging", "backup_count", default=10)
+        cls.MAX_BYTES = cls._load_int("logging", "max_bytes", default=0)
+        cls.BACKUP_COUNT = cls._load_int("logging", "backup_count", default=0)
 
         # database
         cls.DB_HOST = cls._load_str("database", "host", default="localhost")
@@ -151,46 +151,36 @@ class Settings:
 
     @classmethod
     def _load_str(cls, *keys: str, default: str | None = None) -> str | None:
-        if (val := cls._load(*keys)) is cls._MISSING:
+        if (val := cls._load(*keys)) is cls._MISSING or val is None:
             return default
-        if val is None:
-            return None
         return str(val)
 
     @classmethod
     def _load_int(cls, *keys: str, default: int | None = None) -> int | None:
-        if (val := cls._load(*keys)) is cls._MISSING:
+        if (val := cls._load(*keys)) is cls._MISSING or val is None:
             return default
-        if val is None:
-            return None
         return int(val)
 
     @classmethod
     def _load_bool(cls, *keys: str, default: bool | None = None) -> bool | None:
-        if (val := cls._load(*keys)) is cls._MISSING:
+        if (val := cls._load(*keys)) is cls._MISSING or val is None:
             return default
-        if val is None:
-            return None
         if isinstance(val, bool):
             return val
         return str(val).lower() in ("1", "true", "yes")
 
     @classmethod
     def _load_str_list(cls, *keys: str, default: list[str] | None = None) -> list[str] | None:
-        if (val := cls._load(*keys)) is cls._MISSING:
+        if (val := cls._load(*keys)) is cls._MISSING or val is None:
             return default
-        if val is None:
-            return None
         if isinstance(val, list):
             return [str(x) for x in val]
         return [item.strip() for item in str(val).split(",") if item.strip()]
 
     @classmethod
     def _load_int_list(cls, *keys: str, default: list[int] | None = None) -> list[int] | None:
-        if (val := cls._load(*keys)) is cls._MISSING:
+        if (val := cls._load(*keys)) is cls._MISSING or val is None:
             return default
-        if val is None:
-            return None
         if isinstance(val, list):
             return [int(x) for x in val]
         return [int(item.strip()) for item in str(val).split(",") if item.strip()]
