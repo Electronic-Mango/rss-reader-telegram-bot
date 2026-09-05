@@ -52,22 +52,25 @@ def get_latest_data(feed: FeedParserDict) -> tuple[str, str, struct_time]:
 
 def get_data(entry: FeedParserDict) -> tuple[str, str, struct_time]:
     """Return data (entry ID, link, data) for a given entry."""
-    id = entry.get("id")
+    entry_id = entry.get("id")
     link = entry.get("link")
     date = _get_entry_date(entry)
-    return id, link, date
+    return entry_id, link, date
 
 
 def get_not_handled_entries(
-    feed: FeedParserDict, id: str, date: struct_time | None
+    feed: FeedParserDict, target_id: str, date: struct_time | None
 ) -> list[FeedParserDict]:
     """
     Get not yet handled entries for a given feed.
+
     Return all elements from the feed list, until element with ID matching the target ID.
     """
-    logger.info(f"Getting not handled entries for [{feed.href}] target ID [{id}]")
+    logger.info(f"Getting not handled entries for [{feed.href}] target ID [{target_id}]")
     entries = get_sorted_entries(feed)
-    not_handled_entries = takewhile(lambda entry: _not_latest_entry(id, date, entry), entries)
+    not_handled_entries = takewhile(
+        lambda entry: _not_latest_entry(target_id, date, entry), entries
+    )
     not_handled_entries = list(not_handled_entries)
     not_handled_entries.reverse()
     return not_handled_entries

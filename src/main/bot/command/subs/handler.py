@@ -1,5 +1,6 @@
 """
 Command and conversation handlers used by "subscriptions" command.
+
 Handling of "subscriptions" command is split into two handlers.
 Regular command handler only creates initial inline keyboard.
 Conversation handler handles all inline keyboard queries.
@@ -25,12 +26,12 @@ from bot.user_filter import USER_FILTER
 
 
 def subscriptions_initial_handler() -> CommandHandler:
-    """Initial handler responding to "subscriptions" command itself, creates initial query."""
+    """Create initial handler responding to "subscriptions" command itself."""
     return CommandHandler("subscriptions", initial_list_feed_types, USER_FILTER)
 
 
 def subscriptions_followup_handler() -> ConversationHandler:
-    """Followup conversation handler for inline keyboard queries."""
+    """Create followup conversation handler for inline keyboard queries."""
     return ConversationHandler(
         entry_points=[CallbackQueryHandler(list_names, NamesData)],
         states={

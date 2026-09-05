@@ -1,5 +1,7 @@
 """
-Main bot module, which is responsible for:
+Main bot module.
+
+The module is responsible for:
  - creating the bot itself
  - configuring all command handlers
  - starting a job checking for all RSS updates.

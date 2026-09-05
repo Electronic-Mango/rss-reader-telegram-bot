@@ -8,23 +8,23 @@ class TypesData(NamedTuple):
 
 
 class NamesData(NamedTuple):
-    type: str
+    feed_type: str
     chat_data: dict[str, list[str]]
 
 
 class DetailsData(NamedTuple):
-    type: str
-    name: str
+    feed_type: str
+    feed_name: str
     chat_data: dict[str, list[str]]
 
 
 class RemoveFeedData(NamedTuple):
-    type: str
-    name: str
+    feed_type: str
+    feed_name: str
     chat_data: dict[str, list[str]]
 
 
 class SendLatestUpdateData(NamedTuple):
-    type: str
-    name: str
+    feed_type: str
+    feed_name: str
     chat_data: dict[str, list[str]]

@@ -1,5 +1,7 @@
 """
-Module handling the "start" and "help" commands, printing basic usage and bot description.
+Module handling the "start" and "help" commands.
+
+Commands print basic usage and bot description.
 Responses for both "start" and "help" are the same.
 
 Description of each command is stored in the module handling this specific command.

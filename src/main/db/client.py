@@ -52,7 +52,7 @@ async def _create_indexes() -> None:
 async def insert_one(
     document: Mapping[str, Any], collection_name: str = DB_FEEDS_NAME
 ) -> InsertOneResult:
-    """Wrapper for "insert_one" DB function."""
+    """Wrap "insert_one" DB function."""
     collection = _get_collection(collection_name)
     return await collection.insert_one(document)
 
@@ -60,7 +60,7 @@ async def insert_one(
 async def delete_many(
     db_filter: Mapping[str, Any], collection_name: str = DB_FEEDS_NAME
 ) -> DeleteResult:
-    """Wrapper for "delete_many" DB function."""
+    """Wrap "delete_many" DB function."""
     collection = _get_collection(collection_name)
     return await collection.delete_many(db_filter)
 
@@ -68,7 +68,7 @@ async def delete_many(
 async def update_one(
     db_filter: Mapping[str, Any], update: Mapping[str, Any], collection_name: str = DB_FEEDS_NAME
 ) -> Any:
-    """Wrapper for "find_one_and_update" DB function."""
+    """Wrap "find_one_and_update" DB function."""
     collection = _get_collection(collection_name)
     return await collection.find_one_and_update(db_filter, update)
 
@@ -76,7 +76,7 @@ async def update_one(
 async def find_many(
     db_filter: Mapping[str, Any] | None = None, collection_name: str = DB_FEEDS_NAME
 ) -> AsyncCursor:
-    """Wrapper for "find" DB function."""
+    """Wrap "find" DB function."""
     collection = _get_collection(collection_name)
     return collection.find(db_filter)
 
@@ -84,7 +84,7 @@ async def find_many(
 async def find_one(
     db_filter: Mapping[str, Any] | None = None, collection_name: str = DB_FEEDS_NAME
 ) -> Mapping[str, Any] | None:
-    """Wrapper for "find_one" DB function."""
+    """Wrap "find_one" DB function."""
     collection = _get_collection(collection_name)
     return await collection.find_one(db_filter)
 
@@ -97,7 +97,9 @@ async def exists(db_filter: Mapping[str, Any], collection_name: str = DB_FEEDS_N
 
 def _get_collection(name: str) -> AsyncCollection:
     if name != DB_FEEDS_NAME:
-        raise ValueError(f"Unknown collection name: {name}")
+        error_msg = f"Unknown collection name: {name}"
+        raise ValueError(error_msg)
     if _feeds_collection is None:
-        raise RuntimeError("DB is not initialized!")
+        error_msg = "DB is not initialized!"
+        raise RuntimeError(error_msg)
     return _feeds_collection

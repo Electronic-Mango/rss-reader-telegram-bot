@@ -13,18 +13,22 @@ async def request_confirmation(update: Update, _: ContextTypes.DEFAULT_TYPE) -> 
     """Request confirmation for removal of selected subscription."""
     query = update.callback_query
     await query.answer()
-    type, name, chat_data = query.data
-    logger.info(f"[{update.effective_chat.id}] Selected [{type}] [{name}] for removal")
+    feed_type, feed_name, chat_data = query.data
+    logger.info(f"[{update.effective_chat.id}] Selected [{feed_type}] [{feed_name}] for removal")
     keyboard = [
         [
             InlineKeyboardButton("Yes", callback_data=query.data),
-            InlineKeyboardButton("No", callback_data=DetailsData(type, name, chat_data)),
+            InlineKeyboardButton("No", callback_data=DetailsData(feed_type, feed_name, chat_data)),
         ],
-        [InlineKeyboardButton("« Back to subscriptions", callback_data=NamesData(type, chat_data))],
+        [
+            InlineKeyboardButton(
+                "« Back to subscriptions", callback_data=NamesData(feed_type, chat_data)
+            )
+        ],
         [InlineKeyboardButton("« Back to types", callback_data=TypesData(chat_data))],
     ]
     await query.edit_message_text(
-        f"Do you want to unsubscribe from <b>{name}</b>?",
+        f"Do you want to unsubscribe from <b>{feed_name}</b>?",
         reply_markup=InlineKeyboardMarkup(keyboard),
     )
     return ConversationState.CONFIRM_REMOVAL

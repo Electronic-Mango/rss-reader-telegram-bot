@@ -42,7 +42,7 @@ def _get_description_from_summary(summary: str) -> str | None:
         (
             matching_tag.get(attribute).strip()
             for attribute in ATTRS_FOR_DESCRIPTION
-            if (matching_tag := bs.find(lambda tag: tag.has_attr(attribute)))
+            if (matching_tag := bs.find(lambda tag, attr=attribute: tag.has_attr(attr)))
         ),
         None,
     )
@@ -50,7 +50,7 @@ def _get_description_from_summary(summary: str) -> str | None:
 
 def _filter_text(text: str, feed_params: dict[str, Any]) -> str:
     filters = feed_params.get("filters", [])
-    return reduce(lambda text, filter: text.replace(filter, ""), filters, text)
+    return reduce(lambda text, feed_filter: text.replace(feed_filter, ""), filters, text)
 
 
 def parse_media_links(entry: FeedParserDict) -> list[str]:

@@ -17,27 +17,27 @@ async def send_latest_update(
     await query.answer()
     bot = context.bot
     chat_id = update.effective_chat.id
-    type, name, _ = query.data
-    await _handle_update(bot, chat_id, type, name)
+    feed_type, feed_name, _ = query.data
+    await _handle_update(bot, chat_id, feed_type, feed_name)
     return ConversationState.SHOW_DETAILS
 
 
-async def _handle_update(bot: Bot, chat_id: int, type: str, name: str) -> None:
-    if not (entries := get_sorted_entries(await get_parsed_feed(type, name))):
-        logger.warning(f"[{chat_id}] No entries found for [{type}] [{name}]")
-        await bot.send_message(chat_id, f"No entries found for <b>{name}</b>!")
+async def _handle_update(bot: Bot, chat_id: int, feed_type: str, feed_name: str) -> None:
+    if not (entries := get_sorted_entries(await get_parsed_feed(feed_type, feed_name))):
+        logger.warning(f"[{chat_id}] No entries found for [{feed_type}] [{feed_name}]")
+        await bot.send_message(chat_id, f"No entries found for <b>{feed_name}</b>!")
         return
-    logger.info(f"[{chat_id}] Resending latest update for [{type}] [{name}]")
+    logger.info(f"[{chat_id}] Resending latest update for [{feed_type}] [{feed_name}]")
     latest_entry = entries[0]
     await send_update(
         bot,
         chat_id,
-        type,
-        name,
+        feed_type,
+        feed_name,
         parse_link(latest_entry),
-        parse_title(latest_entry, type),
-        parse_description(latest_entry, type),
-        await get_latest_message_id(chat_id, type, name),
+        parse_title(latest_entry, feed_type),
+        parse_description(latest_entry, feed_type),
+        await get_latest_message_id(chat_id, feed_type, feed_name),
         parse_media_links(latest_entry),
         False,
     )

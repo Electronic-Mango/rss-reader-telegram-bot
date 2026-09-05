@@ -3,6 +3,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from pymongo import ASCENDING
 from pytest import fixture, mark, raises
 
+from db import client as dbc
 from db.client import (
     delete_many,
     exists,
@@ -29,8 +30,6 @@ def mocked_mongo_client(host: str, port: str):
 
 @fixture(autouse=True)
 def clear_initialized_collection():
-    import db.client as dbc
-
     dbc._feeds_collection = None
 
 
@@ -131,9 +130,8 @@ async def test_correct_collection_is_selected(_, client_function, db_function, a
     ],
 )
 async def test_db_operations_fail_on_uninitialized_db(_, client_function, args):
-    with raises(RuntimeError) as exception_info:
+    with raises(RuntimeError, match="DB is not initialized!"):
         await client_function(*args)
-    assert str(exception_info.value) == "DB is not initialized!"
 
 
 @patch("db.client.AsyncMongoClient", side_effect=mocked_mongo_client)
@@ -148,7 +146,7 @@ async def test_db_operations_fail_on_uninitialized_db(_, client_function, args):
         (exists, (db_filter,)),
     ],
 )
-async def test_db_operations_fail_on_unexpected_collection_name(_, client_function, args):
-    with raises(ValueError) as exception_info:
-        await client_function(*args, collection_name="unexpected_collection_name")
-    assert str(exception_info.value) == "Unknown collection name: unexpected_collection_name"
+async def test_db_operations_fail_on_unknown_collection_name(_, client_function, args):
+    unknown_name = "unknown_collection_name"
+    with raises(ValueError, match=f"Unknown collection name: {unknown_name}"):
+        await client_function(*args, collection_name=unknown_name)
