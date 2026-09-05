@@ -24,7 +24,7 @@ from loguru import logger
 from more_itertools import sliced
 from niquests import AsyncResponse, aget
 from PIL import Image
-from telegram import Bot, InputMediaPhoto, InputMediaVideo, ReplyParameters
+from telegram import Bot, InputMediaPhoto, InputMediaVideo, Message, ReplyParameters
 
 from settings import (
     DEFAULT_IMAGE_PATH,
@@ -209,10 +209,8 @@ async def _send_media_group(
         write_timeout=SEND_MEDIA_TIMEOUT,
     )
     if pin_videos:
-        for sent_message in sent_messages:
-            if sent_message.video is not None:
-                await sent_message.pin()
-    return sent_messages[0].message_id
+        await _pin_videos(chat_id, sent_messages)
+    return sent_messages[0].id
 
 
 async def _media_object(media: bytes, media_type: str) -> InputMediaPhoto | InputMediaVideo:
@@ -262,3 +260,13 @@ def _trim_image(media: bytes) -> bytes:
         image.save(image_bytes, format=image.format)
         image_raw = image_bytes.getvalue()
     return image_raw
+
+
+async def _pin_videos(chat_id: int, messages: list[Message]) -> None:
+    for message in messages:
+        if message.video is None:
+            continue
+        try:
+            await message.pin()
+        except Exception as e:
+            logger.warning(f"[{chat_id}] Failed to pin video message [{message.id}] due to: {e}")
