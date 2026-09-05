@@ -54,7 +54,7 @@ def get_latest_data(feed: FeedParserDict) -> tuple[str, str, struct_time]:
 
 
 def get_data(entry: FeedParserDict) -> tuple[str, str, struct_time]:
-    """Return data (entry ID, link, data) for a given entry."""
+    """Return data (entry ID, link, date) for a given entry."""
     entry_id = entry.get("id")
     link = entry.get("link")
     date = _get_entry_date(entry)
