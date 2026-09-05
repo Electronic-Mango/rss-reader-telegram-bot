@@ -42,15 +42,22 @@ src = ["src/main", "src/test"]
 [tool.ruff.lint]
 select = ["ALL"]
 ignore = [
-    "ANN401",  # Type hinting JSONs is problematic
+    "ANN401",  # Type hinting settings YAML is problematic
+    "BLE001",  # 'Exception' caught by design to prevent stopping update loop
     "COM812",  # Avoid issues with formatter
     "CPY001",  # I don't think, that copyright notices are necessary here
+    "D1",      # Ignore all missing docstring rules
     "D203",    # Conflicts with D211
     "D212",    # Conflicts with D213
+    "DTZ005",  # Doesn't matter here
+    "DTZ901",  # Doesn't matter here
     "FBT",
     "FIX002",
+    "INP001",
     "PLR0913", # I think it makes sense for functions here to have more arguments
     "PLR0917", # Same as PLR0913
+    "PLW0603", # 'global' DB client seems appropriate
+    "S311",    # 'random' used in this project is for trivial purposes only
     "TD002",
     "TD003",
 ]
