@@ -129,7 +129,7 @@ async def _send_text(
     if (default_image := _load_image(DEFAULT_IMAGE_PATH)) is None:
         logger.info(f"[{chat_id}] No default media [{DEFAULT_IMAGE_PATH}], sending only text")
         sent_message = await bot.send_message(chat_id, message, reply_parameters=reply_params)
-        return sent_message.id
+        return sent_message.message_id
     logger.info(f"[{chat_id}] Sending default image [{DEFAULT_IMAGE_PATH}]")
     image_bytes = BytesIO()
     await to_thread(default_image.save, image_bytes, format=default_image.format or "PNG")
@@ -210,7 +210,7 @@ async def _send_media_group(
     )
     if pin_videos:
         await _pin_videos(chat_id, sent_messages)
-    return sent_messages[0].id
+    return sent_messages[0].message_id
 
 
 async def _media_object(media: bytes, media_type: str) -> InputMediaPhoto | InputMediaVideo:
@@ -269,4 +269,4 @@ async def _pin_videos(chat_id: int, messages: list[Message]) -> None:
         try:
             await message.pin()
         except Exception as e:
-            logger.warning(f"[{chat_id}] Failed to pin video message [{message.id}] due to: {e}")
+            logger.warning(f"[{chat_id}] Failed to pin video [{message.message_id}] due to: {e}")
