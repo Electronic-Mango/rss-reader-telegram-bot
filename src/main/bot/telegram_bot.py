@@ -59,8 +59,11 @@ def _prepare_application() -> Application:
 async def _post_init(application: Application) -> None:
     await initialize_db()
     event_loop = get_running_loop()
-    for stop_signal in (SIGINT, SIGTERM, SIGABRT):
-        event_loop.add_signal_handler(stop_signal, _handle_shutdown_signal, application)
+    try:
+        for sig in (SIGINT, SIGTERM, SIGABRT):
+            event_loop.add_signal_handler(sig, _handle_shutdown_signal, application)
+    except NotImplementedError:
+        logger.info("Signal handlers are not supported on this platform/event loop.")
 
 
 def _handle_shutdown_signal(application: Application) -> None:
