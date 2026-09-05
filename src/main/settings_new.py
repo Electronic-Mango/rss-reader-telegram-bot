@@ -1,5 +1,7 @@
 """
-Module holding all configuration parameters for the project based on "settings.yml" file.
+Module holding all configuration parameters for the project.
+
+Parameters are loaded from YAML files. Default values are loaded from "settings.yml".
 Additional parameters, overwriting the default ones can be loaded from a file defined in
 "CUSTOM_SETTINGS_PATH" environment variable.
 This overwriting file doesn't have to contain everything, only values to overwrite.
@@ -61,26 +63,40 @@ class Settings:
     RSS_FEEDS: dict[str, dict[str, Any]] = None
 
     @classmethod
-    def init(cls, default_settings: Path | None = None, custom_settings: list[Path] | None = None):
+    def init(
+        cls,
+        default_settings: Path | None = None,
+        custom_settings: list[Path] | None = None,
+    ) -> None:
         cls._prepare_settings(default_settings, custom_settings)
 
         cls.TOKEN = cls._load_str("telegram", "token")
-        cls.ALLOWED_USERNAMES = cls._load_str_list("telegram", "allowed_usernames", default=[])
-        cls.PERSISTENCE_FILE = cls._load_str("telegram", "persistence_file", default="persistence")
+        cls.ALLOWED_USERNAMES = cls._load_str_list(
+            "telegram", "allowed_usernames", default=[]
+        )
+        cls.PERSISTENCE_FILE = cls._load_str(
+            "telegram", "persistence_file", default="persistence"
+        )
 
         # telegram updates
-        cls.LOOKUP_INTERVAL = cls._load_int("telegram", "updates", "lookup_interval", default=3600)
+        cls.LOOKUP_INTERVAL = cls._load_int(
+            "telegram", "updates", "lookup_interval", default=3600
+        )
         cls.LOOKUP_INTERVAL_RANDOMNESS = cls._load_int(
             "telegram", "updates", "lookup_interval_randomness", default=0
         )
         cls.LOOKUP_INITIAL_DELAY = cls._load_int(
             "telegram", "updates", "lookup_initial_delay", default=0
         )
-        cls.LOOKUP_FEED_DELAY = cls._load_int("telegram", "updates", "lookup_feed_delay", default=0)
+        cls.LOOKUP_FEED_DELAY = cls._load_int(
+            "telegram", "updates", "lookup_feed_delay", default=0
+        )
         cls.LOOKUP_FEED_DELAY_RANDOMNESS = cls._load_int(
             "telegram", "updates", "lookup_feed_delay_randomness", default=0
         )
-        cls.QUIET_HOURS = cls._load_int_list("telegram", "updates", "quiet_hours", default=[])
+        cls.QUIET_HOURS = cls._load_int_list(
+            "telegram", "updates", "quiet_hours", default=[]
+        )
         cls.SHUFFLE_UPDATES = cls._load_bool(
             "telegram", "updates", "shuffle_updates", default=False
         )
@@ -92,7 +108,9 @@ class Settings:
         cls.MAX_MEDIA_ITEMS_PER_MESSAGE = cls._load_int(
             "telegram", "messages", "max_media_items_per_message", default=10
         )
-        cls.PIN_VIDEOS = cls._load_bool("telegram", "messages", "pin_videos", default=True)
+        cls.PIN_VIDEOS = cls._load_bool(
+            "telegram", "messages", "pin_videos", default=True
+        )
         cls.DEFAULT_IMAGE_PATH = cls._load_str(
             "telegram", "messages", "default_image_path", default=None
         )
@@ -115,19 +133,27 @@ class Settings:
         cls.DB_FEEDS_NAME = cls._load_str("database", "feeds_name", default="feed_data")
 
         # rss
-        if feeds_filename := cls._load_str("rss", "feeds_yaml_filename", default="feed_links.yml"):
-            with open(feeds_filename, "r") as feeds_path:
+        if feeds_filename := cls._load_str(
+            "rss", "feeds_yaml_filename", default="feed_links.yml"
+        ):
+            with Path(feeds_filename).open() as feeds_path:
                 feeds = safe_load(feeds_path) or {}
-                cls.RSS_FEEDS = {name: data for name, data in feeds.items() if "url" in data}
+                cls.RSS_FEEDS = {
+                    name: data for name, data in feeds.items() if "url" in data
+                }
 
         cls._validate()
 
     @classmethod
-    def _prepare_settings(cls, default_settings: Path | None, custom_settings: list[Path] | None):
+    def _prepare_settings(
+        cls, default_settings: Path | None, custom_settings: list[Path] | None
+    ) -> None:
         load_dotenv()
         default_settings = default_settings or (
             Path(default_settings_env)
-            if (default_settings_env := getenv(cls._DEFAULT_SETTINGS_PATH_VARIABLE_NAME))
+            if (
+                default_settings_env := getenv(cls._DEFAULT_SETTINGS_PATH_VARIABLE_NAME)
+            )
             else Path("settings.yml")
         )
         custom_settings = custom_settings or (
@@ -144,7 +170,7 @@ class Settings:
     def _load_settings(cls, settings_path: Path) -> dict[str, Any]:
         if not settings_path.exists():
             return {}
-        with open(settings_path) as settings_yaml:
+        with Path(settings_path).open() as settings_yaml:
             return safe_load(settings_yaml) or {}
 
     @classmethod
@@ -164,7 +190,9 @@ class Settings:
         return str(val).lower() in ("1", "true", "yes")
 
     @classmethod
-    def _load_str_list(cls, *keys: str, default: list[str] | None = None) -> list[str] | None:
+    def _load_str_list(
+        cls, *keys: str, default: list[str] | None = None
+    ) -> list[str] | None:
         if (val := cls._load(*keys)) is None:
             return default
         if isinstance(val, list):
@@ -172,7 +200,9 @@ class Settings:
         return [item.strip() for item in str(val).split(",") if item.strip()]
 
     @classmethod
-    def _load_int_list(cls, *keys: str, default: list[int] | None = None) -> list[int] | None:
+    def _load_int_list(
+        cls, *keys: str, default: list[int] | None = None
+    ) -> list[int] | None:
         if (val := cls._load(*keys)) is None:
             return default
         if isinstance(val, list):
@@ -201,4 +231,5 @@ class Settings:
             and getattr(cls, field) is None
         ]
         if missing:
-            raise ValueError(f"Required configuration settings are missing: {', '.join(missing)}")
+            msg = f"Required configuration settings are missing: {', '.join(missing)}"
+            raise ValueError(msg)
