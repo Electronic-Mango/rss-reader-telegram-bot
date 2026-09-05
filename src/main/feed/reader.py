@@ -85,7 +85,7 @@ def get_sorted_entries(feed: FeedParserDict) -> list[FeedParserDict]:
 def _not_latest_entry(
     latest_id: str, latest_date: struct_time | None, entry: FeedParserDict
 ) -> bool:
-    id_is_not_latest = entry.id not in latest_id and latest_id not in entry.id
+    id_is_not_latest = latest_id is None or entry.get("id") != latest_id
     entry_date = _get_entry_date(entry)
     date_is_newer = entry_date > latest_date if entry_date and latest_date else True
     return id_is_not_latest and date_is_newer
