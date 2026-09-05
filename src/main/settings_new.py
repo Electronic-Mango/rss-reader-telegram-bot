@@ -16,9 +16,11 @@ from yaml import safe_load
 
 
 class Settings:
+    # Names of environment variables
     _DEFAULT_SETTINGS_PATH_VARIABLE_NAME = "DEFAULT_SETTINGS_PATH"
     _CUSTOM_SETTINGS_PATH_VARIABLE_NAME = "CUSTOM_SETTINGS_PATH"
 
+    # Internal settings storage and optional fields
     _SETTINGS = None
     _OPTIONAL_FIELDS = {"DEFAULT_IMAGE_PATH", "ALLOWED_USERNAMES"}
 
@@ -62,48 +64,49 @@ class Settings:
     def init(cls, default_settings: Path | None = None, custom_settings: list[Path] | None = None):
         cls._prepare_settings(default_settings, custom_settings)
 
-        cls.TOKEN = cls._load_config("telegram", "token")
-        cls.ALLOWED_USERNAMES = cls._load_config("telegram", "allowed_usernames")
-        cls.PERSISTENCE_FILE = cls._load_config("telegram", "persistence_file")
+        cls.TOKEN = cls._load_str("telegram", "token")
+        cls.ALLOWED_USERNAMES = cls._load_str_list("telegram", "allowed_usernames")
+        cls.PERSISTENCE_FILE = cls._load_str("telegram", "persistence_file")
 
         # telegram updates
-        cls.LOOKUP_INTERVAL = cls._load_config("telegram", "updates", "lookup_interval")
-        cls.LOOKUP_INTERVAL_RANDOMNESS = cls._load_config(
+        cls.LOOKUP_INTERVAL = cls._load_int("telegram", "updates", "lookup_interval")
+        cls.LOOKUP_INTERVAL_RANDOMNESS = cls._load_int(
             "telegram", "updates", "lookup_interval_randomness"
         )
-        cls.LOOKUP_INITIAL_DELAY = cls._load_config("telegram", "updates", "lookup_initial_delay")
-        cls.LOOKUP_FEED_DELAY = cls._load_config("telegram", "updates", "lookup_feed_delay")
-        cls.LOOKUP_FEED_DELAY_RANDOMNESS = cls._load_config(
+        cls.LOOKUP_INITIAL_DELAY = cls._load_int("telegram", "updates", "lookup_initial_delay")
+        cls.LOOKUP_FEED_DELAY = cls._load_int("telegram", "updates", "lookup_feed_delay")
+        cls.LOOKUP_FEED_DELAY_RANDOMNESS = cls._load_int(
             "telegram", "updates", "lookup_feed_delay_randomness"
         )
-        cls.QUIET_HOURS = cls._load_config("telegram", "updates", "quiet_hours")
-        cls.SHUFFLE_UPDATES = cls._load_config("telegram", "updates", "shuffle_updates")
+        cls.QUIET_HOURS = cls._load_int_list("telegram", "updates", "quiet_hours")
+        cls.SHUFFLE_UPDATES = cls._load_bool("telegram", "updates", "shuffle_updates")
 
         # telegram messages
-        cls.MAX_MESSAGE_SIZE = cls._load_config("telegram", "messages", "max_message_size")
-        cls.MAX_MEDIA_ITEMS_PER_MESSAGE = cls._load_config(
+        cls.MAX_MESSAGE_SIZE = cls._load_int("telegram", "messages", "max_message_size")
+        cls.MAX_MEDIA_ITEMS_PER_MESSAGE = cls._load_int(
             "telegram", "messages", "max_media_items_per_message"
         )
-        cls.PIN_VIDEOS = cls._load_config("telegram", "messages", "pin_videos")
-        cls.DEFAULT_IMAGE_PATH = cls._load_config("telegram", "messages", "default_image_path")
-        cls.SEND_MEDIA_TIMEOUT = cls._load_config("telegram", "messages", "send_media_timeout")
-        cls.UPDATES_AS_REPLIES = cls._load_config("telegram", "messages", "updates_as_replies")
+        cls.PIN_VIDEOS = cls._load_bool("telegram", "messages", "pin_videos")
+        cls.DEFAULT_IMAGE_PATH = cls._load_str("telegram", "messages", "default_image_path")
+        cls.SEND_MEDIA_TIMEOUT = cls._load_int("telegram", "messages", "send_media_timeout")
+        cls.UPDATES_AS_REPLIES = cls._load_bool("telegram", "messages", "updates_as_replies")
 
         # logging
-        cls.LOG_PATH = cls._load_config("logging", "log_path")
-        cls.MAX_BYTES = cls._load_config("logging", "max_bytes")
-        cls.BACKUP_COUNT = cls._load_config("logging", "backup_count")
+        cls.LOG_PATH = cls._load_str("logging", "log_path")
+        cls.MAX_BYTES = cls._load_int("logging", "max_bytes")
+        cls.BACKUP_COUNT = cls._load_int("logging", "backup_count")
 
         # database
-        cls.DB_HOST = cls._load_config("database", "host")
-        cls.DB_PORT = cls._load_config("database", "port")
-        cls.DB_NAME = cls._load_config("database", "name")
-        cls.DB_FEEDS_NAME = cls._load_config("database", "feeds_name")
+        cls.DB_HOST = cls._load_str("database", "host")
+        cls.DB_PORT = cls._load_int("database", "port")
+        cls.DB_NAME = cls._load_str("database", "name")
+        cls.DB_FEEDS_NAME = cls._load_str("database", "feeds_name")
 
         # rss
-        with open(cls._load_config("rss", "feeds_yaml_filename"), "r") as feeds_path:
-            feeds = safe_load(feeds_path) or {}
-            cls.RSS_FEEDS = {name: data for name, data in feeds.items() if "url" in data}
+        if feeds_filename := cls._load_str("rss", "feeds_yaml_filename"):
+            with open(feeds_filename, "r") as feeds_path:
+                feeds = safe_load(feeds_path) or {}
+                cls.RSS_FEEDS = {name: data for name, data in feeds.items() if "url" in data}
 
         cls._validate()
 
@@ -133,9 +136,47 @@ class Settings:
             return safe_load(settings_yaml) or {}
 
     @classmethod
-    def _load_config(cls, *keys: str) -> Any:
+    def _load_str(cls, *keys: str) -> str | None:
+        if (val := cls._load(*keys)) is None:
+            return None
+        return str(val) if val is not None else None
+
+    @classmethod
+    def _load_int(cls, *keys: str) -> int | None:
+        if (val := cls._load(*keys)) is None:
+            return None
+        return int(val) if val is not None else None
+
+    @classmethod
+    def _load_bool(cls, *keys: str) -> bool | None:
+        if (val := cls._load(*keys)) is None:
+            return None
+        if isinstance(val, bool):
+            return val
+        return str(val).lower() in ("1", "true", "yes")
+
+    @classmethod
+    def _load_str_list(cls, *keys: str) -> list[str] | None:
+        if (val := cls._load(*keys)) is None:
+            return None
+        if isinstance(val, list):
+            return [str(x) for x in val]
+        return [item.strip() for item in str(val).split(",") if item.strip()]
+
+    @classmethod
+    def _load_int_list(cls, *keys: str) -> list[int] | None:
+        if (val := cls._load(*keys)) is None:
+            return None
+        if isinstance(val, list):
+            return [int(x) for x in val]
+        return [int(item.strip()) for item in str(val).split(",") if item.strip()]
+
+    @classmethod
+    def _load(cls, *keys: str) -> Any:
+        if (env_val := getenv("_".join(keys).upper())) is not None:
+            return env_val
         return reduce(
-            lambda table, key: table.get(key) if table is not None else None,
+            lambda table, key: table.get(key) if isinstance(table, dict) else None,
             keys,
             cls._SETTINGS,
         )
