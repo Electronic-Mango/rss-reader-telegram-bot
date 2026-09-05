@@ -1,6 +1,4 @@
-"""
-Main module, configures logging, initialized the DB and starts the bot.
-"""
+"""Main module, configures logging, initialized the DB and starts the bot."""
 
 from logging.handlers import RotatingFileHandler
 

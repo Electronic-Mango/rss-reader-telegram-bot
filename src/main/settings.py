@@ -68,5 +68,5 @@ DB_NAME = _load_config("database", "name")
 DB_FEEDS_NAME = _load_config("database", "feeds_name")
 
 # rss
-with open(_load_config("rss", "feeds_yaml_filename"), "r") as feeds_yml:
+with open(_load_config("rss", "feeds_yaml_filename")) as feeds_yml:
     RSS_FEEDS = {name: data for name, data in safe_load(feeds_yml).items() if "url" in data}

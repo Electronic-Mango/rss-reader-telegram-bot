@@ -1,6 +1,4 @@
-"""
-Module handling the "add" command, allowing users to add new RSS subscriptions.
-"""
+"""Module handling the "add" command, allowing users to add new RSS subscriptions."""
 
 from asyncio import gather
 from enum import Enum, auto
@@ -57,7 +55,7 @@ def add_followup_handler() -> ConversationHandler:
 async def _request_feed_type(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:
     logger.info(f"[{update.effective_chat.id}] User requested new subscription")
     keyboard = [
-        [InlineKeyboardButton(name, callback_data=_AddFeedData(name))] for name in RSS_FEEDS.keys()
+        [InlineKeyboardButton(name, callback_data=_AddFeedData(name))] for name in RSS_FEEDS
     ]
     await update.message.reply_text(
         "Select source:",

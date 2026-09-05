@@ -1,6 +1,4 @@
-"""
-Module handling all RSS requests.
-"""
+"""Module handling all RSS requests."""
 
 from asyncio import to_thread
 from datetime import datetime
@@ -45,7 +43,7 @@ def feed_is_valid(feed: FeedParserDict) -> bool:
 
 
 def get_latest_data(feed: FeedParserDict) -> tuple[str, str, struct_time]:
-    """Get data (entry ID, link, date) of latest entry for a given feed"""
+    """Get data (entry ID, link, date) of latest entry for a given feed."""
     logger.info(f"Getting data from latest entry for [{feed.href}]")
     entries = get_sorted_entries(feed)
     latest_entry = entries[0]
@@ -53,7 +51,7 @@ def get_latest_data(feed: FeedParserDict) -> tuple[str, str, struct_time]:
 
 
 def get_data(entry: FeedParserDict) -> tuple[str, str, struct_time]:
-    """Return data (entry ID, link, data) for a given entry"""
+    """Return data (entry ID, link, data) for a given entry."""
     id = entry.get("id")
     link = entry.get("link")
     date = _get_entry_date(entry)
@@ -78,7 +76,7 @@ def get_not_handled_entries(
 def get_sorted_entries(feed: FeedParserDict) -> list[FeedParserDict]:
     if not (entries := feed.get("entries")):
         return []
-    return sorted(entries, key=lambda entry: _get_entry_date(entry), reverse=True)
+    return sorted(entries, key=_get_entry_date, reverse=True)
 
 
 def _not_latest_entry(

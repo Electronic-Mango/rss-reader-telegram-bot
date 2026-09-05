@@ -35,7 +35,7 @@ def test_parse_description_description_enabled(summary, expected_description) ->
 
 @patch("feed.parser.RSS_FEEDS", {FEED_TYPE: {"show_description": True, "filters": FILTERS}})
 def test_parse_description_with_filtering() -> None:
-    assert EXPECTED_FILTERED_DESCRIPTION == parse_description(ENTRY, FEED_TYPE)
+    assert parse_description(ENTRY, FEED_TYPE) == EXPECTED_FILTERED_DESCRIPTION
 
 
 @patch("feed.parser.RSS_FEEDS", {FEED_TYPE: {}})

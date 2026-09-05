@@ -1,6 +1,4 @@
-"""
-States used by "subscriptions" command conversation handler.
-"""
+"""States used by "subscriptions" command conversation handler."""
 
 from enum import Enum, auto
 

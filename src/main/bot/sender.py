@@ -217,8 +217,7 @@ async def _media_object(media: bytes, media_type: str) -> InputMediaPhoto | Inpu
     if _is_video(media_type):
         width, height = await to_thread(_probe_video_size, media)
         return InputMediaVideo(media, supports_streaming=True, width=width, height=height)
-    else:
-        return InputMediaPhoto(await to_thread(_trim_image, media))
+    return InputMediaPhoto(await to_thread(_trim_image, media))
 
 
 def _is_video(media_type: str) -> bool:

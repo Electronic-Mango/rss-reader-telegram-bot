@@ -17,8 +17,7 @@ MOCKED_FEED_PARSER_DICT = FeedParserDict({"id": "FEED-ID"})
 def mocked_parse(content: bytes, response_headers=None) -> FeedParserDict | None:
     if content == FEED_CONTENT and response_headers == FEED_HEADERS:
         return MOCKED_FEED_PARSER_DICT
-    else:
-        return None
+    return None
 
 
 @patch("feed.reader.RSS_FEEDS", {FEED_TYPE: {"url": FEED_LINK}})
