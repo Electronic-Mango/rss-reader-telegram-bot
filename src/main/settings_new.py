@@ -82,9 +82,7 @@ class Settings:
         cls.LOOKUP_FEED_DELAY_RANDOMNESS = cls._load_int(
             "telegram", "updates", "lookup_feed_delay_randomness", default=0
         )
-        cls.QUIET_HOURS = cls._load_int_list(
-            "telegram", "updates", "quiet_hours", default=[0, 1, 2, 3, 4, 5, 6, 7, 23]
-        )
+        cls.QUIET_HOURS = cls._load_int_list("telegram", "updates", "quiet_hours", default=[])
         cls.SHUFFLE_UPDATES = cls._load_bool(
             "telegram", "updates", "shuffle_updates", default=False
         )
@@ -98,7 +96,7 @@ class Settings:
         )
         cls.PIN_VIDEOS = cls._load_bool("telegram", "messages", "pin_videos", default=True)
         cls.DEFAULT_IMAGE_PATH = cls._load_str(
-            "telegram", "messages", "default_image_path", default="/resources/default_image.png"
+            "telegram", "messages", "default_image_path", default=None
         )
         cls.SEND_MEDIA_TIMEOUT = cls._load_int(
             "telegram", "messages", "send_media_timeout", default=180
