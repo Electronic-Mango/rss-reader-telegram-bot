@@ -48,7 +48,7 @@ def add_followup_handler() -> ConversationHandler:
         fallbacks=[CommandHandler("cancel", _cancel, user_filter())],
         allow_reentry=True,
         name="add_followup_handler",
-        persistent=True,
+        persistent=bool(Settings.PERSISTENCE_FILE),
     )
 
 
