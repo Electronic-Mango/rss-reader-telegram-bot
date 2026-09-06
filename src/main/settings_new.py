@@ -26,9 +26,9 @@ class Settings:
     _SETTINGS = None
 
     # Telegram
-    TOKEN: str = None
+    TOKEN: str | None = None  # Bot will fail on startup for None
     ALLOWED_USERNAMES: list[str] = None
-    PERSISTENCE_FILE: str = None
+    PERSISTENCE_FILE: str | None = None
 
     # Telegram updates
     LOOKUP_INTERVAL: int = None
@@ -43,12 +43,12 @@ class Settings:
     MAX_MESSAGE_SIZE: int = None
     MAX_MEDIA_ITEMS_PER_MESSAGE: int = None
     PIN_VIDEOS: bool = None
-    DEFAULT_IMAGE_PATH: str = None
+    DEFAULT_IMAGE_PATH: str | None = None
     SEND_MEDIA_TIMEOUT: int = None
     UPDATES_AS_REPLIES: bool = None
 
     # Logging
-    LOG_PATH: str = None
+    LOG_PATH: str | None = None
     MAX_BYTES: int = None
     BACKUP_COUNT: int = None
 
@@ -75,7 +75,6 @@ class Settings:
         )
         cls.PERSISTENCE_FILE = cls._load_str("telegram", "persistence_file")
 
-        # telegram updates
         cls.LOOKUP_INTERVAL = cls._load_int(
             "telegram", "updates", "lookup_interval", default=3600
         )
@@ -98,7 +97,6 @@ class Settings:
             "telegram", "updates", "shuffle_updates", default=False
         )
 
-        # telegram messages
         cls.MAX_MESSAGE_SIZE = cls._load_int(
             "telegram", "messages", "max_message_size", default=1024
         )
@@ -109,7 +107,7 @@ class Settings:
             "telegram", "messages", "pin_videos", default=True
         )
         cls.DEFAULT_IMAGE_PATH = cls._load_str(
-            "telegram", "messages", "default_image_path", default=None
+            "telegram", "messages", "default_image_path"
         )
         cls.SEND_MEDIA_TIMEOUT = cls._load_int(
             "telegram", "messages", "send_media_timeout", default=180
@@ -118,25 +116,24 @@ class Settings:
             "telegram", "messages", "updates_as_replies", default=True
         )
 
-        # logging
         cls.LOG_PATH = cls._load_str("logging", "log_path")
         cls.MAX_BYTES = cls._load_int("logging", "max_bytes", default=0)
         cls.BACKUP_COUNT = cls._load_int("logging", "backup_count", default=0)
 
-        # database
         cls.DB_HOST = cls._load_str("database", "host", default="localhost")
         cls.DB_PORT = cls._load_int("database", "port", default=27017)
         cls.DB_NAME = cls._load_str("database", "name", default="rss_reader")
         cls.DB_FEEDS_NAME = cls._load_str("database", "feeds_name", default="feed_data")
 
-        # rss
-        if feeds_filename := cls._load_str(
+        feeds_filename = cls._load_str(
             "rss", "feeds_yaml_filename", default="feed_links.yml"
-        ):
+        )
+        if feeds_filename:
             with Path(feeds_filename).open() as feeds_path:
-                feeds = safe_load(feeds_path) or {}
                 cls.RSS_FEEDS = {
-                    name: data for name, data in feeds.items() if "url" in data
+                    name: data
+                    for name, data in (safe_load(feeds_path) or {}).items()
+                    if "url" in data
                 }
 
     @classmethod
