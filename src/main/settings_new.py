@@ -147,15 +147,13 @@ class Settings:
     ) -> None:
         load_dotenv()
         default_settings = default_settings or (
-            Path(default_settings_env)
-            if (
-                default_settings_env := getenv(cls._DEFAULT_SETTINGS_PATH_VARIABLE_NAME)
-            )
+            Path(default_env)
+            if (default_env := getenv(cls._DEFAULT_SETTINGS_PATH_VARIABLE_NAME))
             else Path("settings.yml")
         )
         custom_settings = custom_settings or (
-            [Path(p) for p in custom_settings_env.split(",")]
-            if (custom_settings_env := getenv(cls._CUSTOM_SETTINGS_PATH_VARIABLE_NAME))
+            [Path(p) for p in custom_env.split(",")]
+            if (custom_env := getenv(cls._CUSTOM_SETTINGS_PATH_VARIABLE_NAME))
             else []
         )
         cls._SETTINGS = merge(
