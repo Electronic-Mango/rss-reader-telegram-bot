@@ -1,7 +1,12 @@
 # YAML file with all configuration variables needed by the bot.
-# Values from this file can be overwritten by another YAML
-# which path is supplied by CUSTOM_SETTINGS_PATH environment variable.
-# Second YAML doesn't have to contain all parameters, only the ones to overwrite.
+# Values from this file can be overwritten by additional, "custom" YAML files.
+# Additional YAMLs don't have to contain all parameters, only the ones to overwrite.
+# Individual settings can be overridden by environment variables,
+# which contain the YAML key path in uppercase, with underscores instead of dots.
+# For example:
+#  - TELEGRAM_TOKEN will override telegram.token
+#  - TELEGRAM_UPDATES_LOOKUP_INTERVAL will override telegram.updates.lookup_interval
+#  - LOGGING_LOG_PATH will override logging.log_path
 
 telegram:
   # Your telegram bot token.
