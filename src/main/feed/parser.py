@@ -14,7 +14,7 @@ from typing import Any
 from bs4 import BeautifulSoup
 from feedparser import FeedParserDict
 
-from settings import RSS_FEEDS
+from settings_new import Settings
 
 ATTRS_FOR_DESCRIPTION = ["title", "alt"]
 
@@ -24,16 +24,18 @@ def parse_link(entry: FeedParserDict) -> str | None:
 
 
 def parse_description(entry: FeedParserDict, feed_type: str) -> str | None:
-    if not RSS_FEEDS[feed_type].get("show_description") or not entry.get("summary"):
+    feed_data = Settings.RSS_FEEDS[feed_type]
+    if not feed_data.get("show_description") or not (summary := entry.get("summary")):
         return None
-    desc = _get_description_from_summary(entry.summary)
-    return escape(_filter_text(desc, RSS_FEEDS[feed_type])) if desc else None
+    desc = _get_description_from_summary(summary)
+    return escape(_filter_text(desc, feed_data)) if desc else None
 
 
 def parse_title(entry: FeedParserDict, feed_type: str) -> str | None:
-    if not RSS_FEEDS[feed_type].get("show_title") or not entry.get("title"):
+    feed_data = Settings.RSS_FEEDS[feed_type]
+    if not feed_data.get("show_title") or not (title := entry.get("title")):
         return None
-    return f"<b>{escape(_filter_text(entry.title, RSS_FEEDS[feed_type]).strip())}</b>"
+    return f"<b>{escape(_filter_text(title, feed_data).strip())}</b>"
 
 
 def _get_description_from_summary(summary: str) -> str | None:

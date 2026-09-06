@@ -4,6 +4,7 @@ from feedparser import FeedParserDict
 from pytest import mark
 
 from feed.parser import parse_description
+from settings_new import Settings
 
 FEED_TYPE = "FEED_TYPE"
 ENTRY = FeedParserDict(
@@ -14,7 +15,7 @@ FILTERS = ["nk te", "w\nt"]
 EXPECTED_FILTERED_DESCRIPTION = "bold text\n\nlixt raext"
 
 
-@patch("feed.parser.RSS_FEEDS", {FEED_TYPE: {"show_description": True}})
+@patch.object(Settings, "RSS_FEEDS", {FEED_TYPE: {"show_description": True}})
 @mark.parametrize(
     ("summary", "expected_description"),
     [
@@ -41,13 +42,13 @@ def test_parse_description_description_enabled(summary, expected_description) ->
     assert expected_description == parse_description(entry, FEED_TYPE)
 
 
-@patch(
-    "feed.parser.RSS_FEEDS", {FEED_TYPE: {"show_description": True, "filters": FILTERS}}
+@patch.object(
+    Settings, "RSS_FEEDS", {FEED_TYPE: {"show_description": True, "filters": FILTERS}}
 )
 def test_parse_description_with_filtering() -> None:
     assert parse_description(ENTRY, FEED_TYPE) == EXPECTED_FILTERED_DESCRIPTION
 
 
-@patch("feed.parser.RSS_FEEDS", {FEED_TYPE: {}})
+@patch.object(Settings, "RSS_FEEDS", {FEED_TYPE: {}})
 def test_parse_description_description_disabled() -> None:
     assert parse_description(ENTRY, FEED_TYPE) is None
