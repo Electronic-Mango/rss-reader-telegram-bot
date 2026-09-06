@@ -4,13 +4,14 @@ from feedparser import FeedParserDict
 from pytest import mark
 
 from feed.reader import feed_is_valid
+from settings_new import Settings
 
 FEED_TYPE = "FEED_TYPE"
 FEED_NAME = "FEED_NAME"
 FEED_LINK = "FEED_LINK"
 
 
-@patch("feed.reader.RSS_FEEDS", {FEED_TYPE: {"url": FEED_LINK}})
+@patch.object(Settings, "RSS_FEEDS", {FEED_TYPE: {"url": FEED_LINK}})
 @mark.parametrize(
     argnames=("parsed_rss", "expected_validity"),
     argvalues=[
