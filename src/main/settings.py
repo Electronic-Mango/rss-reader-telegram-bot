@@ -11,7 +11,6 @@ from functools import reduce
 from os import getenv
 from pathlib import Path
 from typing import Any
-from json import dumps
 
 from dotenv import load_dotenv
 from loguru import logger
@@ -159,7 +158,6 @@ class Settings:
             cls._load_settings(default_settings),
             *[cls._load_settings(custom) for custom in custom_settings],
         )
-        logger.info(f"Final merged settings:\n{dumps(cls._SETTINGS, indent=4)}")
 
     @classmethod
     def _load_settings(cls, settings_path: Path) -> dict[str, Any]:
