@@ -36,7 +36,7 @@ from bot.command.subs.handler import (
 from bot.error_handler import handle_errors
 from bot.update_checker import cancel_active_update_check, check_for_all_updates
 from db.client import initialize_db
-from settings import LOOKUP_INITIAL_DELAY, LOOKUP_INTERVAL, PERSISTENCE_FILE, TOKEN
+from settings_new import Settings
 
 _UPDATE_HANDLERS = [
     add_initial_handler(),
@@ -61,10 +61,14 @@ def run_bot() -> None:
 def _prepare_application() -> Application:
     return (
         ApplicationBuilder()
-        .token(TOKEN)
+        .token(Settings.TOKEN)
         .defaults(Defaults("HTML"))
         .arbitrary_callback_data(True)
-        .persistence(PicklePersistence(PERSISTENCE_FILE))
+        .persistence(
+            PicklePersistence(Settings.PERSISTENCE_FILE)
+            if Settings.PERSISTENCE_FILE
+            else None
+        )
         .post_init(_post_init)
         .build()
     )
@@ -96,7 +100,7 @@ def _start_checking_for_updates(job_queue: JobQueue) -> None:
     logger.info("Starting checking for updates...")
     job_queue.run_repeating(
         callback=check_for_all_updates,
-        interval=LOOKUP_INTERVAL,
-        first=LOOKUP_INITIAL_DELAY,
+        interval=Settings.LOOKUP_INTERVAL,
+        first=Settings.LOOKUP_INITIAL_DELAY,
         job_kwargs={"max_instances": 1, "coalesce": True},
     )
