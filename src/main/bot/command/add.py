@@ -16,7 +16,7 @@ from telegram.ext import (
 )
 from telegram.ext.filters import COMMAND, TEXT
 
-from bot.user_filter import USER_FILTER
+from bot.user_filter import user_filter
 from db.wrapper import feed_is_already_stored, store_feed_data
 from feed.reader import feed_is_valid, get_latest_data, get_parsed_feed
 from settings import Settings
@@ -33,7 +33,7 @@ class _AddFeedData(NamedTuple):
 
 
 def add_initial_handler() -> CommandHandler:
-    return CommandHandler("add", _request_feed_type, USER_FILTER)
+    return CommandHandler("add", _request_feed_type, user_filter())
 
 
 def add_followup_handler() -> ConversationHandler:
@@ -41,11 +41,11 @@ def add_followup_handler() -> ConversationHandler:
         entry_points=[CallbackQueryHandler(_request_feed_names, _AddFeedData)],
         states={
             _ConversationState.FEED_NAME: [
-                MessageHandler(USER_FILTER & TEXT & ~COMMAND, _handle_feed_names),
-                CommandHandler("cancel", _cancel, USER_FILTER),
+                MessageHandler(user_filter() & TEXT & ~COMMAND, _handle_feed_names),
+                CommandHandler("cancel", _cancel, user_filter()),
             ],
         },
-        fallbacks=[CommandHandler("cancel", _cancel, USER_FILTER)],
+        fallbacks=[CommandHandler("cancel", _cancel, user_filter())],
         allow_reentry=True,
         name="add_followup_handler",
         persistent=True,

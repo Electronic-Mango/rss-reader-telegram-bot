@@ -9,13 +9,13 @@ from loguru import logger
 from telegram import Update
 from telegram.ext import CommandHandler, ContextTypes
 
-from bot.user_filter import USER_FILTER
+from bot.user_filter import user_filter
 
 CANCEL_HELP_MESSAGE = "/cancel - cancel the current operation"
 
 
 def cancel_command_handler() -> CommandHandler:
-    return CommandHandler("cancel", _cancel, USER_FILTER)
+    return CommandHandler("cancel", _cancel, user_filter())
 
 
 async def _cancel(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:

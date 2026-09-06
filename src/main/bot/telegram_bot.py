@@ -38,18 +38,6 @@ from bot.update_checker import cancel_active_update_check, check_for_all_updates
 from db.client import initialize_db
 from settings import Settings
 
-_UPDATE_HANDLERS = [
-    add_initial_handler(),
-    add_followup_handler(),
-    cancel_command_handler(),
-    hello_command_handler(),
-    remove_all_initial_handler(),
-    remove_all_followup_handler(),
-    start_help_command_handler(),
-    subscriptions_initial_handler(),
-    subscriptions_followup_handler(),
-]
-
 
 def run_bot() -> None:
     application = _prepare_application()
@@ -92,7 +80,19 @@ def _handle_shutdown_signal(application: Application) -> None:
 
 def _configure_handlers(application: Application) -> None:
     logger.info("Configuring handlers...")
-    application.add_handlers(_UPDATE_HANDLERS)
+    application.add_handlers(
+        [
+            add_initial_handler(),
+            add_followup_handler(),
+            cancel_command_handler(),
+            hello_command_handler(),
+            remove_all_initial_handler(),
+            remove_all_followup_handler(),
+            start_help_command_handler(),
+            subscriptions_initial_handler(),
+            subscriptions_followup_handler(),
+        ]
+    )
     application.add_error_handler(handle_errors)
 
 

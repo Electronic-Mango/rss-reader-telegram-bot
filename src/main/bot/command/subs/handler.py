@@ -25,12 +25,12 @@ from bot.command.subs.query_data import (
 )
 from bot.command.subs.remove_feed import remove_subscription, request_confirmation
 from bot.command.subs.send_latest_update import send_latest_update
-from bot.user_filter import USER_FILTER
+from bot.user_filter import user_filter
 
 
 def subscriptions_initial_handler() -> CommandHandler:
     """Create initial handler responding to "subscriptions" command itself."""
-    return CommandHandler("subscriptions", initial_list_feed_types, USER_FILTER)
+    return CommandHandler("subscriptions", initial_list_feed_types, user_filter())
 
 
 def subscriptions_followup_handler() -> ConversationHandler:
