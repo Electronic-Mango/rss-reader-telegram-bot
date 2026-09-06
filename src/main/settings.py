@@ -126,16 +126,7 @@ class Settings:
         cls.DB_NAME = cls._load_str("database", "name", default="rss_reader")
         cls.DB_FEEDS_NAME = cls._load_str("database", "feeds_name", default="feed_data")
 
-        feeds_filename = cls._load_str(
-            "rss", "feeds_yaml_filename", default="feed_links.yml"
-        )
-        if feeds_filename and (feeds_path := Path(feeds_filename)).is_file():
-            with feeds_path.open() as feeds_file:
-                cls.RSS_FEEDS = {
-                    name: data
-                    for name, data in (safe_load(feeds_file) or {}).items()
-                    if "url" in data
-                }
+        cls._load_rss_feeds()
 
     @classmethod
     def _prepare_settings(
@@ -206,11 +197,24 @@ class Settings:
     @classmethod
     def _load(cls, *keys: str) -> Any:
         if (env_val := getenv("_".join(keys).upper())) is not None:
-            key_name = ".".join(keys)
-            logger.info(f"Loading value for [{key_name}] from environment")
+            logger.info(f"Loading value for [{'.'.join(keys)}] from environment")
             return env_val or None
         return reduce(
             lambda table, key: table.get(key) if isinstance(table, dict) else None,
             keys,
             cls._SETTINGS,
         )
+
+    @classmethod
+    def _load_rss_feeds(cls) -> None:
+        filename = cls._load_str("rss", "feeds_yaml_filename", default="feed_links.yml")
+        if not filename or not (feeds_path := Path(filename)).is_file():
+            logger.error(f"RSS feeds YAML file not found: [{filename}]")
+            cls.RSS_FEEDS = {}
+            return
+        with feeds_path.open() as feeds_file:
+            cls.RSS_FEEDS = {
+                name: data
+                for name, data in (safe_load(feeds_file) or {}).items()
+                if "url" in data
+            }
