@@ -37,13 +37,17 @@ This bot was built with `Python 3.12` and [`python-telegram-bot`](https://github
 
 ### Bot parameters
 Configuration parameters for the bot are stored in a configuration YAML file.
-Default parameters are stored in `settings.yml` file in the project root.
+Default parameters are stored in `settings.yml` file.
 Detailed description of each parameter is described there.
 
 Almost all fields are filled with sensible defaults, except the Telegram bot token.
-Values from the default file can be overwritten by a custom YAML file, which path can be supplied by `CUSTOM_SETTINGS_PATH` environment variable.
-Only specific parameters can be configured in the custom file.
-All parameters missing from custom YAML will be taken from default YAML instead.
+The default configuration file path can be changed with `--default-settings-path` or the `DEFAULT_SETTINGS_PATH` environment variable.
+If neither is provided, the bot uses `settings.yml` from the current working directory.
+
+Values from the default file can be overwritten by one or more custom YAML files.
+Supply their paths with `--custom-settings-path path/to/first.yml path/to/second.yml`, or use a comma-separated `CUSTOM_SETTINGS_PATH` environment variable.
+Command-line paths take precedence over environment variables.
+Only specific parameters need to be configured in custom files; missing values fall back to the default configuration or built-in defaults.
 
 This way you can provide your own Telegram bot token without modifying project files.
 This can be especially useful when running the bot in a Docker container.
@@ -54,6 +58,14 @@ Most basic custom YAML can contain only Telegram bot token:
 telegram:
   token: your-telegram-bot-token
 ```
+
+Individual configuration values can also be supplied through environment variables.
+The variable name is the YAML key path joined with underscores and converted to uppercase.
+For example, `TELEGRAM_TOKEN` overrides `telegram.token`, `TELEGRAM_UPDATES_LOOKUP_INTERVAL` overrides `telegram.updates.lookup_interval`, and `DATABASE_HOST` overrides `database.host`.
+Environment variables take precedence over values from all YAML files.
+Comma-separated values can be used for list parameters, such as `TELEGRAM_ALLOWED_USERNAMES=user1,user2`.
+
+The bot also loads variables from a local `.env` file when present.
 
 
 ### Restricting access to bot commands
@@ -178,15 +190,15 @@ When it's disabled feeds are always checked in the order they're returned from t
 ### Docker
 
 There's a Dockerfile in the repo, which builds the bot image using `python:3.12-slim` as the base image and installs dependencies via `uv`.
-You can set all configuration parameters using environment variables for Docker container, rather than modifying project files before building.
+You can set any configuration parameter using environment variables for Docker container, rather than modifying project files before building.
 
 Keep in mind, that running the bot in a Docker container might require changing DB IP address (as the default one is `localhost`) and possibly RSS feed links if you're using a self-hosted RSS feed, like [`RSS-Bridge`](https://github.com/RSS-Bridge/rss-bridge) or [`RSSHub`](https://github.com/DIYgod/RSSHub).
 
-When supplying configuration parameters, you can add a custom configuration YAML to a mounted volume and point to it via `CUSTOM_SETTINGS_PATH` environment variable in the container.
+When supplying configuration parameters, you can add custom configuration YAML files to a mounted volume and point to them with `CUSTOM_SETTINGS_PATH` in the container.
 This way configuration YAML with your bot token isn't inserted directly in the container.
-Also, you can provide custom configuration without modifying project files.
+You can also use `DEFAULT_SETTINGS_PATH` to replace the bundled default configuration file.
 
-You can in a similar way supply feed links.
+You can in a similar way supply feed links by overriding `RSS_FEEDS_YAML_FILENAME`.
 
 When deploying the bot via Docker I'd also recommend changing the path to persistence pickled file into a mounted volume.
 Otherwise, it will be stored directly in the container, and it will be removed with it.
