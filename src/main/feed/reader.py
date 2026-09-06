@@ -10,7 +10,7 @@ from feedparser import FeedParserDict, parse
 from loguru import logger
 from niquests import aget
 
-from settings_new import Settings
+from settings import Settings
 
 
 async def get_parsed_feed(feed_type: str, feed_name: str) -> FeedParserDict:

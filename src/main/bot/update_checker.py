@@ -36,7 +36,7 @@ from feed.reader import (
     get_not_handled_entries,
     get_parsed_feed,
 )
-from settings_new import Settings
+from settings import Settings
 
 _active_update_check: Task[None] | None = None
 

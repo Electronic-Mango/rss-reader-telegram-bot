@@ -26,7 +26,7 @@ from niquests import AsyncResponse, aget
 from PIL import Image
 from telegram import Bot, InputMediaPhoto, InputMediaVideo, Message, ReplyParameters
 
-from settings_new import Settings
+from settings import Settings
 
 DEFAULT_SENDER_TEXT = "By <b>{name}</b> on {type}"
 # Per Telegram Bot API limits: images up to 10 MB, videos/other files up to 50 MB.

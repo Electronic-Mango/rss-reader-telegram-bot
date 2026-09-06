@@ -36,7 +36,7 @@ from bot.command.subs.handler import (
 from bot.error_handler import handle_errors
 from bot.update_checker import cancel_active_update_check, check_for_all_updates
 from db.client import initialize_db
-from settings_new import Settings
+from settings import Settings
 
 _UPDATE_HANDLERS = [
     add_initial_handler(),

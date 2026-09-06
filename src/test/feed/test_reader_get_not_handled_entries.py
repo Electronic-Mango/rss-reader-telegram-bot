@@ -5,7 +5,7 @@ from feedparser import FeedParserDict
 from pytest import mark
 
 from feed.reader import get_not_handled_entries
-from settings_new import Settings
+from settings import Settings
 
 FEED_TYPE = "FEED_TYPE"
 FEED_NAME = "FEED_NAME"

@@ -4,7 +4,7 @@ from feedparser import FeedParserDict
 from pytest import mark
 
 from feed.parser import parse_description
-from settings_new import Settings
+from settings import Settings
 
 FEED_TYPE = "FEED_TYPE"
 ENTRY = FeedParserDict(

@@ -19,7 +19,7 @@ from pymongo.asynchronous.collection import AsyncCollection
 from pymongo.asynchronous.cursor import AsyncCursor
 from pymongo.results import DeleteResult, InsertOneResult
 
-from settings_new import Settings
+from settings import Settings
 
 _feeds_collection: AsyncCollection | None = None
 
