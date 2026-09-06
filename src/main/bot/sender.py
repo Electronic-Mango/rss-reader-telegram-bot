@@ -26,15 +26,7 @@ from niquests import AsyncResponse, aget
 from PIL import Image
 from telegram import Bot, InputMediaPhoto, InputMediaVideo, Message, ReplyParameters
 
-from settings import (
-    DEFAULT_IMAGE_PATH,
-    MAX_MEDIA_ITEMS_PER_MESSAGE,
-    MAX_MESSAGE_SIZE,
-    PIN_VIDEOS,
-    RSS_FEEDS,
-    SEND_MEDIA_TIMEOUT,
-    UPDATES_AS_REPLIES,
-)
+from settings_new import Settings
 
 DEFAULT_SENDER_TEXT = "By <b>{name}</b> on {type}"
 # Per Telegram Bot API limits: images up to 10 MB, videos/other files up to 50 MB.
@@ -56,7 +48,7 @@ async def send_update(
     description: str,
     latest_message_id: int | None,
     media_links: list[str] | None = None,
-    pin_videos: bool = PIN_VIDEOS,
+    pin_videos: bool = Settings.PIN_VIDEOS,
 ) -> int:
     logger.info(f"[{chat_id}] Sending update [{feed_name}] [{feed_type}]")
     message = _format_message(chat_id, feed_type, feed_name, link, title, description)
@@ -66,7 +58,7 @@ async def send_update(
     if not media:
         logger.info(f"[{chat_id}] No media downloaded from [{media_links}]")
         return await _send_text(bot, chat_id, message, reply_params)
-    media_groups = list(sliced(media, MAX_MEDIA_ITEMS_PER_MESSAGE))
+    media_groups = list(sliced(media, Settings.MAX_MEDIA_ITEMS_PER_MESSAGE))
     last_index = len(media_groups) - 1
     message_id = None
     for index, media_group in enumerate(media_groups):
@@ -104,12 +96,13 @@ def _format_message(
 
 
 def _prepare_sender_text(feed_type: str, feed_name: str) -> str:
-    text_format = RSS_FEEDS[feed_type].get("sender_text_format") or DEFAULT_SENDER_TEXT
+    rss_feed = Settings.RSS_FEEDS[feed_type]
+    text_format = rss_feed.get("sender_text_format") or DEFAULT_SENDER_TEXT
     return str(text_format).format(name=escape(feed_name), type=escape(feed_type))
 
 
 def _trim_message(chat_id: int, message: str, appended_size: int) -> str:
-    effective_max_message_size = MAX_MESSAGE_SIZE - appended_size
+    effective_max_message_size = Settings.MAX_MESSAGE_SIZE - appended_size
     if len(message) > effective_max_message_size:
         logger.info(f"[{chat_id}] Trimming message")
         effective_max_number_of_characters = effective_max_message_size - len("...")
@@ -118,7 +111,7 @@ def _trim_message(chat_id: int, message: str, appended_size: int) -> str:
 
 
 def _prepare_reply_params(latest_message_id: int | None) -> ReplyParameters | None:
-    if not UPDATES_AS_REPLIES or latest_message_id is None:
+    if not Settings.UPDATES_AS_REPLIES or latest_message_id is None:
         return None
     return ReplyParameters(latest_message_id, allow_sending_without_reply=True)
 
@@ -126,10 +119,10 @@ def _prepare_reply_params(latest_message_id: int | None) -> ReplyParameters | No
 async def _send_text(
     bot: Bot, chat_id: int, message: str, reply_params: ReplyParameters | None
 ) -> int:
-    if (default_img := _load_image(DEFAULT_IMAGE_PATH)) is None:
+    if (default_img := _load_image(Settings.DEFAULT_IMAGE_PATH)) is None:
         msg = await bot.send_message(chat_id, message, reply_parameters=reply_params)
         return msg.message_id
-    logger.info(f"[{chat_id}] Sending default image [{DEFAULT_IMAGE_PATH}]")
+    logger.info(f"[{chat_id}] Sending default image [{Settings.DEFAULT_IMAGE_PATH}]")
     image_bytes = BytesIO()
     await to_thread(default_img.save, image_bytes, format=default_img.format or "PNG")
     media = [(image_bytes.getvalue(), default_img.format or "PNG")]
@@ -217,8 +210,8 @@ async def _send_media_group(
         input_media_list,
         caption=message,
         reply_parameters=reply_params,
-        read_timeout=SEND_MEDIA_TIMEOUT,
-        write_timeout=SEND_MEDIA_TIMEOUT,
+        read_timeout=Settings.SEND_MEDIA_TIMEOUT,
+        write_timeout=Settings.SEND_MEDIA_TIMEOUT,
     )
     if pin_videos:
         await _pin_videos(chat_id, sent_messages)
