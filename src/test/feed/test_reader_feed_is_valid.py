@@ -15,13 +15,62 @@ FEED_LINK = "FEED_LINK"
 @mark.parametrize(
     argnames=("parsed_rss", "expected_validity"),
     argvalues=[
-        (FeedParserDict({"href": FEED_LINK, "status": 200, "entries": [None]}), True),
-        (FeedParserDict({"href": FEED_LINK, "status": 301, "entries": [None]}), True),
+        (
+            FeedParserDict(
+                {
+                    "href": FEED_LINK,
+                    "status": 200,
+                    "entries": [FeedParserDict({"id": "ID", "link": "LINK"})],
+                }
+            ),
+            True,
+        ),
+        (
+            FeedParserDict(
+                {
+                    "href": FEED_LINK,
+                    "status": 301,
+                    "entries": [FeedParserDict({"id": "ID"})],
+                }
+            ),
+            True,
+        ),
         (FeedParserDict({"href": FEED_LINK, "status": 200, "entries": []}), False),
         (FeedParserDict({"href": FEED_LINK, "status": 301, "entries": []}), False),
         (FeedParserDict({"href": FEED_LINK, "status": 200}), False),
         (FeedParserDict({"href": FEED_LINK, "status": 301}), False),
-        (FeedParserDict({"href": FEED_LINK, "status": 400, "entries": [None]}), False),
+        (FeedParserDict({"href": FEED_LINK, "status": 200, "entries": [{}]}), False),
+        (
+            FeedParserDict(
+                {
+                    "href": FEED_LINK,
+                    "status": 200,
+                    "entries": [
+                        {
+                            "link": "LINK",
+                            "published_parsed": (2000, 1, 1, 0, 0, 0, 0, 1, -1),
+                        }
+                    ],
+                }
+            ),
+            True,
+        ),
+        (
+            FeedParserDict(
+                {"href": FEED_LINK, "status": 200, "entries": [{"link": "LINK"}]}
+            ),
+            True,
+        ),
+        (
+            FeedParserDict(
+                {
+                    "href": FEED_LINK,
+                    "status": 400,
+                    "entries": [FeedParserDict({"id": "ID", "link": "LINK"})],
+                }
+            ),
+            False,
+        ),
     ],
 )
 def test_feed_is_valid(parsed_rss: FeedParserDict, expected_validity: bool) -> None:

@@ -11,36 +11,61 @@ FEED_TYPE = "FEED_TYPE"
 FEED_NAME = "FEED_NAME"
 FEED_LINK = "FEED_LINK"
 ENTRIES = [
-    FeedParserDict(
-        {"published_parsed": strptime("01.01.2001", "%d.%m.%Y"), "id": "ID-1"}
-    ),
-    FeedParserDict(
-        {"published_parsed": strptime("02.02.2002", "%d.%m.%Y"), "id": "ID-2"}
-    ),
-    FeedParserDict(
-        {"published_parsed": strptime("03.03.2003", "%d.%m.%Y"), "id": "ID-3"}
-    ),
-    FeedParserDict(
-        {"published_parsed": strptime("04.04.2004", "%d.%m.%Y"), "id": "ID-4"}
-    ),
-    FeedParserDict(
-        {"published_parsed": strptime("05.05.2005", "%d.%m.%Y"), "id": "ID-5"}
-    ),
+    FeedParserDict({"published_parsed": strptime("01.01.01", "%d.%m.%y"), "id": "ID1"}),
+    FeedParserDict({"published_parsed": strptime("02.02.02", "%d.%m.%y"), "id": "ID2"}),
+    FeedParserDict({"published_parsed": strptime("03.03.03", "%d.%m.%y"), "id": "ID3"}),
+    FeedParserDict({"published_parsed": strptime("04.04.04", "%d.%m.%y"), "id": "ID4"}),
+    FeedParserDict({"published_parsed": strptime("05.05.05", "%d.%m.%y"), "id": "ID5"}),
 ]
 
 
 @patch.object(Settings, "RSS_FEEDS", {FEED_TYPE: FEED_LINK})
 @mark.parametrize(
-    argnames=("latest_id", "latest_date", "expected_entries"),
+    argnames=("entries", "latest_id", "latest_date", "expected_entries"),
     argvalues=[
-        ("ID-5", strptime("05.05.2005", "%d.%m.%Y"), []),
-        ("ID-0", strptime("01.01.2000", "%d.%m.%Y"), ENTRIES),
-        ("ID-3", strptime("03.03.2003", "%d.%m.%Y"), ENTRIES[3:]),
-        ("ID-2.5", strptime("03.02.2003", "%d.%m.%Y"), ENTRIES[2:]),
+        (ENTRIES, "ID5", strptime("05.05.2005", "%d.%m.%Y"), []),
+        (ENTRIES, "ID0", strptime("01.01.2000", "%d.%m.%Y"), ENTRIES),
+        (ENTRIES, "ID3", strptime("03.03.2003", "%d.%m.%Y"), ENTRIES[3:]),
+        (ENTRIES, "ID2.5", strptime("03.02.2003", "%d.%m.%Y"), ENTRIES[2:]),
+        (
+            [
+                FeedParserDict(
+                    {
+                        "link": "https://example.com/older",
+                        "published_parsed": strptime("01.01.2001", "%d.%m.%Y"),
+                    }
+                ),
+                FeedParserDict(
+                    {
+                        "link": "https://example.com/latest/",
+                        "published_parsed": strptime("02.02.2002", "%d.%m.%Y"),
+                    }
+                ),
+            ],
+            "https://example.com/older",
+            strptime("01.01.2001", "%d.%m.%Y"),
+            [
+                FeedParserDict(
+                    {
+                        "link": "https://example.com/latest/",
+                        "published_parsed": strptime("02.02.2002", "%d.%m.%Y"),
+                    }
+                )
+            ],
+        ),
+        (
+            [FeedParserDict({"id": "NEW_ID"}), FeedParserDict({"id": "LATEST_ID"})],
+            "LATEST_ID",
+            None,
+            [FeedParserDict({"id": "NEW_ID"})],
+        ),
     ],
 )
 def test_get_not_handled_entries(
-    latest_id: str, latest_date: struct_time, expected_entries: list[FeedParserDict]
+    entries: list[FeedParserDict],
+    latest_id: str,
+    latest_date: struct_time | None,
+    expected_entries: list[FeedParserDict],
 ) -> None:
-    feed = FeedParserDict({"href": FEED_LINK, "entries": ENTRIES})
+    feed = FeedParserDict({"href": FEED_LINK, "entries": entries})
     assert expected_entries == get_not_handled_entries(feed, latest_id, latest_date)

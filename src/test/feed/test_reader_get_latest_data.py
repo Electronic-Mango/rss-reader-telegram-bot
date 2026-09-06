@@ -46,3 +46,45 @@ LATEST_ENTRY = FeedParserDict(
 def test_get_latest_data(entries: list[FeedParserDict]) -> None:
     feed = FeedParserDict({"href": FEED_LINK, "entries": entries})
     assert get_latest_data(feed) == EXPECTED_LATEST_ENTRY_DATA
+
+
+@patch.object(Settings, "RSS_FEEDS", {FEED_TYPE: {"url": FEED_LINK}})
+@mark.parametrize(
+    ("entries", "expected_data"),
+    [
+        (
+            [
+                FeedParserDict(
+                    {
+                        "title": "INVALID_ENTRY",
+                        "published_parsed": strptime("06.06.2006", "%d.%m.%Y"),
+                    }
+                ),
+                LATEST_ENTRY,
+            ],
+            EXPECTED_LATEST_ENTRY_DATA,
+        ),
+        (
+            [FeedParserDict({"id": EXPECTED_LATEST_ID})],
+            (EXPECTED_LATEST_ID, None, None),
+        ),
+        (
+            [
+                FeedParserDict(
+                    {
+                        "id": EXPECTED_LATEST_ID,
+                        "published_parsed": EXPECTED_LATEST_DATE,
+                    }
+                )
+            ],
+            (EXPECTED_LATEST_ID, None, EXPECTED_LATEST_DATE),
+        ),
+        (
+            [FeedParserDict({"link": EXPECTED_LATEST_LINK})],
+            (None, EXPECTED_LATEST_LINK, None),
+        ),
+    ],
+)
+def test_get_latest_data_handles_missing_fields(entries, expected_data) -> None:
+    feed = FeedParserDict({"href": FEED_LINK, "entries": entries})
+    assert get_latest_data(feed) == expected_data

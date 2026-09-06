@@ -1,6 +1,7 @@
 """Module handling all RSS requests."""
 
 from asyncio import to_thread
+from collections.abc import Generator
 from datetime import datetime
 from functools import partial
 from itertools import takewhile
@@ -39,21 +40,25 @@ def feed_is_valid(feed: FeedParserDict) -> bool:
     Technically a feed can be valid, but without any items, when it was just created.
     This is a workaround for feeds which always respond with code 200.
     """
-    logger.info(f"Checking if [{feed.href}] feed exists")
+    logger.info(f"Checking if [{feed.get('href')}] feed exists")
     # 301 is a workaround for Tumblr blogs with dedicated URLs.
     # Workaround for feeds which always respond with code 200.
-    return feed.get("status") in [200, 301] and feed.get("entries")
+    return feed.get("status") in [200, 301] and any(_get_usable_entries(feed))
 
 
-def get_latest_data(feed: FeedParserDict) -> tuple[str, str, struct_time]:
+def get_latest_data(
+    feed: FeedParserDict,
+) -> tuple[str | None, str | None, struct_time | None]:
     """Get data (entry ID, link, date) of latest entry for a given feed."""
-    logger.info(f"Getting data from latest entry for [{feed.href}]")
+    logger.info(f"Getting data from latest entry for [{feed.get('href')}]")
     entries = get_sorted_entries(feed)
     latest_entry = entries[0]
     return get_data(latest_entry)
 
 
-def get_data(entry: FeedParserDict) -> tuple[str, str, struct_time]:
+def get_data(
+    entry: FeedParserDict,
+) -> tuple[str | None, str | None, struct_time | None]:
     """Return data (entry ID, link, date) for a given entry."""
     entry_id = entry.get("id")
     link = entry.get("link")
@@ -62,14 +67,14 @@ def get_data(entry: FeedParserDict) -> tuple[str, str, struct_time]:
 
 
 def get_not_handled_entries(
-    feed: FeedParserDict, target_id: str, date: struct_time | None
+    feed: FeedParserDict, target_id: str | None, date: struct_time | None
 ) -> list[FeedParserDict]:
     """
     Get not yet handled entries for a given feed.
 
     Return all elements from the list, until element with ID matching the target ID.
     """
-    logger.info(f"Getting not handled entries for [{feed.href}] ID [{target_id}]")
+    logger.info(f"Getting not handled entries for [{feed.get('href')}] [{target_id}]")
     is_not_handled = partial(_not_latest_entry, target_id, date)
     not_handled_entries = list(takewhile(is_not_handled, get_sorted_entries(feed)))
     not_handled_entries.reverse()
@@ -77,33 +82,37 @@ def get_not_handled_entries(
 
 
 def get_sorted_entries(feed: FeedParserDict) -> list[FeedParserDict]:
-    if not (entries := feed.get("entries")):
-        return []
-    return sorted(entries, key=_get_entry_date, reverse=True)
+    return sorted(
+        _get_usable_entries(feed),
+        key=lambda entry: _get_entry_date(entry) or datetime.min.timetuple(),
+        reverse=True,
+    )
+
+
+def _get_usable_entries(feed: FeedParserDict) -> Generator[FeedParserDict]:
+    """Return all usable entries for a given feed."""
+    return (e for e in feed.get("entries", []) if e.get("id") or e.get("link"))
 
 
 def _not_latest_entry(
-    latest_id: str, latest_date: struct_time | None, entry: FeedParserDict
+    latest_id: str | None, latest_date: struct_time | None, entry: FeedParserDict
 ) -> bool:
-    id_is_not_latest = latest_id is None or entry.get("id") != latest_id
+    entry_id = entry.get("id") or entry.get("link")
+    id_is_not_latest = latest_id is None or entry_id != latest_id
     entry_date = _get_entry_date(entry)
     date_is_newer = entry_date > latest_date if entry_date and latest_date else True
     logger.info(
         "Checking for latest entry "
         f"latest_id=[{latest_id}] latest_date=[{_format_date(latest_date)}] "
-        f"against entry_id=[{entry.get('id')}] entry_date=[{_format_date(entry_date)}] "
+        f"against entry_id=[{entry_id}] entry_date=[{_format_date(entry_date)}] "
         f"id_is_not_latest=[{id_is_not_latest}] date_is_newer=[{date_is_newer}] "
         f"returning=[{id_is_not_latest and date_is_newer}]"
     )
     return id_is_not_latest and date_is_newer
 
 
-def _get_entry_date(entry: FeedParserDict) -> struct_time:
-    return (
-        entry.get("published_parsed")
-        or entry.get("updated_parsed")
-        or datetime.min.timetuple()
-    )
+def _get_entry_date(entry: FeedParserDict) -> struct_time | None:
+    return entry.get("published_parsed") or entry.get("updated_parsed")
 
 
 def _format_date(date: struct_time | None) -> str | None:
