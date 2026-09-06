@@ -9,13 +9,13 @@ from loguru import logger
 from telegram import Update
 from telegram.ext import CommandHandler, ContextTypes
 
-from bot.user_filter import USER_FILTER
+from bot.user_filter import user_filter
 
 HELLO_HELP_MESSAGE = "/hello - say hello to the bot"
 
 
 def hello_command_handler() -> CommandHandler:
-    return CommandHandler("hello", _hello, USER_FILTER)
+    return CommandHandler("hello", _hello, user_filter())
 
 
 async def _hello(update: Update, _: ContextTypes.DEFAULT_TYPE) -> None:

@@ -12,7 +12,7 @@ from telegram.ext import (
     ConversationHandler,
 )
 
-from bot.user_filter import USER_FILTER
+from bot.user_filter import user_filter
 from db.wrapper import chat_has_stored_feeds, remove_stored_chat_data
 
 REMOVE_ALL_HELP_MESSAGE = "/removeall - remove all subscriptions"
@@ -27,7 +27,7 @@ class _RemoveAllData(NamedTuple):
 
 
 def remove_all_initial_handler() -> CommandHandler:
-    return CommandHandler("removeall", _request_confirmation_1, USER_FILTER)
+    return CommandHandler("removeall", _request_confirmation_1, user_filter())
 
 
 def remove_all_followup_handler() -> ConversationHandler:
