@@ -26,6 +26,7 @@ from bot.command.subs.query_data import (
 from bot.command.subs.remove_feed import remove_subscription, request_confirmation
 from bot.command.subs.send_latest_update import send_latest_update
 from bot.user_filter import user_filter
+from settings import Settings
 
 
 def subscriptions_initial_handler() -> CommandHandler:
@@ -59,5 +60,5 @@ def subscriptions_followup_handler() -> ConversationHandler:
         fallbacks=[CallbackQueryHandler(followup_list_feed_types)],
         per_message=True,
         name="subscriptions_followup_handler",
-        persistent=True,
+        persistent=bool(Settings.PERSISTENCE_FILE),
     )

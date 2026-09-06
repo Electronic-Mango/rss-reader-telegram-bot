@@ -14,6 +14,7 @@ from telegram.ext import (
 
 from bot.user_filter import user_filter
 from db.wrapper import chat_has_stored_feeds, remove_stored_chat_data
+from settings import Settings
 
 REMOVE_ALL_HELP_MESSAGE = "/removeall - remove all subscriptions"
 
@@ -45,7 +46,7 @@ def remove_all_followup_handler() -> ConversationHandler:
         fallbacks=[CallbackQueryHandler(_cancel)],
         per_message=True,
         name="remove_all_followup_handler",
-        persistent=True,
+        persistent=bool(Settings.PERSISTENCE_FILE),
     )
 
 
