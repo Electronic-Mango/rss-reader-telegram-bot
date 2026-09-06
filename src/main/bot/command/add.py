@@ -3,6 +3,7 @@
 from asyncio import gather
 from enum import Enum, auto
 from typing import NamedTuple
+from warnings import filterwarnings
 
 from feedparser import FeedParserDict
 from loguru import logger
@@ -15,6 +16,7 @@ from telegram.ext import (
     MessageHandler,
 )
 from telegram.ext.filters import COMMAND, TEXT
+from telegram.warnings import PTBUserWarning
 
 from bot.user_filter import user_filter
 from db.wrapper import feed_is_already_stored, store_feed_data
@@ -37,6 +39,12 @@ def add_initial_handler() -> CommandHandler:
 
 
 def add_followup_handler() -> ConversationHandler:
+    # This is a valid case for both "CallbackQueryHandler" and "per_message=False".
+    filterwarnings(
+        action="ignore",
+        message=r"If 'per_message=False', 'CallbackQueryHandler'",
+        category=PTBUserWarning,
+    )
     return ConversationHandler(
         entry_points=[CallbackQueryHandler(_request_feed_names, _AddFeedData)],
         states={
