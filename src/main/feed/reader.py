@@ -91,7 +91,11 @@ def get_sorted_entries(feed: FeedParserDict) -> list[FeedParserDict]:
 
 def _get_usable_entries(feed: FeedParserDict) -> Generator[FeedParserDict]:
     """Return all usable entries for a given feed."""
-    return (e for e in feed.get("entries", []) if e.get("id") or e.get("link"))
+    return (
+        entry
+        for entry in feed.get("entries", [])
+        if entry.get("id") or entry.get("link") or _get_entry_date(entry)
+    )
 
 
 def _not_latest_entry(
