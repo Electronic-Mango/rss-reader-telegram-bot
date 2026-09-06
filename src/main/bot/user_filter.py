@@ -1,5 +1,5 @@
 from telegram.ext.filters import User
 
-from settings import ALLOWED_USERNAMES
+from settings_new import Settings
 
-USER_FILTER = User(username=ALLOWED_USERNAMES, allow_empty=True)
+USER_FILTER = User(username=Settings.ALLOWED_USERNAMES, allow_empty=True)
