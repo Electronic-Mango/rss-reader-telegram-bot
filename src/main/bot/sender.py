@@ -48,7 +48,7 @@ async def send_update(
     description: str,
     latest_message_id: int | None,
     media_links: list[str] | None = None,
-    pin_videos: bool = Settings.PIN_VIDEOS,
+    pin_videos: bool | None = None,
 ) -> int:
     logger.info(f"[{chat_id}] Sending update [{feed_name}] [{feed_type}]")
     message = _format_message(chat_id, feed_type, feed_name, link, title, description)
@@ -66,7 +66,7 @@ async def send_update(
             bot,
             chat_id,
             media_group,
-            pin_videos,
+            pin_videos if pin_videos is not None else Settings.PIN_VIDEOS,
             message if index == last_index else None,
             reply_params if index == 0 else None,
         )
