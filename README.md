@@ -84,8 +84,8 @@ By default `persistence` file in the project root is used.
 Its path can be tweaked via configuration YAML.
 Set `telegram.persistence_file` to `null` to disable persistence entirely.
 
-All conversation-style commands are persistent.
-This means, that their state should be preserved after bot has been restarted, you can just continue the conversation afterward.
+All conversation-style commands are persistent - as long as persistence file path is configured.
+If persistency is configured, command state should be preserved after bot has been restarted and you can just continue the conversation afterwards.
 
 When deploying the bot via Docker I'd recommend changing the path to persistence pickled file into a mounted volume.
 Otherwise, it will be stored directly in the container, and it will be removed with it.
