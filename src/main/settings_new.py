@@ -22,7 +22,6 @@ class Settings:
 
     # Internal settings storage and optional fields
     _SETTINGS = None
-    _OPTIONAL_FIELDS = {"DEFAULT_IMAGE_PATH", "ALLOWED_USERNAMES"}
 
     # Telegram
     TOKEN: str = None
@@ -120,8 +119,6 @@ class Settings:
                 feeds = safe_load(feeds_path) or {}
                 cls.RSS_FEEDS = {name: data for name, data in feeds.items() if "url" in data}
 
-        cls._validate()
-
     @classmethod
     def _prepare_settings(cls, default_settings: Path | None, custom_settings: list[Path] | None):
         load_dotenv()
@@ -190,15 +187,3 @@ class Settings:
                 cls._SETTINGS,
             )
         )
-
-    @classmethod
-    def _validate(cls) -> None:
-        missing = [
-            field
-            for field in cls.__annotations__
-            if not field.startswith("_")
-            and field not in cls._OPTIONAL_FIELDS
-            and getattr(cls, field) is None
-        ]
-        if missing:
-            raise ValueError(f"Required configuration settings are missing: {', '.join(missing)}")
