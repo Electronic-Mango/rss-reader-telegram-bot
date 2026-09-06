@@ -153,7 +153,7 @@ class Settings:
             if (custom_env := getenv(cls._CUSTOM_SETTINGS_PATH_VARIABLE_NAME))
             else []
         )
-        logger.info(f"Loading custom settings: [{[str(p) for p in custom_settings]}]")
+        logger.info(f"Loading custom settings: {[str(p) for p in custom_settings]}")
         cls._SETTINGS = merge(
             cls._load_settings(default_settings),
             *[cls._load_settings(custom) for custom in custom_settings],
