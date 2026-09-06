@@ -28,7 +28,7 @@ def _parse_arguments() -> Namespace:
         "--custom-settings-path",
         type=Path,
         nargs="+",
-        help="Paths to the custom settings YAML file",
+        help="Paths to the custom settings YAML files",
     )
     return parser.parse_args()
 
