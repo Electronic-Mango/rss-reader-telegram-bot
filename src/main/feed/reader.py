@@ -4,7 +4,7 @@ from asyncio import to_thread
 from datetime import datetime
 from functools import partial
 from itertools import takewhile
-from time import struct_time
+from time import strftime, struct_time
 
 from feedparser import FeedParserDict, parse
 from loguru import logger
@@ -89,8 +89,9 @@ def _not_latest_entry(
     entry_date = _get_entry_date(entry)
     date_is_newer = entry_date > latest_date if entry_date and latest_date else True
     logger.info(
-        f"Checking for latest latest_id=[{latest_id}] latest_date=[{latest_date}] "
-        f"against entry entry_id=[{entry.get('id')}] entry_date=[{entry_date}] "
+        "Checking for latest entry "
+        f"latest_id=[{latest_id}] latest_date=[{_format_date(latest_date)}] "
+        f"against entry_id=[{entry.get('id')}] entry_date=[{_format_date(entry_date)}] "
         f"id_is_not_latest=[{id_is_not_latest}] date_is_newer=[{date_is_newer}] "
         f"returning=[{id_is_not_latest and date_is_newer}]"
     )
@@ -103,3 +104,7 @@ def _get_entry_date(entry: FeedParserDict) -> struct_time:
         or entry.get("updated_parsed")
         or datetime.min.timetuple()
     )
+
+
+def _format_date(date: struct_time | None) -> str | None:
+    return strftime("%Y-%m-%d %H:%M:%S", date) if date is not None else None
