@@ -36,13 +36,7 @@ from feed.reader import (
     get_not_handled_entries,
     get_parsed_feed,
 )
-from settings import (
-    LOOKUP_FEED_DELAY,
-    LOOKUP_FEED_DELAY_RANDOMNESS,
-    LOOKUP_INTERVAL_RANDOMNESS,
-    QUIET_HOURS,
-    SHUFFLE_UPDATES,
-)
+from settings_new import Settings
 
 _active_update_check: Task[None] | None = None
 
@@ -57,7 +51,7 @@ async def check_for_all_updates(context: ContextTypes.DEFAULT_TYPE) -> None:
     global _active_update_check
     _active_update_check = current_task()
     try:
-        if initial_delay := randrange(max(LOOKUP_INTERVAL_RANDOMNESS, 1)):
+        if initial_delay := randrange(max(Settings.LOOKUP_INTERVAL_RANDOMNESS, 1)):
             logger.info(f"Delaying checking for updates for [{initial_delay}] seconds")
             await sleep(initial_delay)
         await _delayed_check_for_all_updates(context)
@@ -69,12 +63,12 @@ async def check_for_all_updates(context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 async def _delayed_check_for_all_updates(context: ContextTypes.DEFAULT_TYPE) -> None:
-    if datetime.now().hour in QUIET_HOURS:
+    if datetime.now().hour in Settings.QUIET_HOURS:
         logger.info("Quiet hour, skipping checking for updates")
         return
     logger.info("Starting checking for all updates")
     all_data = await get_all_stored_data()
-    if SHUFFLE_UPDATES:
+    if Settings.SHUFFLE_UPDATES:
         logger.info("Shuffling RSS data before checking for updates")
         shuffle(all_data)
     for (
@@ -105,7 +99,10 @@ async def _delayed_check_for_all_updates(context: ContextTypes.DEFAULT_TYPE) -> 
                 f"[{chat_id}] Unexpected error occurred during update check for "
                 f"[{feed_name}] [{feed_type}]: "
             )
-        await sleep(LOOKUP_FEED_DELAY + randrange(max(LOOKUP_FEED_DELAY_RANDOMNESS, 1)))
+        await sleep(
+            Settings.LOOKUP_FEED_DELAY
+            + randrange(max(Settings.LOOKUP_FEED_DELAY_RANDOMNESS, 1))
+        )
 
 
 async def _check_for_updates(
