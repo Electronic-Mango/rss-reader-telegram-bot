@@ -5,6 +5,7 @@ from feedparser import FeedParserDict
 from pytest import mark
 
 from feed.reader import get_latest_data
+from settings_new import Settings
 
 FEED_TYPE = "FEED_TYPE"
 FEED_NAME = "FEED_NAME"
@@ -33,7 +34,7 @@ LATEST_ENTRY = FeedParserDict(
 )
 
 
-@patch("feed.reader.RSS_FEEDS", {FEED_TYPE: {"url": FEED_LINK}})
+@patch.object(Settings, "RSS_FEEDS", {FEED_TYPE: {"url": FEED_LINK}})
 @mark.parametrize(
     argnames="entries",
     argvalues=[

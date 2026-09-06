@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, patch
 from feedparser import FeedParserDict
 
 from feed.reader import get_parsed_feed
+from settings_new import Settings
 
 FEED_TYPE = "FEED_TYPE"
 FEED_NAME = "FEED_NAME"
@@ -20,7 +21,7 @@ def mocked_parse(content: bytes, response_headers=None) -> FeedParserDict | None
     return None
 
 
-@patch("feed.reader.RSS_FEEDS", {FEED_TYPE: {"url": FEED_LINK}})
+@patch.object(Settings, "RSS_FEEDS", {FEED_TYPE: {"url": FEED_LINK}})
 @patch("feed.reader.parse", side_effect=mocked_parse)
 @patch("feed.reader.aget")
 async def test_get_parsed_feed(aget_mock: MagicMock, _) -> None:

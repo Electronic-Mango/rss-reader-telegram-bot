@@ -5,6 +5,7 @@ from feedparser import FeedParserDict
 from pytest import mark
 
 from feed.reader import get_not_handled_entries
+from settings_new import Settings
 
 FEED_TYPE = "FEED_TYPE"
 FEED_NAME = "FEED_NAME"
@@ -28,7 +29,7 @@ ENTRIES = [
 ]
 
 
-@patch("feed.reader.RSS_FEEDS", {FEED_TYPE: FEED_LINK})
+@patch.object(Settings, "RSS_FEEDS", {FEED_TYPE: FEED_LINK})
 @mark.parametrize(
     argnames=("latest_id", "latest_date", "expected_entries"),
     argvalues=[
