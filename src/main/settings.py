@@ -202,7 +202,7 @@ class Settings:
     @classmethod
     def _load(cls, *keys: str) -> Any:
         return (
-            env_val or None
+            (env_val or None)
             if (env_val := getenv("_".join(keys).upper())) is not None
             else reduce(
                 lambda table, key: table.get(key) if isinstance(table, dict) else None,
