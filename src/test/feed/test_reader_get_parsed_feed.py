@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch
 from feedparser import FeedParserDict
 
 from feed.reader import get_parsed_feed
-from settings_new import Settings
+from settings import Settings
 
 FEED_TYPE = "FEED_TYPE"
 FEED_NAME = "FEED_NAME"

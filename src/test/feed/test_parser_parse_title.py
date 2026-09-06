@@ -3,7 +3,7 @@ from unittest.mock import patch
 from feedparser import FeedParserDict
 
 from feed.parser import parse_title
-from settings_new import Settings
+from settings import Settings
 
 FEED_TYPE = "FEED_TYPE"
 ENTRY = FeedParserDict({"title": "\n\n\ntext\n\nmore\ntext\n\n\n"})

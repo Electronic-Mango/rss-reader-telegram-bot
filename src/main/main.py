@@ -7,7 +7,7 @@ from pathlib import Path
 from loguru import logger
 
 from bot.telegram_bot import run_bot
-from settings_new import Settings
+from settings import Settings
 
 
 def _main() -> None:

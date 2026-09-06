@@ -13,7 +13,7 @@ from db.client import (
     insert_one,
     update_one,
 )
-from settings_new import Settings
+from settings import Settings
 
 feeds_collection_mock = AsyncMock()
 feeds_collection_mock.find = MagicMock()  # "find" is synchronous in AsyncCollection

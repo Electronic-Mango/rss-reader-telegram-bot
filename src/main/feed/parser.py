@@ -14,7 +14,7 @@ from typing import Any
 from bs4 import BeautifulSoup
 from feedparser import FeedParserDict
 
-from settings_new import Settings
+from settings import Settings
 
 ATTRS_FOR_DESCRIPTION = ["title", "alt"]
 
