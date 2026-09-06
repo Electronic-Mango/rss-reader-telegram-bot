@@ -53,18 +53,6 @@ def test_get_latest_data(entries: list[FeedParserDict]) -> None:
     ("entries", "expected_data"),
     [
         (
-            [
-                FeedParserDict(
-                    {
-                        "title": "INVALID_ENTRY",
-                        "published_parsed": strptime("06.06.2006", "%d.%m.%Y"),
-                    }
-                ),
-                LATEST_ENTRY,
-            ],
-            EXPECTED_LATEST_ENTRY_DATA,
-        ),
-        (
             [FeedParserDict({"id": EXPECTED_LATEST_ID})],
             (EXPECTED_LATEST_ID, None, None),
         ),
@@ -82,6 +70,10 @@ def test_get_latest_data(entries: list[FeedParserDict]) -> None:
         (
             [FeedParserDict({"link": EXPECTED_LATEST_LINK})],
             (None, EXPECTED_LATEST_LINK, None),
+        ),
+        (
+            [FeedParserDict({"published_parsed": EXPECTED_LATEST_DATE})],
+            (None, None, EXPECTED_LATEST_DATE),
         ),
     ],
 )

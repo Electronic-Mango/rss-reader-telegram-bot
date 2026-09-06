@@ -110,7 +110,7 @@ async def _check_for_updates(
     chat_id: int,
     feed_type: str,
     feed_name: str,
-    latest_id: str,
+    latest_id: str | None,
     latest_date: struct_time | None,
     latest_message_id: int | None,
 ) -> None:

@@ -65,6 +65,16 @@ FEED_LINK = "FEED_LINK"
             FeedParserDict(
                 {
                     "href": FEED_LINK,
+                    "status": 200,
+                    "entries": [{"published_parsed": (2000, 1, 1, 0, 0, 0, 0, 1, -1)}],
+                }
+            ),
+            True,
+        ),
+        (
+            FeedParserDict(
+                {
+                    "href": FEED_LINK,
                     "status": 400,
                     "entries": [FeedParserDict({"id": "ID", "link": "LINK"})],
                 }

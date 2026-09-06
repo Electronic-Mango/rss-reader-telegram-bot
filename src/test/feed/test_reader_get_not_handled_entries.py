@@ -59,11 +59,24 @@ ENTRIES = [
             None,
             [FeedParserDict({"id": "NEW_ID"})],
         ),
+        (
+            [
+                FeedParserDict(
+                    {"published_parsed": strptime("02.02.2002", "%d.%m.%Y")}
+                ),
+                FeedParserDict(
+                    {"published_parsed": strptime("01.01.2001", "%d.%m.%Y")}
+                ),
+            ],
+            None,
+            strptime("01.01.2001", "%d.%m.%Y"),
+            [FeedParserDict({"published_parsed": strptime("02.02.2002", "%d.%m.%Y")})],
+        ),
     ],
 )
 def test_get_not_handled_entries(
     entries: list[FeedParserDict],
-    latest_id: str,
+    latest_id: str | None,
     latest_date: struct_time | None,
     expected_entries: list[FeedParserDict],
 ) -> None:
