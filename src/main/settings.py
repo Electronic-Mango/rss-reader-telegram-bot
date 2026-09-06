@@ -147,13 +147,13 @@ class Settings:
             if (default_env := getenv(cls._DEFAULT_SETTINGS_PATH_VARIABLE_NAME))
             else Path("settings.yml")
         )
-        logger.info(f"Loading default settings from: []{default_settings}")
+        logger.info(f"Loading default settings: [{default_settings}]")
         custom_settings = custom_settings or (
             [Path(p) for p in custom_env.split(",")]
             if (custom_env := getenv(cls._CUSTOM_SETTINGS_PATH_VARIABLE_NAME))
             else []
         )
-        logger.info(f"Loading custom settings from: [{custom_settings}]")
+        logger.info(f"Loading custom settings: [{[str(p) for p in custom_settings]}]")
         cls._SETTINGS = merge(
             cls._load_settings(default_settings),
             *[cls._load_settings(custom) for custom in custom_settings],
