@@ -11,8 +11,10 @@ from functools import reduce
 from os import getenv
 from pathlib import Path
 from typing import Any
+from json import dumps
 
 from dotenv import load_dotenv
+from loguru import logger
 from mergedeep import merge
 from yaml import safe_load
 
@@ -146,15 +148,18 @@ class Settings:
             if (default_env := getenv(cls._DEFAULT_SETTINGS_PATH_VARIABLE_NAME))
             else Path("settings.yml")
         )
+        logger.info(f"Loading default settings from: []{default_settings}")
         custom_settings = custom_settings or (
             [Path(p) for p in custom_env.split(",")]
             if (custom_env := getenv(cls._CUSTOM_SETTINGS_PATH_VARIABLE_NAME))
             else []
         )
+        logger.info(f"Loading custom settings from: [{custom_settings}]")
         cls._SETTINGS = merge(
             cls._load_settings(default_settings),
             *[cls._load_settings(custom) for custom in custom_settings],
         )
+        logger.info(f"Final merged settings:\n{dumps(cls._SETTINGS, indent=4)}")
 
     @classmethod
     def _load_settings(cls, settings_path: Path) -> dict[str, Any]:
