@@ -13,7 +13,7 @@ from db.client import (
     insert_one,
     update_one,
 )
-from settings import DB_FEEDS_NAME, DB_HOST, DB_NAME, DB_PORT
+from settings_new import Settings
 
 feeds_collection_mock = AsyncMock()
 feeds_collection_mock.find = MagicMock()  # "find" is synchronous in AsyncCollection
@@ -23,9 +23,17 @@ db_filter = MagicMock()
 
 
 def mocked_mongo_client(host: str, port: str):
-    assert host == DB_HOST
-    assert port == DB_PORT
-    return {DB_NAME: {DB_FEEDS_NAME: feeds_collection_mock}}
+    assert host == Settings.DB_HOST
+    assert port == Settings.DB_PORT
+    return {Settings.DB_NAME: {Settings.DB_FEEDS_NAME: feeds_collection_mock}}
+
+
+@fixture(autouse=True)
+def reset_settings(monkeypatch):
+    monkeypatch.setattr(Settings, "DB_HOST", "a-host-name")
+    monkeypatch.setattr(Settings, "DB_PORT", 12345)
+    monkeypatch.setattr(Settings, "DB_NAME", "db_name")
+    monkeypatch.setattr(Settings, "DB_FEEDS_NAME", "feeds_collection_name")
 
 
 @fixture(autouse=True)
@@ -113,7 +121,7 @@ async def test_element_exists(_, document_count: int):
 )
 async def test_correct_collection_is_selected(_, client_function, db_function, args):
     await initialize_db()
-    await client_function(*args, collection_name=DB_FEEDS_NAME)
+    await client_function(*args, collection_name=Settings.DB_FEEDS_NAME)
     getattr(feeds_collection_mock, db_function).assert_called_once()
 
 

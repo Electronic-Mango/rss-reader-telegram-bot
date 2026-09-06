@@ -19,7 +19,7 @@ from pymongo.asynchronous.collection import AsyncCollection
 from pymongo.asynchronous.cursor import AsyncCursor
 from pymongo.results import DeleteResult, InsertOneResult
 
-from settings import DB_FEEDS_NAME, DB_HOST, DB_NAME, DB_PORT
+from settings_new import Settings
 
 _feeds_collection: AsyncCollection | None = None
 
@@ -35,9 +35,9 @@ async def initialize_db() -> None:
 
 
 def _initialize_collections() -> None:
-    database = AsyncMongoClient(DB_HOST, DB_PORT)[DB_NAME]
+    database = AsyncMongoClient(Settings.DB_HOST, Settings.DB_PORT)[Settings.DB_NAME]
     global _feeds_collection
-    _feeds_collection = database[DB_FEEDS_NAME]
+    _feeds_collection = database[Settings.DB_FEEDS_NAME]
 
 
 async def _create_indexes() -> None:
@@ -54,57 +54,57 @@ async def _create_indexes() -> None:
 
 
 async def insert_one(
-    document: Mapping[str, Any], collection_name: str = DB_FEEDS_NAME
+    document: Mapping[str, Any], collection_name: str | None = None
 ) -> InsertOneResult:
     """Wrap "insert_one" DB function."""
-    collection = _get_collection(collection_name)
+    collection = _get_collection(collection_name or Settings.DB_FEEDS_NAME)
     return await collection.insert_one(document)
 
 
 async def delete_many(
-    db_filter: Mapping[str, Any], collection_name: str = DB_FEEDS_NAME
+    db_filter: Mapping[str, Any], collection_name: str | None = None
 ) -> DeleteResult:
     """Wrap "delete_many" DB function."""
-    collection = _get_collection(collection_name)
+    collection = _get_collection(collection_name or Settings.DB_FEEDS_NAME)
     return await collection.delete_many(db_filter)
 
 
 async def update_one(
     db_filter: Mapping[str, Any],
     update: Mapping[str, Any],
-    collection_name: str = DB_FEEDS_NAME,
+    collection_name: str | None = None,
 ) -> Any:
     """Wrap "find_one_and_update" DB function."""
-    collection = _get_collection(collection_name)
+    collection = _get_collection(collection_name or Settings.DB_FEEDS_NAME)
     return await collection.find_one_and_update(db_filter, update)
 
 
 async def find_many(
-    db_filter: Mapping[str, Any] | None = None, collection_name: str = DB_FEEDS_NAME
+    db_filter: Mapping[str, Any] | None = None, collection_name: str | None = None
 ) -> AsyncCursor:
     """Wrap "find" DB function."""
-    collection = _get_collection(collection_name)
+    collection = _get_collection(collection_name or Settings.DB_FEEDS_NAME)
     return collection.find(db_filter)
 
 
 async def find_one(
-    db_filter: Mapping[str, Any] | None = None, collection_name: str = DB_FEEDS_NAME
+    db_filter: Mapping[str, Any] | None = None, collection_name: str | None = None
 ) -> Mapping[str, Any] | None:
     """Wrap "find_one" DB function."""
-    collection = _get_collection(collection_name)
+    collection = _get_collection(collection_name or Settings.DB_FEEDS_NAME)
     return await collection.find_one(db_filter)
 
 
 async def exists(
-    db_filter: Mapping[str, Any], collection_name: str = DB_FEEDS_NAME
+    db_filter: Mapping[str, Any], collection_name: str | None = None
 ) -> bool:
     """Check if there are any documents from a given filter."""
-    collection = _get_collection(collection_name)
+    collection = _get_collection(collection_name or Settings.DB_FEEDS_NAME)
     return bool(await collection.count_documents(db_filter, limit=1))
 
 
 def _get_collection(name: str) -> AsyncCollection:
-    if name != DB_FEEDS_NAME:
+    if name != Settings.DB_FEEDS_NAME:
         error_msg = f"Unknown collection name: {name}"
         raise ValueError(error_msg)
     if _feeds_collection is None:
