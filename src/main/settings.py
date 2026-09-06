@@ -162,6 +162,7 @@ class Settings:
     @classmethod
     def _load_settings(cls, settings_path: Path) -> dict[str, Any]:
         if not settings_path.exists():
+            logger.warning(f"Settings file not found: [{settings_path}]")
             return {}
         with Path(settings_path).open() as settings_yaml:
             return safe_load(settings_yaml) or {}
