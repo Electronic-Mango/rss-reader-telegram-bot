@@ -34,6 +34,8 @@ def _parse_arguments() -> Namespace:
 
 
 def _configure_logging() -> None:
+    if not Settings.LOG_PATH:
+        return
     logger.add(
         RotatingFileHandler(
             Settings.LOG_PATH,
