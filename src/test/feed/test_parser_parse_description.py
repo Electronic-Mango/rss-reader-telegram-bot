@@ -52,3 +52,8 @@ def test_parse_description_with_filtering() -> None:
 @patch.object(Settings, "RSS_FEEDS", {FEED_TYPE: {}})
 def test_parse_description_description_disabled() -> None:
     assert parse_description(ENTRY, FEED_TYPE) is None
+
+
+@patch.object(Settings, "RSS_FEEDS", {FEED_TYPE: {"show_description": True}})
+def test_parse_description_missing() -> None:
+    assert parse_description(FeedParserDict(), FEED_TYPE) is None

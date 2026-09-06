@@ -27,3 +27,8 @@ def test_parse_title_filtered() -> None:
 @patch.object(Settings, "RSS_FEEDS", {FEED_TYPE: {}})
 def test_parse_title_disabled() -> None:
     assert parse_title(ENTRY, FEED_TYPE) is None
+
+
+@patch.object(Settings, "RSS_FEEDS", {FEED_TYPE: {"show_title": True}})
+def test_parse_title_missing() -> None:
+    assert parse_title(FeedParserDict(), FEED_TYPE) is None
