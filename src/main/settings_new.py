@@ -73,9 +73,7 @@ class Settings:
         cls.ALLOWED_USERNAMES = cls._load_str_list(
             "telegram", "allowed_usernames", default=[]
         )
-        cls.PERSISTENCE_FILE = cls._load_str(
-            "telegram", "persistence_file", default="persistence"
-        )
+        cls.PERSISTENCE_FILE = cls._load_str("telegram", "persistence_file")
 
         # telegram updates
         cls.LOOKUP_INTERVAL = cls._load_int(
