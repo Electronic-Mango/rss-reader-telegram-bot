@@ -121,7 +121,7 @@ class Settings:
         )
 
         # logging
-        cls.LOG_PATH = cls._load_str("logging", "log_path", default="bot.log")
+        cls.LOG_PATH = cls._load_str("logging", "log_path")
         cls.MAX_BYTES = cls._load_int("logging", "max_bytes", default=0)
         cls.BACKUP_COUNT = cls._load_int("logging", "backup_count", default=0)
 
