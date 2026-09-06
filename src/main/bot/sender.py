@@ -201,10 +201,10 @@ async def _send_media_group(
 ) -> int:
     # Technically single media elements don't have to be handled as media group,
     # but they can, so the same implementation can be used for both.
+    logger.info(f"[{chat_id}] Sending media {media_group}")
     input_media_list = [
         await _media_object(media, media_type) for media, media_type in media_group
     ]
-    logger.info(f"{chat_id} Sending media group")
     sent_messages = await bot.send_media_group(
         chat_id,
         input_media_list,
