@@ -207,7 +207,7 @@ class Settings:
     def _load(cls, *keys: str) -> Any:
         if (env_val := getenv("_".join(keys).upper())) is not None:
             key_name = ".".join(keys)
-            logger.debug(f"Loading value for [{key_name}] from environment")
+            logger.info(f"Loading value for [{key_name}] from environment")
             return env_val or None
         return reduce(
             lambda table, key: table.get(key) if isinstance(table, dict) else None,
