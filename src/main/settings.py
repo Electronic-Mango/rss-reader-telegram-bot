@@ -149,7 +149,7 @@ class Settings:
         )
         logger.info(f"Loading default settings: [{default_settings}]")
         custom_settings = custom_settings or (
-            [Path(p) for p in custom_env.split(",")]
+            [Path(p.strip()) for p in custom_env.split(",") if p.strip()]
             if (custom_env := getenv(cls._CUSTOM_SETTINGS_PATH_VARIABLE_NAME))
             else []
         )
