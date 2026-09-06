@@ -129,11 +129,11 @@ class Settings:
         feeds_filename = cls._load_str(
             "rss", "feeds_yaml_filename", default="feed_links.yml"
         )
-        if feeds_filename:
-            with Path(feeds_filename).open() as feeds_path:
+        if feeds_filename and (feeds_path := Path(feeds_filename)).is_file():
+            with feeds_path.open() as feeds_file:
                 cls.RSS_FEEDS = {
                     name: data
-                    for name, data in (safe_load(feeds_path) or {}).items()
+                    for name, data in (safe_load(feeds_file) or {}).items()
                     if "url" in data
                 }
 
