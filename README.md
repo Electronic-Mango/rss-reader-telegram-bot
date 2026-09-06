@@ -67,6 +67,8 @@ Comma-separated values can be used for list parameters, such as `TELEGRAM_ALLOWE
 
 The bot also loads variables from a local `.env` file when present.
 
+Some optional YAML settings can be disabled by assigning `null`, or `~` (or leaving the value empty). For example, `telegram.persistence_file: null` disables persistence, `logging.log_path: null` disables file logging, and `telegram.messages.default_image_path: null` disables the default image.
+The same features can be disabled with an **empty** environment variable, for example `PERSISTENCE_FILE=`.
 
 ### Restricting access to bot commands
 Bot can be restricted to allow only specific users to execute bot commands via `telegram` - `allowed_usernames` value in configuration YAML.
@@ -80,6 +82,7 @@ You can specify multiple users, as the value in YAML is a list.
 Bot uses pickled file for storing persistence data between restarts.
 By default `persistence` file in the project root is used.
 Its path can be tweaked via configuration YAML.
+Set `telegram.persistence_file` to `null` to disable persistence entirely.
 
 All conversation-style commands are persistent.
 This means, that their state should be preserved after bot has been restarted, you can just continue the conversation afterward.
