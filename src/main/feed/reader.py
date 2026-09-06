@@ -88,6 +88,12 @@ def _not_latest_entry(
     id_is_not_latest = latest_id is None or entry.get("id") != latest_id
     entry_date = _get_entry_date(entry)
     date_is_newer = entry_date > latest_date if entry_date and latest_date else True
+    logger.info(
+        f"Checking for latest latest_id=[{latest_id}] latest_date=[{latest_date}] "
+        f"against entry entry_id=[{entry.get('id')}] entry_date=[{entry_date}] "
+        f"id_is_not_latest=[{id_is_not_latest}] date_is_newer=[{date_is_newer}] "
+        f"returning=[{id_is_not_latest and date_is_newer}]"
+    )
     return id_is_not_latest and date_is_newer
 
 
