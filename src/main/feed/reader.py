@@ -46,9 +46,7 @@ def feed_is_valid(feed: FeedParserDict) -> bool:
     return feed.get("status") in [200, 301] and any(_get_usable_entries(feed))
 
 
-def get_latest_data(
-    feed: FeedParserDict,
-) -> tuple[str | None, str | None, struct_time | None]:
+def get_latest_data(feed: FeedParserDict) -> tuple[str, str | None, struct_time | None]:
     """Get data (entry ID, link, date) of latest entry for a given feed."""
     logger.info(f"Getting data from latest entry for [{feed.get('href')}]")
     entries = get_sorted_entries(feed)
@@ -58,16 +56,16 @@ def get_latest_data(
 
 def get_data(
     entry: FeedParserDict,
-) -> tuple[str | None, str | None, struct_time | None]:
+) -> tuple[str, str | None, struct_time | None]:
     """Return data (entry ID, link, date) for a given entry."""
-    entry_id = entry.get("id")
+    entry_id = entry["id"]  # Entries without IDs are already rejected
     link = entry.get("link")
     date = _get_entry_date(entry)
     return entry_id, link, date
 
 
 def get_not_handled_entries(
-    feed: FeedParserDict, target_id: str | None, date: struct_time | None
+    feed: FeedParserDict, target_id: str, date: struct_time | None
 ) -> list[FeedParserDict]:
     """
     Get not yet handled entries for a given feed.
@@ -82,6 +80,7 @@ def get_not_handled_entries(
 
 
 def get_sorted_entries(feed: FeedParserDict) -> list[FeedParserDict]:
+    """Return all valid entries for a given feed, sorted by date in descending order."""
     return sorted(
         _get_usable_entries(feed),
         key=lambda entry: _get_entry_date(entry) or datetime.min.timetuple(),
@@ -91,18 +90,13 @@ def get_sorted_entries(feed: FeedParserDict) -> list[FeedParserDict]:
 
 def _get_usable_entries(feed: FeedParserDict) -> Generator[FeedParserDict]:
     """Return all usable entries for a given feed."""
-    return (
-        entry
-        for entry in feed.get("entries", [])
-        if entry.get("id") or entry.get("link") or _get_entry_date(entry)
-    )
+    return (entry for entry in feed.get("entries", []) if entry.get("id"))
 
 
 def _not_latest_entry(
-    latest_id: str | None, latest_date: struct_time | None, entry: FeedParserDict
+    latest_id: str, latest_date: struct_time | None, entry: FeedParserDict
 ) -> bool:
-    entry_id = entry.get("id") or entry.get("link")
-    id_is_not_latest = latest_id is None or entry_id != latest_id
+    id_is_not_latest = (entry_id := entry.get("id")) != latest_id
     entry_date = _get_entry_date(entry)
     date_is_newer = entry_date > latest_date if entry_date and latest_date else True
     logger.info(
