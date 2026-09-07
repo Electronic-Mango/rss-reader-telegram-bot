@@ -1,15 +1,10 @@
 from time import strptime, struct_time
-from unittest.mock import patch
 
 from feedparser import FeedParserDict
 from pytest import mark
 
 from feed.reader import get_not_handled_entries
-from settings import Settings
 
-FEED_TYPE = "FEED_TYPE"
-FEED_NAME = "FEED_NAME"
-FEED_LINK = "FEED_LINK"
 ENTRIES = [
     FeedParserDict({"published_parsed": strptime("01.01.01", "%d.%m.%y"), "id": "ID1"}),
     FeedParserDict({"published_parsed": strptime("02.02.02", "%d.%m.%y"), "id": "ID2"}),
@@ -19,7 +14,6 @@ ENTRIES = [
 ]
 
 
-@patch.object(Settings, "RSS_FEEDS", {FEED_TYPE: FEED_LINK})
 @mark.parametrize(
     argnames=("entries", "latest_id", "latest_date", "expected_entries"),
     argvalues=[
@@ -28,32 +22,6 @@ ENTRIES = [
         (ENTRIES, "ID3", strptime("03.03.2003", "%d.%m.%Y"), ENTRIES[3:]),
         (ENTRIES, "ID2.5", strptime("03.02.2003", "%d.%m.%Y"), ENTRIES[2:]),
         (
-            [
-                FeedParserDict(
-                    {
-                        "link": "https://example.com/older",
-                        "published_parsed": strptime("01.01.2001", "%d.%m.%Y"),
-                    }
-                ),
-                FeedParserDict(
-                    {
-                        "link": "https://example.com/latest/",
-                        "published_parsed": strptime("02.02.2002", "%d.%m.%Y"),
-                    }
-                ),
-            ],
-            "https://example.com/older",
-            strptime("01.01.2001", "%d.%m.%Y"),
-            [
-                FeedParserDict(
-                    {
-                        "link": "https://example.com/latest/",
-                        "published_parsed": strptime("02.02.2002", "%d.%m.%Y"),
-                    }
-                )
-            ],
-        ),
-        (
             [FeedParserDict({"id": "NEW_ID"}), FeedParserDict({"id": "LATEST_ID"})],
             "LATEST_ID",
             None,
@@ -61,24 +29,20 @@ ENTRIES = [
         ),
         (
             [
-                FeedParserDict(
-                    {"published_parsed": strptime("02.02.2002", "%d.%m.%Y")}
-                ),
-                FeedParserDict(
-                    {"published_parsed": strptime("01.01.2001", "%d.%m.%Y")}
-                ),
+                FeedParserDict({"published_parsed": strptime("02.02.02", "%d.%m.%y")}),
+                ENTRIES[0],
             ],
+            "LATEST_ID",
             None,
-            strptime("01.01.2001", "%d.%m.%Y"),
-            [FeedParserDict({"published_parsed": strptime("02.02.2002", "%d.%m.%Y")})],
+            ENTRIES[0:1],
         ),
     ],
 )
 def test_get_not_handled_entries(
     entries: list[FeedParserDict],
-    latest_id: str | None,
+    latest_id: str,
     latest_date: struct_time | None,
     expected_entries: list[FeedParserDict],
 ) -> None:
-    feed = FeedParserDict({"href": FEED_LINK, "entries": entries})
+    feed = FeedParserDict({"entries": entries})
     assert expected_entries == get_not_handled_entries(feed, latest_id, latest_date)

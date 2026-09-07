@@ -18,7 +18,7 @@ from db.client import delete_many, exists, find_many, find_one, insert_one, upda
 
 
 async def get_all_stored_data() -> list[
-    tuple[int, str, str, str | None, struct_time | None, int | None]
+    tuple[int, str, str, str, struct_time | None, int | None]
 ]:
     """Return all data stored in the DB."""
     logger.info("Getting all data for all chats")
@@ -27,7 +27,7 @@ async def get_all_stored_data() -> list[
             document["chat_id"],
             document["feed_type"],
             document["feed_name"],
-            document.get("latest_id") or document.get("latest_link"),
+            document["latest_id"],
             _parse_date(document.get("latest_date")),
             document.get("latest_message_id"),
         )
@@ -73,7 +73,7 @@ async def store_feed_data(
     chat_id: int,
     feed_name: str,
     feed_type: str,
-    latest_id: str | None,
+    latest_id: str,
     latest_link: str | None,
     latest_date: struct_time | None,
 ) -> None:
@@ -97,7 +97,7 @@ async def update_stored_latest_data(
     chat_id: int,
     feed_type: str,
     feed_name: str,
-    latest_id: str | None,
+    latest_id: str,
     latest_link: str | None,
     latest_date: struct_time | None,
 ) -> None:

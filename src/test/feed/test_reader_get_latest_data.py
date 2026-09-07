@@ -1,14 +1,10 @@
 from time import strptime
-from unittest.mock import patch
 
 from feedparser import FeedParserDict
 from pytest import mark
 
 from feed.reader import get_latest_data
-from settings import Settings
 
-FEED_TYPE = "FEED_TYPE"
-FEED_NAME = "FEED_NAME"
 FEED_LINK = "FEED_LINK"
 
 ENTRIES = [
@@ -34,7 +30,6 @@ LATEST_ENTRY = FeedParserDict(
 )
 
 
-@patch.object(Settings, "RSS_FEEDS", {FEED_TYPE: {"url": FEED_LINK}})
 @mark.parametrize(
     argnames="entries",
     argvalues=[
@@ -46,37 +41,3 @@ LATEST_ENTRY = FeedParserDict(
 def test_get_latest_data(entries: list[FeedParserDict]) -> None:
     feed = FeedParserDict({"href": FEED_LINK, "entries": entries})
     assert get_latest_data(feed) == EXPECTED_LATEST_ENTRY_DATA
-
-
-@patch.object(Settings, "RSS_FEEDS", {FEED_TYPE: {"url": FEED_LINK}})
-@mark.parametrize(
-    ("entries", "expected_data"),
-    [
-        (
-            [FeedParserDict({"id": EXPECTED_LATEST_ID})],
-            (EXPECTED_LATEST_ID, None, None),
-        ),
-        (
-            [
-                FeedParserDict(
-                    {
-                        "id": EXPECTED_LATEST_ID,
-                        "published_parsed": EXPECTED_LATEST_DATE,
-                    }
-                )
-            ],
-            (EXPECTED_LATEST_ID, None, EXPECTED_LATEST_DATE),
-        ),
-        (
-            [FeedParserDict({"link": EXPECTED_LATEST_LINK})],
-            (None, EXPECTED_LATEST_LINK, None),
-        ),
-        (
-            [FeedParserDict({"published_parsed": EXPECTED_LATEST_DATE})],
-            (None, None, EXPECTED_LATEST_DATE),
-        ),
-    ],
-)
-def test_get_latest_data_handles_missing_fields(entries, expected_data) -> None:
-    feed = FeedParserDict({"href": FEED_LINK, "entries": entries})
-    assert get_latest_data(feed) == expected_data
