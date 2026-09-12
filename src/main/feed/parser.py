@@ -14,6 +14,7 @@ from typing import Any
 from bs4 import BeautifulSoup
 from feedparser import FeedParserDict
 
+from feed.utils import format_date, get_entry_date
 from settings import Settings
 
 ATTRS_FOR_DESCRIPTION = ["title", "alt"]
@@ -56,6 +57,8 @@ def _filter_text(text: str, feed_params: dict[str, Any]) -> str:
 
 
 def parse_media_links(entry: FeedParserDict) -> list[str]:
+    if media_override := entry.get("media_override"):
+        return [format_media_override(media_override, entry)]
     if media_content := entry.get("media_content"):
         return [media["url"] for media in media_content if "url" in media]
     if not (summary := entry.get("summary")):
@@ -64,3 +67,13 @@ def parse_media_links(entry: FeedParserDict) -> list[str]:
     media_elements = media_source.find_all(["img", "source"])
     media_links = [media.get("src") for media in media_elements]
     return [link for link in media_links if link]
+
+
+def format_media_override(media_format: str, entry: FeedParserDict) -> str:
+    return media_format.format(
+        feed_type=entry.get("feed_type", ""),
+        feed_name=entry.get("feed_name", ""),
+        entry_id=entry.get("id", ""),
+        entry_link=entry.get("link", ""),
+        entry_date=format_date(get_entry_date(entry)) or "",
+    )
