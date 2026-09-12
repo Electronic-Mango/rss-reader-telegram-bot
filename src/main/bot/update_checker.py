@@ -168,7 +168,7 @@ async def _send_update(
     link = parse_link(entry)
     title = parse_title(entry, feed_type)
     description = parse_description(entry, feed_type)
-    media = parse_media_links(entry)
+    media = parse_media_links(entry, feed_type, feed_name)
     base_send_args = (
         bot,
         chat_id,
