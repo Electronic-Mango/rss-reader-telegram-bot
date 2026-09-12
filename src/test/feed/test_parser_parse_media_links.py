@@ -1,3 +1,4 @@
+from time import strftime, struct_time
 from unittest.mock import patch
 from urllib.parse import quote
 
@@ -12,17 +13,27 @@ FEED_NAME = "test-feed-name"
 FEED_TYPE_NO_OVERRIDE = "test-feed-type-no-override"
 FEED_TYPE_OVERRIDE = "test-feed-type"
 FEED_TYPE_OVERRIDE_PARAMETRIZED = "test-feed-type-parametrized-override"
+FEED_TYPE_INVALID_OVERRIDE = "test-feed-type-invalid-override"
 
 ENTRY_ID = "test-entry-id"
 ENTRY_LINK = "test-entry-link"
 
+DATE_STRUCT = struct_time([2024, 6, 6, 0, 0, 0, 0, 0, 0])
 OVERRIDE_PATTERN_NO_PARAMETERS = "override-pattern"
-OVERRIDE_PATTERN = "{feed_type}_{feed_name}_{entry_id}_{entry_link}"
+OVERRIDE_PATTERN = "{feed_type}_{feed_name}_{entry_id}_{entry_link}_{entry_date}"
 OVERRIDE_VALUE = OVERRIDE_PATTERN.format(
     feed_type=FEED_TYPE_OVERRIDE_PARAMETRIZED,
     feed_name=FEED_NAME,
     entry_id=ENTRY_ID,
     entry_link=ENTRY_LINK,
+    entry_date=strftime("%Y-%m-%d %H:%M:%S", DATE_STRUCT),
+)
+OVERRIDE_VALUE_MISSING_FIELDS = OVERRIDE_PATTERN.format(
+    feed_type=FEED_TYPE_OVERRIDE_PARAMETRIZED,
+    feed_name=FEED_NAME,
+    entry_id=None,
+    entry_link=None,
+    entry_date=None,
 )
 
 RSS_FEEDS = {
@@ -31,6 +42,7 @@ RSS_FEEDS = {
         "media_override": {"pattern": OVERRIDE_PATTERN, "encode_http": True}
     },
     FEED_TYPE_NO_OVERRIDE: {"show_description": True},
+    FEED_TYPE_INVALID_OVERRIDE: {"media_override": {}},
 }
 
 ENTRY_WITH_MEDIA_CONTENT = FeedParserDict(
@@ -52,6 +64,13 @@ ENTRY_FOR_PARAMETRIZED_OVERRIDE = FeedParserDict(
         "summary": MEDIA_LINKS_IN_SUMMARY,
         "id": ENTRY_ID,
         "link": ENTRY_LINK,
+        "published_parsed": DATE_STRUCT,
+    }
+)
+ENTRY_FOR_PARAMETRIZED_OVERRIDE_MISSING_FIELDS = FeedParserDict(
+    {
+        "media_content": [{"url": "link-1"}, {"url": "link-2"}],
+        "summary": MEDIA_LINKS_IN_SUMMARY,
     }
 )
 
@@ -78,6 +97,16 @@ ENTRY_FOR_PARAMETRIZED_OVERRIDE = FeedParserDict(
             FEED_TYPE_OVERRIDE_PARAMETRIZED,
             ENTRY_FOR_PARAMETRIZED_OVERRIDE,
             [quote(OVERRIDE_VALUE, safe="")],
+        ),
+        (
+            FEED_TYPE_INVALID_OVERRIDE,
+            ENTRY_WITH_MEDIA_CONTENT,
+            EXPECTED_LINKS_FROM_MEDIA_CONTENT,
+        ),
+        (
+            FEED_TYPE_OVERRIDE_PARAMETRIZED,
+            ENTRY_FOR_PARAMETRIZED_OVERRIDE_MISSING_FIELDS,
+            [quote(OVERRIDE_VALUE_MISSING_FIELDS, safe="")],
         ),
     ],
 )
