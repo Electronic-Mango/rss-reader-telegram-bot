@@ -36,7 +36,7 @@ Feed name 3:
   url: https://{source_pattern}.feedlink2.com/rss
   media_override:
     pattern: "https://{feed_type}_{feed_name}/{entry_id}_{entry_link}"
-    encode_http: False
+    encode_http: false
   # Updates for this feed won't contain RSS entry titles or descriptions, just images and link.
   # The media attached for this entry will use the URL pattern specified in "media_override".
   # The override uses the string format syntax, available placeholders are:
