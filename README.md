@@ -112,17 +112,21 @@ Here's a basic set of configuration parameters for an RSS feed in YAML:
 Feed name 1:
   # RSS feed link. Notice {source_pattern} substring, it will be replaced with whatever source you input when adding a subscription.
   url: http://feedlink1.com/{source_pattern}/rss
+
   # Configure whether updates will contain RSS entry title.
   # Case-sensitive, optional, defaults to "false".
   show_title: true
+
   # Configure whether updates will contain RSS entry description.
   # Case-sensitive, optional, defaults to "false".
   show_description: true
+
   # List of strings which will be trimmed out of both title and description.
   # Filters are case-sensitive. Whole field is optional and defaults to an empty string.
   filters:
     - some string
     - some other string
+
   # String format used when creating update text to identify where the update comes from.
   # Elements "{name}" and "{type}" are replaced by specific feed name and feed type
   # (in this case "Feed name 1"). Both are optional.
@@ -133,6 +137,21 @@ Feed name 1:
   # The field is optional, if absent a default text format is used:
   # "By <b>{name}</b> on {type}"
   sender_text_format: Posted by <b>{name}</b> in <i>{type}</i>!
+
+  # Parameter allowing for overriding media links with custom pattern.
+  # Currently it always result in a single media sent as update.
+  media_override:
+    # Python string pattern which will be used for creating media URL for download.
+    # Available placeholders are:
+    #   - {feed_type} - name of RSS type (here it's "Feed name 1")
+    #   - {feed_name} - name of the specific RSS subscription
+    #   - {entry_id} - ID of the specific RSS entry
+    #   - {entry_link} - link to the specific RSS entry
+    #   - {entry_date} - date of the specific RSS entry
+    pattern: "https://{feed_type}_{feed_name}/{entry_id}_{entry_link}"
+    # This parameter defines whether the placeholders above should be percent-encoded.
+    # Only the placeholders are percent-encoded, the rest of the pattern stays as is.
+    encode_http: false
 ```
 
 Out of all parameters only `url` is required, others are optional.
