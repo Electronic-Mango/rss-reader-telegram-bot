@@ -40,6 +40,6 @@ async def _handle_update(
         parse_title(latest_entry, feed_type),
         parse_description(latest_entry, feed_type),
         await get_latest_message_id(chat_id, feed_type, feed_name),
-        parse_media_links(latest_entry),
+        parse_media_links(latest_entry, feed_type, feed_name),
         False,
     )

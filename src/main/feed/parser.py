@@ -56,9 +56,11 @@ def _filter_text(text: str, feed_params: dict[str, Any]) -> str:
     return reduce(lambda text, pattern: text.replace(pattern, ""), filters, text)
 
 
-def parse_media_links(entry: FeedParserDict) -> list[str]:
-    if media_override := entry.get("media_override"):
-        return [format_media_override(media_override, entry)]
+def parse_media_links(
+    entry: FeedParserDict, feed_type: str, feed_name: str
+) -> list[str]:
+    if media_override := Settings.RSS_FEEDS[feed_type].get("media_override"):
+        return [_format_media_override(entry, media_override, feed_type, feed_name)]
     if media_content := entry.get("media_content"):
         return [media["url"] for media in media_content if "url" in media]
     if not (summary := entry.get("summary")):
@@ -69,10 +71,12 @@ def parse_media_links(entry: FeedParserDict) -> list[str]:
     return [link for link in media_links if link]
 
 
-def format_media_override(media_format: str, entry: FeedParserDict) -> str:
-    return media_format.format(
-        feed_type=entry.get("feed_type", ""),
-        feed_name=entry.get("feed_name", ""),
+def _format_media_override(
+    entry: FeedParserDict, media_override: str, feed_type: str, feed_name: str
+) -> str:
+    return media_override.format(
+        feed_type=feed_type,
+        feed_name=feed_name,
         entry_id=entry.get("id", ""),
         entry_link=entry.get("link", ""),
         entry_date=format_date(get_entry_date(entry)) or "",
