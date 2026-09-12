@@ -5,12 +5,13 @@ from collections.abc import Generator
 from datetime import datetime
 from functools import partial
 from itertools import takewhile
-from time import strftime, struct_time
+from time import struct_time
 
 from feedparser import FeedParserDict, parse
 from loguru import logger
 from niquests import aget
 
+from feed.utils import format_date, get_entry_date
 from settings import Settings
 
 
@@ -60,7 +61,7 @@ def get_data(
     """Return data (entry ID, link, date) for a given entry."""
     entry_id = entry["id"]  # Entries without IDs are already rejected
     link = entry.get("link")
-    date = _get_entry_date(entry)
+    date = get_entry_date(entry)
     return entry_id, link, date
 
 
@@ -83,7 +84,7 @@ def get_sorted_entries(feed: FeedParserDict) -> list[FeedParserDict]:
     """Return all valid entries for a given feed, sorted by date in descending order."""
     return sorted(
         _get_usable_entries(feed),
-        key=lambda entry: _get_entry_date(entry) or datetime.min.timetuple(),
+        key=lambda entry: get_entry_date(entry) or datetime.min.timetuple(),
         reverse=True,
     )
 
@@ -96,22 +97,15 @@ def _get_usable_entries(feed: FeedParserDict) -> Generator[FeedParserDict]:
 def _not_latest_entry(
     latest_id: str, latest_date: struct_time | None, entry: FeedParserDict
 ) -> bool:
+    """Check if the given entry is not the latest entry based on ID and date."""
     id_is_not_latest = (entry_id := entry.get("id")) != latest_id
-    entry_date = _get_entry_date(entry)
+    entry_date = get_entry_date(entry)
     date_is_newer = entry_date > latest_date if entry_date and latest_date else True
     logger.info(
         "Checking for latest entry "
-        f"latest_id=[{latest_id}] latest_date=[{_format_date(latest_date)}] "
-        f"against entry_id=[{entry_id}] entry_date=[{_format_date(entry_date)}] "
+        f"latest_id=[{latest_id}] latest_date=[{format_date(latest_date)}] "
+        f"against entry_id=[{entry_id}] entry_date=[{format_date(entry_date)}] "
         f"id_is_not_latest=[{id_is_not_latest}] date_is_newer=[{date_is_newer}] "
         f"returning=[{id_is_not_latest and date_is_newer}]"
     )
     return id_is_not_latest and date_is_newer
-
-
-def _get_entry_date(entry: FeedParserDict) -> struct_time | None:
-    return entry.get("published_parsed") or entry.get("updated_parsed")
-
-
-def _format_date(date: struct_time | None) -> str | None:
-    return strftime("%Y-%m-%d %H:%M:%S", date) if date is not None else None
