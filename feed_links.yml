@@ -34,7 +34,9 @@ Feed name 2:
   # "text" will be filtered out of update title.
 Feed name 3:
   url: https://{source_pattern}.feedlink2.com/rss
-  media_override: "https://{feed_type}_{feed_name}/{entry_id}_{entry_link}"
+  media_override:
+    pattern: "https://{feed_type}_{feed_name}/{entry_id}_{entry_link}"
+    encode_http: False
   # Updates for this feed won't contain RSS entry titles or descriptions, just images and link.
   # The media attached for this entry will use the URL pattern specified in "media_override".
   # The override uses the string format syntax, available placeholders are:
@@ -43,3 +45,4 @@ Feed name 3:
   #   - {entry_id} - ID of the specific RSS entry
   #   - {entry_link} - link to the specific RSS entry
   #   - {entry_date} - date of the specific RSS entry
+  # "encode_http" specifies whether the placeholders should be percent-encoded for use in HTTP.
