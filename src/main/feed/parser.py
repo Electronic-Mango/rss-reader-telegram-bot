@@ -60,8 +60,8 @@ def _filter_text(text: str, feed_params: dict[str, Any]) -> str:
 def parse_media_links(
     entry: FeedParserDict, feed_type: str, feed_name: str
 ) -> list[str]:
-    if media_override := Settings.RSS_FEEDS[feed_type].get("media_override"):
-        pattern = media_override.get("pattern")
+    media_override = Settings.RSS_FEEDS[feed_type].get("media_override")
+    if media_override is not None and (pattern := media_override.get("pattern")):
         encode_http = media_override.get("encode_http", False)
         return [_media_override(entry, pattern, feed_type, feed_name, encode_http)]
     if media_content := entry.get("media_content"):
