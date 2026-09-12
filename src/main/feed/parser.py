@@ -91,7 +91,7 @@ def _media_override(
                 entry_date=encode(format_date(get_entry_date(entry))),
             )
         ]
-    except (KeyError, ValueError) as e:
+    except (AttributeError, IndexError, KeyError, TypeError, ValueError) as e:
         warning_message = f"Failed to apply media override pattern to [{pattern}]: "
         logger.opt(exception=e).warning(warning_message)
         return []
