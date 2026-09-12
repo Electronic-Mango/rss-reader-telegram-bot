@@ -139,7 +139,7 @@ Feed name 1:
   sender_text_format: Posted by <b>{name}</b> in <i>{type}</i>!
 
   # Parameter allowing for overriding media links with custom pattern.
-  # Currently it always result in a single media sent as update.
+  # Currently, it always results in a single media sent per update.
   media_override:
     # Python string pattern which will be used for creating media URL for download.
     # Available placeholders are:
