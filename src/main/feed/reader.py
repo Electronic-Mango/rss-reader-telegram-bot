@@ -7,16 +7,17 @@ from functools import partial
 from itertools import takewhile
 from time import struct_time
 
-from feedparser import FeedParserDict, parse
+from feedparser import parse
 from loguru import logger
 from niquests import aget
 
+from feed.types import RssEntry, RssFeed
 from feed.utils import format_date, get_entry_date
 from settings import Settings
 
 
-async def get_parsed_feed(feed_type: str, feed_name: str) -> FeedParserDict:
-    """Parse given information into FeedParserDict, based on URL from RSS links YAML."""
+async def get_parsed_feed(feed_type: str, feed_name: str) -> RssFeed:
+    """Parse given information into RssFeed, based on URL from RSS links YAML."""
     feed_link = Settings.RSS_FEEDS[feed_type]["url"].format(source_pattern=feed_name)
     logger.info(f"Parsed [{feed_name}][{feed_type}] to link [{feed_link}]")
     feed_response = await aget(feed_link)
@@ -31,7 +32,7 @@ async def get_parsed_feed(feed_type: str, feed_name: str) -> FeedParserDict:
     return parsed_feed
 
 
-def feed_is_valid(feed: FeedParserDict) -> bool:
+def feed_is_valid(feed: RssFeed) -> bool:
     """
     Check whether a given feed is valid and can be used.
 
@@ -47,7 +48,7 @@ def feed_is_valid(feed: FeedParserDict) -> bool:
     return feed.get("status") in [200, 301] and any(_get_usable_entries(feed))
 
 
-def get_latest_data(feed: FeedParserDict) -> tuple[str, str | None, struct_time | None]:
+def get_latest_data(feed: RssFeed) -> tuple[str, str | None, struct_time | None]:
     """Get data (entry ID, link, date) of latest entry for a given feed."""
     logger.info(f"Getting data from latest entry for [{feed.get('href')}]")
     entries = get_sorted_entries(feed)
@@ -55,9 +56,7 @@ def get_latest_data(feed: FeedParserDict) -> tuple[str, str | None, struct_time 
     return get_data(latest_entry)
 
 
-def get_data(
-    entry: FeedParserDict,
-) -> tuple[str, str | None, struct_time | None]:
+def get_data(entry: RssEntry) -> tuple[str, str | None, struct_time | None]:
     """Return data (entry ID, link, date) for a given entry."""
     entry_id = entry["id"]  # Entries without IDs are already rejected
     link = entry.get("link")
@@ -66,8 +65,8 @@ def get_data(
 
 
 def get_not_handled_entries(
-    feed: FeedParserDict, target_id: str, date: struct_time | None
-) -> list[FeedParserDict]:
+    feed: RssFeed, target_id: str, date: struct_time | None
+) -> list[RssEntry]:
     """
     Get not yet handled entries for a given feed.
 
@@ -80,7 +79,7 @@ def get_not_handled_entries(
     return not_handled_entries
 
 
-def get_sorted_entries(feed: FeedParserDict) -> list[FeedParserDict]:
+def get_sorted_entries(feed: RssFeed) -> list[RssEntry]:
     """Return all valid entries for a given feed, sorted by date in descending order."""
     return sorted(
         _get_usable_entries(feed),
@@ -89,13 +88,13 @@ def get_sorted_entries(feed: FeedParserDict) -> list[FeedParserDict]:
     )
 
 
-def _get_usable_entries(feed: FeedParserDict) -> Generator[FeedParserDict]:
+def _get_usable_entries(feed: RssFeed) -> Generator[RssEntry]:
     """Return all usable entries for a given feed."""
     return (entry for entry in feed.get("entries", []) if entry.get("id"))
 
 
 def _not_latest_entry(
-    latest_id: str, latest_date: struct_time | None, entry: FeedParserDict
+    latest_id: str, latest_date: struct_time | None, entry: RssEntry
 ) -> bool:
     """Check if the given entry is not the latest entry based on ID and date."""
     id_is_not_latest = (entry_id := entry.get("id")) != latest_id

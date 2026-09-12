@@ -1,9 +1,9 @@
 from time import strftime, struct_time
 
-from feedparser import FeedParserDict
+from feed.types import RssEntry
 
 
-def get_entry_date(entry: FeedParserDict) -> struct_time | None:
+def get_entry_date(entry: RssEntry) -> struct_time | None:
     """
     Retrieve the date of the given feed entry.
 

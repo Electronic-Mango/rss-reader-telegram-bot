@@ -5,7 +5,6 @@ from enum import Enum, auto
 from typing import NamedTuple
 from warnings import filterwarnings
 
-from feedparser import FeedParserDict
 from loguru import logger
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Message, Update
 from telegram.ext import (
@@ -21,6 +20,7 @@ from telegram.warnings import PTBUserWarning
 from bot.user_filter import user_filter
 from db.wrapper import feed_is_already_stored, store_feed_data
 from feed.reader import feed_is_valid, get_latest_data, get_parsed_feed
+from feed.types import RssFeed
 from settings import Settings
 
 ADD_HELP_MESSAGE = "/add - adds subscription for a given feed"
@@ -128,7 +128,7 @@ async def _feed_already_exists(
 async def _store_subscription(
     message: Message,
     chat_id: int,
-    parsed_feed: FeedParserDict,
+    parsed_feed: RssFeed,
     feed_type: str,
     feed_name: str,
 ) -> None:

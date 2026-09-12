@@ -1,15 +1,12 @@
 from unittest.mock import patch
 
-from feedparser import FeedParserDict
 from pytest import mark
 
 from feed.parser import parse_description
 from settings import Settings
 
 FEED_TYPE = "FEED_TYPE"
-ENTRY = FeedParserDict(
-    {"summary": "\n\n\n<b>bold text</b><a>\n\nlink text</a> raw\ntext\n\n\n"}
-)
+ENTRY = {"summary": "\n\n\n<b>bold text</b><a>\n\nlink text</a> raw\ntext\n\n\n"}
 EXPECTED_DESCRIPTION = "bold text\n\nlink text raw\ntext"
 FILTERS = ["nk te", "w\nt"]
 EXPECTED_FILTERED_DESCRIPTION = "bold text\n\nlixt raext"
@@ -38,7 +35,7 @@ EXPECTED_FILTERED_DESCRIPTION = "bold text\n\nlixt raext"
     ],
 )
 def test_parse_description_description_enabled(summary, expected_description) -> None:
-    entry = FeedParserDict({"summary": summary})
+    entry = {"summary": summary}
     assert expected_description == parse_description(entry, FEED_TYPE)
 
 
@@ -56,4 +53,4 @@ def test_parse_description_description_disabled() -> None:
 
 @patch.object(Settings, "RSS_FEEDS", {FEED_TYPE: {"show_description": True}})
 def test_parse_description_missing() -> None:
-    assert parse_description(FeedParserDict(), FEED_TYPE) is None
+    assert parse_description({}, FEED_TYPE) is None

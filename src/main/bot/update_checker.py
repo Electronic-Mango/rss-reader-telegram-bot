@@ -16,7 +16,6 @@ from datetime import datetime
 from random import randrange, shuffle
 from time import struct_time
 
-from feedparser import FeedParserDict
 from loguru import logger
 from telegram import Bot
 from telegram.error import Forbidden
@@ -36,6 +35,7 @@ from feed.reader import (
     get_not_handled_entries,
     get_parsed_feed,
 )
+from feed.types import RssEntry
 from settings import Settings
 
 _active_update_check: Task[None] | None = None
@@ -141,7 +141,7 @@ async def _handle_update(
     chat_id: int,
     feed_type: str,
     feed_name: str,
-    not_handled_feed_entries: list[FeedParserDict],
+    not_handled_feed_entries: list[RssEntry],
     latest_message_id: int | None,
 ) -> None:
     logger.info(f"[{chat_id}] Handling update [{feed_name}] [{feed_type}]")
@@ -162,7 +162,7 @@ async def _send_update(
     chat_id: int,
     feed_type: str,
     feed_name: str,
-    entry: FeedParserDict,
+    entry: RssEntry,
     latest_message_id: int | None,
 ) -> int:
     link = parse_link(entry)
