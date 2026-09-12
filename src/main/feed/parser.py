@@ -7,9 +7,10 @@ Extracted information contains:
  - links to photos and videos
 """
 
-from functools import reduce
+from functools import partial, reduce
 from html import escape
 from typing import Any
+from urllib.parse import quote
 
 from bs4 import BeautifulSoup
 from feedparser import FeedParserDict
@@ -60,7 +61,9 @@ def parse_media_links(
     entry: FeedParserDict, feed_type: str, feed_name: str
 ) -> list[str]:
     if media_override := Settings.RSS_FEEDS[feed_type].get("media_override"):
-        return [_format_media_override(entry, media_override, feed_type, feed_name)]
+        pattern = media_override.get("pattern")
+        encode_http = media_override.get("encode_http", False)
+        return [_media_override(entry, pattern, feed_type, feed_name, encode_http)]
     if media_content := entry.get("media_content"):
         return [media["url"] for media in media_content if "url" in media]
     if not (summary := entry.get("summary")):
@@ -71,13 +74,18 @@ def parse_media_links(
     return [link for link in media_links if link]
 
 
-def _format_media_override(
-    entry: FeedParserDict, media_override: str, feed_type: str, feed_name: str
+def _media_override(
+    entry: FeedParserDict,
+    pattern: str,
+    feed_type: str,
+    feed_name: str,
+    encode_http: bool,
 ) -> str:
-    return media_override.format(
-        feed_type=feed_type,
-        feed_name=feed_name,
-        entry_id=entry.get("id", ""),
-        entry_link=entry.get("link", ""),
-        entry_date=format_date(get_entry_date(entry)) or "",
+    encode = partial(lambda value: quote(value, safe="") if encode_http else value)
+    return pattern.format(
+        feed_type=encode(feed_type),
+        feed_name=encode(feed_name),
+        entry_id=encode(entry.get("id", "")),
+        entry_link=encode(entry.get("link", "")),
+        entry_date=encode(format_date(get_entry_date(entry)) or ""),
     )

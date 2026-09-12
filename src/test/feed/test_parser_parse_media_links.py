@@ -1,4 +1,5 @@
 from unittest.mock import patch
+from urllib.parse import quote
 
 from feedparser import FeedParserDict
 from pytest import mark
@@ -11,8 +12,10 @@ FEED_NAME = "test-feed-name"
 FEED_TYPE_NO_OVERRIDE = "test-feed-type-no-override"
 FEED_TYPE_OVERRIDE = "test-feed-type"
 FEED_TYPE_OVERRIDE_PARAMETRIZED = "test-feed-type-parametrized-override"
+
 ENTRY_ID = "test-entry-id"
 ENTRY_LINK = "test-entry-link"
+
 OVERRIDE_PATTERN_NO_PARAMETERS = "override-pattern"
 OVERRIDE_PATTERN = "{feed_type}_{feed_name}_{entry_id}_{entry_link}"
 OVERRIDE_VALUE = OVERRIDE_PATTERN.format(
@@ -21,9 +24,12 @@ OVERRIDE_VALUE = OVERRIDE_PATTERN.format(
     entry_id=ENTRY_ID,
     entry_link=ENTRY_LINK,
 )
+
 RSS_FEEDS = {
-    FEED_TYPE_OVERRIDE: {"media_override": OVERRIDE_PATTERN_NO_PARAMETERS},
-    FEED_TYPE_OVERRIDE_PARAMETRIZED: {"media_override": OVERRIDE_PATTERN},
+    FEED_TYPE_OVERRIDE: {"media_override": {"pattern": OVERRIDE_PATTERN_NO_PARAMETERS}},
+    FEED_TYPE_OVERRIDE_PARAMETRIZED: {
+        "media_override": {"pattern": OVERRIDE_PATTERN, "encode_http": True}
+    },
     FEED_TYPE_NO_OVERRIDE: {"show_description": True},
 }
 
@@ -71,7 +77,7 @@ ENTRY_FOR_PARAMETRIZED_OVERRIDE = FeedParserDict(
         (
             FEED_TYPE_OVERRIDE_PARAMETRIZED,
             ENTRY_FOR_PARAMETRIZED_OVERRIDE,
-            [OVERRIDE_VALUE],
+            [quote(OVERRIDE_VALUE, safe="")],
         ),
     ],
 )
@@ -79,4 +85,5 @@ ENTRY_FOR_PARAMETRIZED_OVERRIDE = FeedParserDict(
 def test_parse_media_links(
     feed_type: str, entry: FeedParserDict, expected_links: list[str]
 ) -> None:
-    assert expected_links == parse_media_links(entry, feed_type, FEED_NAME)
+    parsed_links = parse_media_links(entry, feed_type, FEED_NAME)
+    assert expected_links == parsed_links
