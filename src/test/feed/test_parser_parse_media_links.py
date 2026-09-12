@@ -15,7 +15,6 @@ FEED_TYPE_OVERRIDE = "test-feed-type"
 FEED_TYPE_OVERRIDE_PARAMETRIZED = "test-feed-type-parametrized-override"
 FEED_TYPE_OVERRIDE_MALFORMED_NO_CLOSING_BRACE = "test-feed-type-malformed-brace"
 FEED_TYPE_OVERRIDE_MALFORMED_UNEXPECTED_PLACEHOLDER = "test-feed-type-placeholder"
-FEED_TYPE_OVERRIDE_PARAMETRIZED = "test-feed-type-parametrized-override"
 FEED_TYPE_INVALID_OVERRIDE = "test-feed-type-invalid-override"
 
 ENTRY_ID = "test-entry-id"
