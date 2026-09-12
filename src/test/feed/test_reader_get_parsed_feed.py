@@ -1,8 +1,7 @@
 from unittest.mock import MagicMock, patch
 
-from feedparser import FeedParserDict
-
 from feed.reader import get_parsed_feed
+from feed.types import RssFeed
 from settings import Settings
 
 FEED_TYPE = "FEED_TYPE"
@@ -12,10 +11,10 @@ FEED_CONTENT = b"FEED-CONTENT"
 FEED_HEADERS = {"content-type": "application/xml"}
 FEED_STATUS_CODE = 200
 EXPECTED_FEED_LINK = FEED_LINK.format(source_pattern=FEED_NAME)
-MOCKED_FEED_PARSER_DICT = FeedParserDict({"id": "FEED-ID"})
+MOCKED_FEED_PARSER_DICT = {"id": "FEED-ID"}
 
 
-def mocked_parse(content: bytes, response_headers=None) -> FeedParserDict | None:
+def mocked_parse(content: bytes, response_headers=None) -> RssFeed | None:
     if content == FEED_CONTENT and response_headers == FEED_HEADERS:
         return MOCKED_FEED_PARSER_DICT
     return None

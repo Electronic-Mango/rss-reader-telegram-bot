@@ -13,20 +13,20 @@ from typing import Any
 from urllib.parse import quote
 
 from bs4 import BeautifulSoup
-from feedparser import FeedParserDict
 from loguru import logger
 
+from feed.types import RssEntry
 from feed.utils import format_date, get_entry_date
 from settings import Settings
 
 ATTRS_FOR_DESCRIPTION = ["title", "alt"]
 
 
-def parse_link(entry: FeedParserDict) -> str | None:
+def parse_link(entry: RssEntry) -> str | None:
     return entry.get("link")
 
 
-def parse_description(entry: FeedParserDict, feed_type: str) -> str | None:
+def parse_description(entry: RssEntry, feed_type: str) -> str | None:
     feed_data = Settings.RSS_FEEDS[feed_type]
     if not feed_data.get("show_description") or not (summary := entry.get("summary")):
         return None
@@ -34,7 +34,7 @@ def parse_description(entry: FeedParserDict, feed_type: str) -> str | None:
     return escape(_filter_text(desc, feed_data)) if desc else None
 
 
-def parse_title(entry: FeedParserDict, feed_type: str) -> str | None:
+def parse_title(entry: RssEntry, feed_type: str) -> str | None:
     feed_data = Settings.RSS_FEEDS[feed_type]
     if not feed_data.get("show_title") or not (title := entry.get("title")):
         return None
@@ -58,9 +58,7 @@ def _filter_text(text: str, feed_params: dict[str, Any]) -> str:
     return reduce(lambda text, pattern: text.replace(pattern, ""), filters, text)
 
 
-def parse_media_links(
-    entry: FeedParserDict, feed_type: str, feed_name: str
-) -> list[str]:
+def parse_media_links(entry: RssEntry, feed_type: str, feed_name: str) -> list[str]:
     media_override = Settings.RSS_FEEDS[feed_type].get("media_override")
     if media_override is not None and (pattern := media_override.get("pattern")):
         encode_http = media_override.get("encode_http", False)
@@ -76,7 +74,7 @@ def parse_media_links(
 
 
 def _media_override(
-    entry: FeedParserDict,
+    entry: RssEntry,
     pattern: str,
     feed_type: str,
     feed_name: str,

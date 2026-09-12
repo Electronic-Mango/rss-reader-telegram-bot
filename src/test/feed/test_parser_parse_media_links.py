@@ -2,10 +2,10 @@ from time import strftime, struct_time
 from unittest.mock import patch
 from urllib.parse import quote
 
-from feedparser import FeedParserDict
 from pytest import mark
 
 from feed.parser import parse_media_links
+from feed.types import RssEntry
 from settings import Settings
 
 FEED_NAME = "test-feed-name"
@@ -45,9 +45,7 @@ RSS_FEEDS = {
     FEED_TYPE_INVALID_OVERRIDE: {"media_override": {}},
 }
 
-ENTRY_WITH_MEDIA_CONTENT = FeedParserDict(
-    {"media_content": [{"url": "link-1"}, {"url": "link-2"}]}
-)
+ENTRY_WITH_MEDIA_CONTENT = {"media_content": [{"url": "link-1"}, {"url": "link-2"}]}
 EXPECTED_LINKS_FROM_MEDIA_CONTENT = ["link-1", "link-2"]
 
 MEDIA_LINKS_IN_SUMMARY = """
@@ -55,24 +53,20 @@ MEDIA_LINKS_IN_SUMMARY = """
     not expected raw text
     <source src='expected-source-link' type='not-expected-type'>
 """
-ENTRY_WITHOUT_MEDIA_CONTENT = FeedParserDict({"summary": MEDIA_LINKS_IN_SUMMARY})
+ENTRY_WITHOUT_MEDIA_CONTENT = {"summary": MEDIA_LINKS_IN_SUMMARY}
 EXPECTED_LINKS_FROM_SUMMARY = ["expected-img-link", "expected-source-link"]
 
-ENTRY_FOR_PARAMETRIZED_OVERRIDE = FeedParserDict(
-    {
-        "media_content": [{"url": "link-1"}, {"url": "link-2"}],
-        "summary": MEDIA_LINKS_IN_SUMMARY,
-        "id": ENTRY_ID,
-        "link": ENTRY_LINK,
-        "published_parsed": DATE_STRUCT,
-    }
-)
-ENTRY_FOR_PARAMETRIZED_OVERRIDE_MISSING_FIELDS = FeedParserDict(
-    {
-        "media_content": [{"url": "link-1"}, {"url": "link-2"}],
-        "summary": MEDIA_LINKS_IN_SUMMARY,
-    }
-)
+ENTRY_FOR_PARAMETRIZED_OVERRIDE = {
+    "media_content": [{"url": "link-1"}, {"url": "link-2"}],
+    "summary": MEDIA_LINKS_IN_SUMMARY,
+    "id": ENTRY_ID,
+    "link": ENTRY_LINK,
+    "published_parsed": DATE_STRUCT,
+}
+ENTRY_FOR_PARAMETRIZED_OVERRIDE_MISSING_FIELDS = {
+    "media_content": [{"url": "link-1"}, {"url": "link-2"}],
+    "summary": MEDIA_LINKS_IN_SUMMARY,
+}
 
 
 @mark.parametrize(
@@ -112,7 +106,7 @@ ENTRY_FOR_PARAMETRIZED_OVERRIDE_MISSING_FIELDS = FeedParserDict(
 )
 @patch.object(Settings, "RSS_FEEDS", RSS_FEEDS)
 def test_parse_media_links(
-    feed_type: str, entry: FeedParserDict, expected_links: list[str]
+    feed_type: str, entry: RssEntry, expected_links: list[str]
 ) -> None:
     parsed_links = parse_media_links(entry, feed_type, FEED_NAME)
     assert expected_links == parsed_links

@@ -1,12 +1,10 @@
 from unittest.mock import patch
 
-from feedparser import FeedParserDict
-
 from feed.parser import parse_title
 from settings import Settings
 
 FEED_TYPE = "FEED_TYPE"
-ENTRY = FeedParserDict({"title": "\n\n\ntext\n\nmore\ntext\n\n\n"})
+ENTRY = {"title": "\n\n\ntext\n\nmore\ntext\n\n\n"}
 EXPECTED_TITLE = "<b>text\n\nmore\ntext</b>"
 FILTERS = ["\n\nmore", "xt"]
 EXPECTED_FILTERED_TITLE = "<b>te\nte</b>"
@@ -31,4 +29,4 @@ def test_parse_title_disabled() -> None:
 
 @patch.object(Settings, "RSS_FEEDS", {FEED_TYPE: {"show_title": True}})
 def test_parse_title_missing() -> None:
-    assert parse_title(FeedParserDict(), FEED_TYPE) is None
+    assert parse_title({}, FEED_TYPE) is None
