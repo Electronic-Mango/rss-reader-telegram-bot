@@ -13,6 +13,9 @@ FEED_NAME = "test-feed-name"
 FEED_TYPE_NO_OVERRIDE = "test-feed-type-no-override"
 FEED_TYPE_OVERRIDE = "test-feed-type"
 FEED_TYPE_OVERRIDE_PARAMETRIZED = "test-feed-type-parametrized-override"
+FEED_TYPE_OVERRIDE_MALFORMED_NO_CLOSING_BRACE = "test-feed-type-malformed-brace"
+FEED_TYPE_OVERRIDE_MALFORMED_UNEXPECTED_PLACEHOLDER = "test-feed-type-placeholder"
+FEED_TYPE_OVERRIDE_PARAMETRIZED = "test-feed-type-parametrized-override"
 FEED_TYPE_INVALID_OVERRIDE = "test-feed-type-invalid-override"
 
 ENTRY_ID = "test-entry-id"
@@ -35,15 +38,8 @@ OVERRIDE_VALUE_MISSING_FIELDS = OVERRIDE_PATTERN.format(
     entry_link=None,
     entry_date=None,
 )
-
-RSS_FEEDS = {
-    FEED_TYPE_OVERRIDE: {"media_override": {"pattern": OVERRIDE_PATTERN_NO_PARAMETERS}},
-    FEED_TYPE_OVERRIDE_PARAMETRIZED: {
-        "media_override": {"pattern": OVERRIDE_PATTERN, "encode_http": True}
-    },
-    FEED_TYPE_NO_OVERRIDE: {"show_description": True},
-    FEED_TYPE_INVALID_OVERRIDE: {"media_override": {}},
-}
+OVERRIDE_MALFORMED_PATTERN_NO_CLOSING_BRACE = "{entry_id}_{entry_link"
+OVERRIDE_MALFORMED_PATTERN_UNEXPECTED_PLACEHOLDER = "{entry_type}_{feed_name}"
 
 ENTRY_WITH_MEDIA_CONTENT = {"media_content": [{"url": "link-1"}, {"url": "link-2"}]}
 EXPECTED_LINKS_FROM_MEDIA_CONTENT = ["link-1", "link-2"]
@@ -66,6 +62,24 @@ ENTRY_FOR_PARAMETRIZED_OVERRIDE = {
 ENTRY_FOR_PARAMETRIZED_OVERRIDE_MISSING_FIELDS = {
     "media_content": [{"url": "link-1"}, {"url": "link-2"}],
     "summary": MEDIA_LINKS_IN_SUMMARY,
+}
+
+RSS_FEEDS = {
+    FEED_TYPE_OVERRIDE: {"media_override": {"pattern": OVERRIDE_PATTERN_NO_PARAMETERS}},
+    FEED_TYPE_OVERRIDE_PARAMETRIZED: {
+        "media_override": {"pattern": OVERRIDE_PATTERN, "encode_http": True}
+    },
+    FEED_TYPE_NO_OVERRIDE: {"show_description": True},
+    FEED_TYPE_INVALID_OVERRIDE: {"media_override": {}},
+    FEED_TYPE_OVERRIDE_MALFORMED_NO_CLOSING_BRACE: {
+        "media_override": {"pattern": OVERRIDE_MALFORMED_PATTERN_NO_CLOSING_BRACE}
+    },
+    FEED_TYPE_OVERRIDE_MALFORMED_UNEXPECTED_PLACEHOLDER: {
+        "media_override": {
+            "pattern": OVERRIDE_MALFORMED_PATTERN_UNEXPECTED_PLACEHOLDER,
+            "encode_http": True,
+        }
+    },
 }
 
 
@@ -101,6 +115,16 @@ ENTRY_FOR_PARAMETRIZED_OVERRIDE_MISSING_FIELDS = {
             FEED_TYPE_OVERRIDE_PARAMETRIZED,
             ENTRY_FOR_PARAMETRIZED_OVERRIDE_MISSING_FIELDS,
             [quote(OVERRIDE_VALUE_MISSING_FIELDS, safe="")],
+        ),
+        (
+            FEED_TYPE_OVERRIDE_MALFORMED_NO_CLOSING_BRACE,
+            ENTRY_FOR_PARAMETRIZED_OVERRIDE,
+            [],
+        ),
+        (
+            FEED_TYPE_OVERRIDE_MALFORMED_UNEXPECTED_PLACEHOLDER,
+            ENTRY_FOR_PARAMETRIZED_OVERRIDE,
+            [],
         ),
     ],
 )
