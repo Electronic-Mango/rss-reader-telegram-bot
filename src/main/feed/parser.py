@@ -14,6 +14,7 @@ from urllib.parse import quote
 
 from bs4 import BeautifulSoup
 from feedparser import FeedParserDict
+from loguru import logger
 
 from feed.utils import format_date, get_entry_date
 from settings import Settings
@@ -63,7 +64,7 @@ def parse_media_links(
     media_override = Settings.RSS_FEEDS[feed_type].get("media_override")
     if media_override is not None and (pattern := media_override.get("pattern")):
         encode_http = media_override.get("encode_http", False)
-        return [_media_override(entry, pattern, feed_type, feed_name, encode_http)]
+        return _media_override(entry, pattern, feed_type, feed_name, encode_http)
     if media_content := entry.get("media_content"):
         return [media["url"] for media in media_content if "url" in media]
     if not (summary := entry.get("summary")):
@@ -80,12 +81,23 @@ def _media_override(
     feed_type: str,
     feed_name: str,
     encode_http: bool,
-) -> str:
-    encode = partial(lambda value: quote(value, safe="") if encode_http else value)
-    return pattern.format(
-        feed_type=encode(feed_type),
-        feed_name=encode(feed_name),
-        entry_id=encode(entry.get("id", "")),
-        entry_link=encode(entry.get("link", "")),
-        entry_date=encode(format_date(get_entry_date(entry)) or ""),
-    )
+) -> list[str]:
+    try:
+        encode = partial(_percent_encode, encode_http=encode_http)
+        return [
+            pattern.format(
+                feed_type=encode(feed_type),
+                feed_name=encode(feed_name),
+                entry_id=encode(entry.get("id")),
+                entry_link=encode(entry.get("link")),
+                entry_date=encode(format_date(get_entry_date(entry))),
+            )
+        ]
+    except (KeyError, ValueError) as e:
+        warning_message = f"Failed to apply media override pattern to [{pattern}]: "
+        logger.opt(exception=e).warning(warning_message)
+        return []
+
+
+def _percent_encode(value: Any, encode_http: bool) -> str:
+    return quote(str(value), safe="") if encode_http else str(value)
