@@ -10,6 +10,7 @@ This overwriting file doesn't have to contain everything, only values to overwri
 from functools import reduce
 from os import getenv
 from pathlib import Path
+from types import MappingProxyType
 from typing import Any
 
 from dotenv import load_dotenv
@@ -60,7 +61,7 @@ class Settings:
     DB_FEEDS_NAME: str = None
 
     # RSS
-    RSS_FEEDS: dict[str, dict[str, Any]] = None
+    RSS_FEEDS: dict[str, dict[str, Any]] = MappingProxyType({})
 
     @classmethod
     def init(
