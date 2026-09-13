@@ -37,3 +37,5 @@ async def test_get_parsed_feed(aget_mock: MagicMock, _) -> None:
     assert parsed_feed["id"] == "FEED-ID"
     assert parsed_feed["status"] == FEED_STATUS_CODE
     assert parsed_feed["href"] == EXPECTED_FEED_LINK
+    assert parsed_feed["feed_type"] == FEED_TYPE
+    assert parsed_feed["feed_name"] == FEED_NAME
