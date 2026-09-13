@@ -1,8 +1,12 @@
+from unittest.mock import patch
+
 from pytest import mark
 
 from feed.reader import feed_is_valid
 from feed.types import RssFeed
+from settings import Settings
 
+FEED_TYPE = "FEED_TYPE"
 VALID_ENTRY = {"id": "ID"}
 INVALID_ENTRY = {"link": "LINK"}
 
@@ -24,3 +28,16 @@ INVALID_ENTRY = {"link": "LINK"}
 )
 def test_feed_is_valid(parsed_rss: RssFeed, expected_validity: bool) -> None:
     assert expected_validity == bool(feed_is_valid(parsed_rss))
+
+
+@patch.object(Settings, "RSS_FEEDS", {FEED_TYPE: {"entry_filters": {"title": "abc.*"}}})
+@mark.parametrize(
+    argnames=("title", "expected_valid"), argvalues=[("xyz", False), ("abcdef", True)]
+)
+def test_feed_is_valid_respects_entry_filters(title: str, expected_valid: bool) -> None:
+    feed = {
+        "status": 200,
+        "feed_type": FEED_TYPE,
+        "entries": [{"id": "ID", "title": title}],
+    }
+    assert feed_is_valid(feed) is expected_valid
