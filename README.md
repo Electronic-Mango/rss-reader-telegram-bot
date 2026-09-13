@@ -131,7 +131,7 @@ Feed name 1:
   # Regex must match from the beginning of the field, so if you need to match something somewhere
   # in the middle you must add ".*" at the beginning of the regex.
   # A missing field is treated as an empty string, so a plain pattern ("inclusion" filter) will
-  # reject entries missing that field, while a negative lookahead ("exclusion" filter, 
+  # reject entries missing that field, while a negative lookahead ("exclusion" filter,
   # e.g. "(?!.*pattern)") will still accept entries with missing fields.
   # Whole field is optional and defaults to an empty dictionary, meaning no additional filtering.
   # To apply "exclusion" filter (the negative-lookahead) to a section in the middle of the field,
