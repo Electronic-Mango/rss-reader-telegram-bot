@@ -127,6 +127,23 @@ Feed name 1:
     - some string
     - some other string
 
+  # Regular expression filters deciding whether an individual RSS entry counts as a valid update.
+  # Regex must match from the beginning of the field, so if you need to match something somewhere
+  # in the middle you must add ".*" at the beginning of the regex.
+  # A missing field is treated as an empty string, so a plain pattern ("inclusion" filter) will
+  # reject entries missing that field, while a negative lookahead ("exclusion" filter, 
+  # e.g. "(?!.*pattern)") will still accept entries with missing fields.
+  # Whole field is optional and defaults to an empty dictionary, meaning no additional filtering.
+  # To apply "exclusion" filter (the negative-lookahead) to a section in the middle of the field,
+  # you must add ".*" after the "?!" (e.g., "(?!.*pattern to exclude in the middle)"). Setting up
+  # ".*" before "?!" will result in the pattern always matching, regardless of the field's content,
+  # meaning nothing will be excluded.
+  entry_filters:
+    id: ".*entries_with_this_in_their_id_are_included"
+    link: "(?!.*entries_with_this_in_their_link_are_excluded)"
+    title: "Only entries starting with this in their title are included"
+    summary: "(?!.*Entries containing this text in their summary/description are excluded)"
+
   # String format used when creating update text to identify where the update comes from.
   # Elements "{name}" and "{type}" are replaced by specific feed name and feed type
   # (in this case "Feed name 1"). Both are optional.
@@ -265,6 +282,9 @@ Bot will assume that a given feed link (for a specific source, not a general one
 The second one means, that you can't subscribe to feeds which do exist, but don't have any entries yet.
 It does, however, allow for a much better validation of links, since some RSS feeds will always respond with code 200, even if the feed is not valid.
 It's not a perfect solution, but it works for my use case.
+
+If `entry_filters` is configured for a feed type, an entry only counts towards this check (and towards updates in general) if it also matches all configured filters.
+A feed whose entries are all filtered out by `entry_filters` will be treated the same as a feed without any entries.
 
 
 ### Checking for updates
