@@ -115,7 +115,6 @@ def _entry_is_valid(entry: RssEntry, feed_type: str | None) -> bool:
     # With default empty string the regular inclusion patterns fail (since there
     # is nothing that can match), but negative-lookahead exclusion patterns pass
     # (since they don't appear in the empty string).
-    logger.info(f"Applying filters: [{filters}]")
     return all(
         match(regex, entry.get(field, ""))
         for field, regex in filters.items()
