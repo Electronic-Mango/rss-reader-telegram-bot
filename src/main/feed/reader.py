@@ -5,6 +5,7 @@ from collections.abc import Generator
 from datetime import datetime
 from functools import partial
 from itertools import takewhile
+from re import match
 from time import struct_time
 
 from feedparser import parse
@@ -29,6 +30,8 @@ async def get_parsed_feed(feed_type: str, feed_name: str) -> RssFeed:
     parsed_feed = await to_thread(parse, feed_content, response_headers=headers)
     parsed_feed["status"] = feed_response.status_code
     parsed_feed["href"] = feed_response.url
+    parsed_feed["feed_type"] = feed_type
+    parsed_feed["feed_name"] = feed_name
     return parsed_feed
 
 
@@ -90,7 +93,33 @@ def get_sorted_entries(feed: RssFeed) -> list[RssEntry]:
 
 def _get_usable_entries(feed: RssFeed) -> Generator[RssEntry]:
     """Return all usable entries for a given feed."""
-    return (entry for entry in feed.get("entries", []) if entry.get("id"))
+    return (
+        entry
+        for entry in feed.get("entries", [])
+        if _entry_is_valid(entry, feed.get("feed_type"))
+    )
+
+
+def _entry_is_valid(entry: RssEntry, feed_type: str | None) -> bool:
+    """
+    Check if the entry is a valid RSS update.
+
+    Entries are considered valid if:
+     - The entry has a non-empty ID.
+     - The entry matches all specified RSS type-specific filters (if any).
+    """
+    if not entry.get("id"):
+        return False
+    if not (filters := Settings.RSS_FEEDS.get(feed_type, {}).get("entry_filters")):
+        return True
+    # With default empty string the regular inclusion patterns fail (since there
+    # is nothing that can match), but negative-lookahead exclusion patterns pass
+    # (since they don't appear in the empty string).
+    return all(
+        match(regex, entry.get(field, ""))
+        for field, regex in filters.items()
+        if field and regex
+    )
 
 
 def _not_latest_entry(
