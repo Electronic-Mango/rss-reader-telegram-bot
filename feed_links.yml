@@ -36,7 +36,9 @@ Feed name 2:
   # For each field, the corresponding regex will be applied to filter entries.
   # The regex doesn't have to match the entire field, but it must match it from the beginning.
   # If you need to match something in the middle, use ".*" at the beginning.
-  # You can filter entries out via negative lookahead in the regex - "(?!pattern)".
+  # You can filter entries out via negative lookahead in the regex - "(?!.*pattern)".
+  # The ".*" after "?!" ensures that the negative lookahead checks the entire field for the pattern.
+  # Without it it won't exclude anything.
   entry_filters:
     # Only entries with "12345" somewhere in their ID are included.
     id: ".*12345"
