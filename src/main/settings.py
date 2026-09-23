@@ -31,6 +31,7 @@ class Settings:
     TOKEN: str | None = None  # Bot will fail on startup for None
     ALLOWED_USERNAMES: list[str] = None
     PERSISTENCE_FILE: str | None = None
+    SKIP_LATEST_ON_ADD: bool = None
 
     # Telegram updates
     LOOKUP_INTERVAL: int = None
@@ -76,6 +77,9 @@ class Settings:
             "telegram", "allowed_usernames", default=[]
         )
         cls.PERSISTENCE_FILE = cls._load_str("telegram", "persistence_file")
+        cls.SKIP_LATEST_ON_ADD = cls._load_bool(
+            "telegram", "skip_latest_on_add", default=False
+        )
 
         cls.LOOKUP_INTERVAL = cls._load_int(
             "telegram", "updates", "lookup_interval", default=3600
