@@ -15,9 +15,9 @@ telegram:
   allowed_usernames: []
   # File used for storing command states between bot restarts.
   persistence_file: persistence
-  # When "true", the second latest entry will be stored on "add" as latest, if possible.
-  # Then, the actual latest entry will be transmitted as the first update.
-  # Only applies to the "add" command.
+  # When true, "add" command stores the second-latest entry as the latest, if possible.
+  # This causes the actual latest entry to be sent during the next update check.
+  # For feeds with only one entry, that entry is selected, regardless of this setting.
   skip_latest_on_add: false
   updates:
     # How often should bot check for updates in seconds.
