@@ -55,7 +55,9 @@ def get_latest_data(feed: RssFeed) -> tuple[str, str | None, struct_time | None]
     """Get data (entry ID, link, date) of latest entry for a given feed."""
     logger.info(f"Getting data from latest entry for [{feed.get('href')}]")
     entries = get_sorted_entries(feed)
-    latest_entry = entries[0]
+    latest_index = 0 if not Settings.SKIP_LATEST_ON_ADD else 1
+    safe_latest_index = min(latest_index, len(entries) - 1)
+    latest_entry = entries[safe_latest_index]
     return get_data(latest_entry)
 
 
