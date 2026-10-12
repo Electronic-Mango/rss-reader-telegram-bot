@@ -43,11 +43,6 @@ MAX_VIDEO_SIZE = 50_000_000
 # However, it's simpler to just enforce 5000 as max for either width or height.
 MAX_IMAGE_DIMENSIONS = 10_000
 MAX_IMAGE_THUMBNAIL = (MAX_IMAGE_DIMENSIONS // 2, MAX_IMAGE_DIMENSIONS // 2)
-# Store timeout parameters for simpler reuse.
-TIMEOUT_PARAMS = {
-    "read_timeout": Settings.SEND_MEDIA_TIMEOUT,
-    "write_timeout": Settings.SEND_MEDIA_TIMEOUT,
-}
 
 # Type alias for media items: media data (bytes or file ID) and its MIME type.
 Media = tuple[bytes | str, str]
@@ -149,7 +144,7 @@ async def _prepare_default_image(bot: Bot) -> Media | None:
 
 
 async def _prepare_profile_image(bot: Bot) -> Media | None:
-    photos = await bot.get_user_profile_photos(bot.id, limit=1, **TIMEOUT_PARAMS)
+    photos = await bot.get_user_profile_photos(bot.id, limit=1, **_timeout_args())
     return (photos.photos[0][-1].file_id, "image") if photos.total_count > 0 else None
 
 
@@ -243,7 +238,7 @@ async def _send_media_group(
         input_media_list,
         caption=message,
         reply_parameters=reply_params,
-        **TIMEOUT_PARAMS,
+        **_timeout_args(),
     )
     if pin_videos:
         await _pin_videos(chat_id, sent_messages)
@@ -309,3 +304,11 @@ async def _pin_videos(chat_id: int, messages: list[Message]) -> None:
             await message.pin()
         except Exception as e:
             logger.warning(f"[{chat_id}] Failed to pin video due to: {e}")
+
+
+@lru_cache(max_size=1)
+def _timeout_args() -> dict[str, int]:
+    return {
+        "read_timeout": Settings.SEND_MEDIA_TIMEOUT,
+        "write_timeout": Settings.SEND_MEDIA_TIMEOUT,
+    }
