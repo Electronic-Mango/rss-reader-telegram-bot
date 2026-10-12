@@ -306,7 +306,7 @@ async def _pin_videos(chat_id: int, messages: list[Message]) -> None:
             logger.warning(f"[{chat_id}] Failed to pin video due to: {e}")
 
 
-@lru_cache(max_size=1)
+@lru_cache(maxsize=1)
 def _timeout_args() -> dict[str, int]:
     return {
         "read_timeout": Settings.SEND_MEDIA_TIMEOUT,
