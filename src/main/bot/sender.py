@@ -132,6 +132,7 @@ async def _send_text(
     if (media := await _prepare_default_image(bot)) is None:
         msg = await bot.send_message(chat_id, message, reply_parameters=reply_params)
         return msg.message_id
+    logger.info(f"[{chat_id}] Sending default image")
     return await _send_media_group(bot, chat_id, [media], False, message, reply_params)
 
 
