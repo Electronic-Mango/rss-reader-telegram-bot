@@ -47,6 +47,7 @@ class Settings:
     MAX_MEDIA_ITEMS_PER_MESSAGE: int = None
     PIN_VIDEOS: bool = None
     DEFAULT_IMAGE_PATH: str | None = None
+    PROFILE_AS_DEFAULT_IMAGE: bool = None
     SEND_MEDIA_TIMEOUT: int = None
     UPDATES_AS_REPLIES: bool = None
 
@@ -114,6 +115,9 @@ class Settings:
         )
         cls.DEFAULT_IMAGE_PATH = cls._load_str(
             "telegram", "messages", "default_image_path"
+        )
+        cls.PROFILE_AS_DEFAULT_IMAGE = cls._load_bool(
+            "telegram", "messages", "profile_as_default_image", default=False
         )
         cls.SEND_MEDIA_TIMEOUT = cls._load_int(
             "telegram", "messages", "send_media_timeout", default=180
