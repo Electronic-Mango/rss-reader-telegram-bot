@@ -24,7 +24,14 @@ from loguru import logger
 from more_itertools import sliced
 from niquests import AsyncResponse, aget
 from PIL import Image
-from telegram import Bot, InputMediaPhoto, InputMediaVideo, Message, ReplyParameters
+from telegram import (
+    Bot,
+    InputMedia,
+    InputMediaPhoto,
+    InputMediaVideo,
+    Message,
+    ReplyParameters,
+)
 
 from settings import Settings
 
@@ -36,6 +43,14 @@ MAX_VIDEO_SIZE = 50_000_000
 # However, it's simpler to just enforce 5000 as max for either width or height.
 MAX_IMAGE_DIMENSIONS = 10_000
 MAX_IMAGE_THUMBNAIL = (MAX_IMAGE_DIMENSIONS // 2, MAX_IMAGE_DIMENSIONS // 2)
+# Store timeout parameters for simpler reuse.
+TIMEOUT_PARAMS = {
+    "read_timeout": Settings.SEND_MEDIA_TIMEOUT,
+    "write_timeout": Settings.SEND_MEDIA_TIMEOUT,
+}
+
+# Type alias for media items: media data (bytes or file ID) and its MIME type.
+Media = tuple[bytes | str, str]
 
 
 async def send_update(
@@ -119,14 +134,32 @@ def _prepare_reply_params(latest_message_id: int | None) -> ReplyParameters | No
 async def _send_text(
     bot: Bot, chat_id: int, message: str, reply_params: ReplyParameters | None
 ) -> int:
-    if (default_img := _load_image(Settings.DEFAULT_IMAGE_PATH)) is None:
+    if (media := await _prepare_default_image(bot)) is None:
         msg = await bot.send_message(chat_id, message, reply_parameters=reply_params)
         return msg.message_id
-    logger.info(f"[{chat_id}] Sending default image [{Settings.DEFAULT_IMAGE_PATH}]")
+    return await _send_media_group(bot, chat_id, [media], False, message, reply_params)
+
+
+async def _prepare_default_image(bot: Bot) -> Media | None:
+    return (
+        await _prepare_profile_image(bot)
+        if Settings.PROFILE_AS_DEFAULT_IMAGE
+        else _prepare_image_from_path(Settings.DEFAULT_IMAGE_PATH)
+    )
+
+
+async def _prepare_profile_image(bot: Bot) -> Media | None:
+    photos = await bot.get_user_profile_photos(bot.id, limit=1, **TIMEOUT_PARAMS)
+    return photos.photos[0][-1].file_id, "image" if photos else None
+
+
+@lru_cache(maxsize=1)
+def _prepare_image_from_path(image_path: str) -> Media | None:
+    if (image := _load_image(image_path)) is None:
+        return None
     image_bytes = BytesIO()
-    await to_thread(default_img.save, image_bytes, format=default_img.format or "PNG")
-    media = [(image_bytes.getvalue(), default_img.format or "PNG")]
-    return await _send_media_group(bot, chat_id, media, False, message, reply_params)
+    image.save(image_bytes, format=image.format or "PNG")
+    return image_bytes.getvalue(), image.format or "image"
 
 
 @lru_cache(maxsize=1)
@@ -194,7 +227,7 @@ async def _download_up_to(
 async def _send_media_group(
     bot: Bot,
     chat_id: int,
-    media_group: list[tuple[bytes, str]],
+    media_group: list[Media],
     pin_videos: bool,
     message: str | None,
     reply_params: ReplyParameters | None,
@@ -210,21 +243,19 @@ async def _send_media_group(
         input_media_list,
         caption=message,
         reply_parameters=reply_params,
-        read_timeout=Settings.SEND_MEDIA_TIMEOUT,
-        write_timeout=Settings.SEND_MEDIA_TIMEOUT,
+        **TIMEOUT_PARAMS,
     )
     if pin_videos:
         await _pin_videos(chat_id, sent_messages)
     return sent_messages[0].message_id
 
 
-async def _media_object(
-    media: bytes, media_type: str
-) -> InputMediaPhoto | InputMediaVideo:
+async def _media_object(media: bytes | str, media_type: str) -> InputMedia:
     if _is_video(media_type):
         w, h = await to_thread(_probe_video_size, media)
         return InputMediaVideo(media, supports_streaming=True, width=w, height=h)
-    return InputMediaPhoto(await to_thread(_trim_image, media))
+    img_media = media if isinstance(media, str) else await to_thread(_trim_image, media)
+    return InputMediaPhoto(img_media)
 
 
 def _is_video(media_type: str) -> bool:
