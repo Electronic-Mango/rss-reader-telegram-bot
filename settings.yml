@@ -41,8 +41,11 @@ telegram:
     max_media_items_per_message: 10
     # Pin new single video messages automatically.
     pin_videos: true
-    # Optional, default image to send if update doesn't have its own.
+    # Optional, default image to send if update doesn't have its own media.
     default_image_path: /resources/default_image.png
+    # Optional, send profile image if update doesn't have its own media.
+    # When enabled, "default_image_path" is ignored.
+    profile_as_default_image: false
     # Timeout for sending large media files in seconds
     send_media_timeout: 180
     # Send new RSS update as a reply to the previous one.
