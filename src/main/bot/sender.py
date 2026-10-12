@@ -140,7 +140,7 @@ async def _prepare_default_image(bot: Bot) -> Media | None:
     return (
         await _prepare_profile_image(bot)
         if Settings.PROFILE_AS_DEFAULT_IMAGE
-        else _prepare_image_from_path(Settings.DEFAULT_IMAGE_PATH)
+        else await to_thread(_prepare_image_from_path, Settings.DEFAULT_IMAGE_PATH)
     )
 
 
@@ -150,7 +150,7 @@ async def _prepare_profile_image(bot: Bot) -> Media | None:
 
 
 @lru_cache(maxsize=1)
-def _prepare_image_from_path(image_path: str) -> Media | None:
+def _prepare_image_from_path(image_path: str | None) -> Media | None:
     if (image := _load_image(image_path)) is None:
         return None
     image_bytes = BytesIO()
