@@ -150,7 +150,7 @@ async def _prepare_default_image(bot: Bot) -> Media | None:
 
 async def _prepare_profile_image(bot: Bot) -> Media | None:
     photos = await bot.get_user_profile_photos(bot.id, limit=1, **TIMEOUT_PARAMS)
-    return photos.photos[0][-1].file_id, "image" if photos else None
+    return (photos.photos[0][-1].file_id, "image") if photos.total_count > 0 else None
 
 
 @lru_cache(maxsize=1)
